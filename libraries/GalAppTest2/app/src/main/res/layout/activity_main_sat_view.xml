@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    android:id="@+id/main_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/darkSpace">
+
+    <!--<ImageView-->
+        <!--android:id="@+id/earth"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="194dp"-->
+        <!--android:adjustViewBounds="false"-->
+        <!--android:scaleType="fitXY"-->
+        <!--app:layout_constraintBottom_toTopOf="parent"-->
+        <!--app:layout_constraintLeft_toLeftOf="parent"-->
+        <!--app:layout_constraintRight_toRightOf="parent"-->
+        <!--app:srcCompat="@drawable/hearth" />-->
+
+    <ImageView
+        android:id="@+id/earth"
+        android:layout_width="wrap_content"
+        android:layout_height="350dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:srcCompat="@drawable/earth" />
+
+    <ImageView
+        android:id="@+id/clouds"
+        android:layout_width="wrap_content"
+        android:layout_height="350dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:srcCompat="@drawable/clouds" />
+
+    <ImageView
+        android:id="@+id/shadow"
+        android:layout_width="wrap_content"
+        android:layout_height="350dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:srcCompat="@drawable/shadow" />
+
+    <com.example.lionelgarcia.galapptest2.SatView
+        android:id="@+id/satview"
+        android:layout_width="411dp"
+        android:layout_height="400dp"
+        app:layout_constraintBottom_toBottomOf="@+id/earth"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" >
+
+    </com.example.lionelgarcia.galapptest2.SatView>
+
+    <ImageView
+        android:id="@+id/stars"
+        android:layout_width="0dp"
+        android:layout_height="526dp"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/earth"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/stars" />
+
+    <ImageView
+        android:id="@+id/central_cabin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/main_panel_cabin" />
+
+    <com.example.lionelgarcia.galapptest2.SatelliteInfoView
+        android:id="@+id/satinfoview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="45dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </com.example.lionelgarcia.galapptest2.SatelliteInfoView>
+
+</android.support.constraint.ConstraintLayout>
