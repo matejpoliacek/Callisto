@@ -1,9 +1,14 @@
 package com.chocolateam.galileomap;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -35,6 +40,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
     }
 
 
@@ -63,10 +69,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         firstPoint = true;
         LatLng point1 = null;
         LatLng point2 = null;
+        mMap.clear();
         // add some button behavior (disable?)
         playButton.setEnabled(false);
         playButton.setAlpha(0.5f);
     }
+
 
     @Override
     public void onMapClick(LatLng point) {
@@ -90,7 +98,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void drawRectangle(LatLng startLocation, LatLng endLocation) {
-
         LatLng pt1 = new LatLng(Math.max(startLocation.latitude, endLocation.latitude), Math.min(startLocation.longitude, endLocation.longitude));
         LatLng pt2 = new LatLng(Math.max(startLocation.latitude, endLocation.latitude), Math.max(startLocation.longitude, endLocation.longitude));
         LatLng pt3 = new LatLng(Math.min(startLocation.latitude, endLocation.latitude), Math.max(startLocation.longitude, endLocation.longitude));
@@ -101,8 +108,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // TODO test if we can enter points out of order
         options.add(pt1, pt2, pt3, pt4);
 
-        // the fill colour needs to be made transparent
-        options.fillColor(getResources().getColor(android.R.color.holo_blue_light));
+        // TODO these are hardcoded RGB values of holo_blue_dark
+        int fill = Color.argb(100, 51, 181, 229);
+        options.fillColor(fill);
         options.strokeColor(getResources().getColor(android.R.color.holo_blue_dark));
         options.strokeWidth( 10 );
 
