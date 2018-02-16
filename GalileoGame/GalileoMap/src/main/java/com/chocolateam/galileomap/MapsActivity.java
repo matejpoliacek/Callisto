@@ -38,6 +38,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -84,6 +85,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String[] mLikelyPlaceAttributions;
     private LatLng[] mLikelyPlaceLatLngs;
 
+    /** GAME VARIABLES **/
+    // Drawing class to handle game visuals
+    private DrawClass draw;
+    private Polygon playingArea = null;
+    private Polygon[][] obstacles = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,6 +119,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        //
+        draw = new DrawClass();
     }
 
 
@@ -421,14 +430,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapClick(LatLng point) {
         lastClickedLocation = point;
         Toast.makeText(getApplicationContext(), "Clicked at " + point, Toast.LENGTH_LONG).show();
-        //drawRectangle(point);
         if (play) {
             if (firstPoint) {
                 point1 = lastClickedLocation;
                 firstPoint = false;
             } else {
                 point2 = lastClickedLocation;
-                drawRectangle(point1, point2);
+                playingArea = mMap.addPolygon(draw.drawRectangle(point1, point2));
+                System.out.println("playing area OK");
+
+                PolygonOptions[][] obstacleOptions = draw.drawObstacles();
+                int obstacleRows = draw.getRows();
+                int obstacleCols = draw.getCols();
+                obstacles = new Polygon[obstacleRows][obstacleCols];
+
+                for (int i = 0; i < obstacleRows; i++) {
+                    for (int j = 0; j < obstacleCols; j++) {
+                        obstacles[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
+                        System.out.println("obstacle " + i + ", " + j + " OK");
+                    }
+                }
+
                 play = false;
                 firstPoint = true;
                 // re-enable button
@@ -445,29 +467,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         firstPoint = true;
         LatLng point1 = null;
         LatLng point2 = null;
-        mMap.clear();
+
+        // clear possible existing drawings
+        if (playingArea != null) {
+            playingArea.remove();
+            playingArea = null;
+            if (obstacles != null) {
+                for (int i = 0; i < draw.getRows(); i++) {
+                    for (int j = 0; j < draw.getCols(); j++) {
+                        obstacles[i][j].remove();
+                    }
+                }
+                obstacles = null;
+            }
+        }
+
         // add some button behavior (disable?)
         playButton.setEnabled(false);
         playButton.setAlpha(0.5f);
-    }
-
-    private void drawRectangle(LatLng startLocation, LatLng endLocation) {
-        LatLng pt1 = new LatLng(Math.max(startLocation.latitude, endLocation.latitude), Math.min(startLocation.longitude, endLocation.longitude));
-        LatLng pt2 = new LatLng(Math.max(startLocation.latitude, endLocation.latitude), Math.max(startLocation.longitude, endLocation.longitude));
-        LatLng pt3 = new LatLng(Math.min(startLocation.latitude, endLocation.latitude), Math.max(startLocation.longitude, endLocation.longitude));
-        LatLng pt4 = new LatLng(Math.min(startLocation.latitude, endLocation.latitude), Math.min(startLocation.longitude, endLocation.longitude));
-
-        PolygonOptions options = new PolygonOptions();
-
-        // TODO test if we can enter points out of order
-        options.add(pt1, pt2, pt3, pt4);
-
-        // TODO these are hardcoded RGB values of holo_blue_dark
-        int fill = Color.argb(100, 51, 181, 229);
-        options.fillColor(fill);
-        options.strokeColor(getResources().getColor(android.R.color.holo_blue_dark));
-        options.strokeWidth( 10 );
-
-        mMap.addPolygon( options );
     }
 }
