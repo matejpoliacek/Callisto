@@ -1,6 +1,5 @@
 package com.chocolateam.galileomap;
 
-import android.content.SyncStatusObserver;
 import android.graphics.Color;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -14,8 +13,8 @@ public class DrawClass {
 
     private LatLng upLeft;
     private LatLng upRight;
-    private LatLng downLeft;
     private LatLng downRight;
+    private LatLng downLeft;
 
     private double longDist;
     private double latDist;
@@ -30,14 +29,16 @@ public class DrawClass {
 
     // one "box" of playing field in metres
     private final int FIELD_SIZE = 10;
+    // what porportion of the above box should be covered by the obstacle?
+    private final int OBSTACLE_PROPORTION = 3;
 
     public PolygonOptions drawRectangle(LatLng startLocation, LatLng endLocation) {
 
         //Drawing a rectangle also stores the delimiting points in the class for further use
         upLeft = new LatLng(Math.max(startLocation.latitude, endLocation.latitude), Math.min(startLocation.longitude, endLocation.longitude));
         upRight = new LatLng(Math.max(startLocation.latitude, endLocation.latitude), Math.max(startLocation.longitude, endLocation.longitude));
-        downLeft = new LatLng(Math.min(startLocation.latitude, endLocation.latitude), Math.max(startLocation.longitude, endLocation.longitude));
-        downRight = new LatLng(Math.min(startLocation.latitude, endLocation.latitude), Math.min(startLocation.longitude, endLocation.longitude));
+        downRight = new LatLng(Math.min(startLocation.latitude, endLocation.latitude), Math.max(startLocation.longitude, endLocation.longitude));
+        downLeft = new LatLng(Math.min(startLocation.latitude, endLocation.latitude), Math.min(startLocation.longitude, endLocation.longitude));
         //Also calculate and store distances
         setPlayfieldSize();
 
@@ -47,7 +48,7 @@ public class DrawClass {
         PolygonOptions options = new PolygonOptions();
 
         // Points must be in order
-        options.add(upLeft, upRight, downLeft, downRight);
+        options.add(upLeft, upRight, downRight, downLeft);
 
         options.fillColor(HOLO_BLUE_FILL);
         options.strokeColor(HOLO_BLUE_STROKE);
@@ -56,22 +57,19 @@ public class DrawClass {
         return options;
     }
 
-    public PolygonOptions[][] drawObstacles() {
+    public PolygonOptions[][] drawObstacles(int[][] playfieldArray) {
 
         double longRemain = longDist % FIELD_SIZE;
         double latRemain = latDist % FIELD_SIZE;
 
-        double longOffset = FIELD_SIZE/2;
-        double latOffset = FIELD_SIZE/2;
+        // get values to move to the top left corner of the obstacle from the top left corner of the field itself
+        double longOffset = FIELD_SIZE-(FIELD_SIZE/OBSTACLE_PROPORTION);
+        double latOffset = FIELD_SIZE-(FIELD_SIZE/OBSTACLE_PROPORTION);
         // generate an array with rows and cols, then offset it from the left by longRemain /2 and from the top by latRemain/2
         // select fields to contain obstacles
 
         PolygonOptions[][] obstacles = new PolygonOptions[rows][cols];
 
-        System.out.println("longRemain: " + longRemain + " latRemain: " + latRemain);
-
-
-        // TODO: the generated obstacles are not precise vertically
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
 
@@ -83,29 +81,22 @@ public class DrawClass {
 
 
                 // pt2 is pt1 translated east
-                LatLng pt2 = movePoint(pt1, longOffset, 90);
+                LatLng pt2 = movePoint(pt1, FIELD_SIZE/OBSTACLE_PROPORTION, 90);
 
                 // pt3 is pt2 translated south
-                LatLng pt3 = movePoint(pt2, latOffset, 180);
+                LatLng pt3 = movePoint(pt2, FIELD_SIZE/OBSTACLE_PROPORTION, 180);
 
                 LatLng pt4 = new LatLng(pt3.latitude, pt1.longitude);
 
-                /** not working ATM
-                // a horrible hack to stop obstacles from being generated out of bounds
-                // TODO something?
-                if (pt4.latitude < downLeft.latitude) {
-                    setRows(i-1);
-                    break;
-                }
-                **/
+                if (playfieldArray[i][j] == 1) {
+                    obstacles[i][j] = new PolygonOptions();
 
-                obstacles[i][j] = new PolygonOptions();
+                    obstacles[i][j].add(pt1, pt2, pt3, pt4);
 
-                obstacles[i][j].add(pt1, pt2, pt3, pt4);
-
-                obstacles[i][j].fillColor(RED_FILL);
-                obstacles[i][j].strokeColor(RED_STROKE);
-                obstacles[i][j].strokeWidth(10);
+                    obstacles[i][j].fillColor(RED_FILL);
+                    obstacles[i][j].strokeColor(RED_STROKE);
+                    obstacles[i][j].strokeWidth(10);
+                };
             }
         }
 

@@ -90,6 +90,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DrawClass draw;
     private Polygon playingArea = null;
     private Polygon[][] obstacles = null;
+    private GameClass game;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -437,17 +438,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             } else {
                 point2 = lastClickedLocation;
                 playingArea = mMap.addPolygon(draw.drawRectangle(point1, point2));
-                System.out.println("playing area OK");
 
-                PolygonOptions[][] obstacleOptions = draw.drawObstacles();
+                game = new GameClass();
                 int obstacleRows = draw.getRows();
                 int obstacleCols = draw.getCols();
+
+                int[][] fieldTypeGenerator = game.fieldTypeGenerator(obstacleRows, obstacleCols);
+                PolygonOptions[][] obstacleOptions = draw.drawObstacles(fieldTypeGenerator);
                 obstacles = new Polygon[obstacleRows][obstacleCols];
 
                 for (int i = 0; i < obstacleRows; i++) {
                     for (int j = 0; j < obstacleCols; j++) {
-                        obstacles[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
-                        System.out.println("obstacle " + i + ", " + j + " OK");
+                        if (fieldTypeGenerator[i][j] == 1) {
+                            obstacles[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
+                        }
                     }
                 }
 
@@ -475,7 +479,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (obstacles != null) {
                 for (int i = 0; i < draw.getRows(); i++) {
                     for (int j = 0; j < draw.getCols(); j++) {
-                        obstacles[i][j].remove();
+                        if (game.getPlayfieldArray()[i][j] == 1) {
+                            obstacles[i][j].remove();
+                        }
                     }
                 }
                 obstacles = null;
