@@ -1,9 +1,11 @@
 package com.chocolateam.galileomap;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -18,7 +20,12 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.PlaceDetectionClient;
@@ -75,6 +82,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String[] mLikelyPlaceAddresses;
     private String[] mLikelyPlaceAttributions;
     private LatLng[] mLikelyPlaceLatLngs;
+
+    /** LOCATION VARIABLES **/
+    //private static final String TAG = "LocationActivity";
+    private static final long INTERVAL = 100;
+    private static final long FASTEST_INTERVAL = 100;
+    private LocationRequest mLocationRequest;
+    private GoogleApiClient mGoogleApiClient;
 
     /** GAME VARIABLES **/
     // Drawing class to handle game visuals
@@ -239,7 +253,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
     }
@@ -297,8 +311,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mLocationPermissionGranted) {
             // Get the likely places - that is, the businesses and other points of interest that
             // are the best match for the device's current location.
-            @SuppressWarnings("MissingPermission") final
-            Task<PlaceLikelihoodBufferResponse> placeResult =
+            @SuppressWarnings("MissingPermission") final Task<PlaceLikelihoodBufferResponse> placeResult =
                     mPlaceDetectionClient.getCurrentPlace(null);
             placeResult.addOnCompleteListener
                     (new OnCompleteListener<PlaceLikelihoodBufferResponse>() {
@@ -359,7 +372,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .snippet(getString(R.string.default_info_snippet)));
 
             // Prompt the user for permission.
-          //  getLocationPermission();
+            //  getLocationPermission();
         }
     }
 
@@ -415,10 +428,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mLastKnownLocation = null;
                 getLocationPermission();
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
     }
+
 
     /***************************/
     /** Game related methods **/
@@ -435,8 +449,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             } else {
                 point2 = lastClickedLocation;
                 gameInit();
-                if (game.isValidGame(this)) {
+                if (game.isValidGame()) {
                     playing();
+                    game.start();
                 } else {
                     stopGame();
                 }
@@ -470,6 +485,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         playing = true;
         playButton.setEnabled(true);
         playButton.setAlpha(1.0f);
+
+
     }
 
     private void stopGame() {
@@ -498,23 +515,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         game = null;
         playing = false;
     }
-
+    // TODO: switch arrays to lists for faster access?
     private void gameInit() {
         playingArea = mMap.addPolygon(draw.drawRectangle(point1, point2));
 
-        game = new GameClass(point1, point2, mLastKnownLocation);
+        game = new GameClass(point1, point2, mLastKnownLocation, this);
         int obstacleRows = draw.getRows();
         int obstacleCols = draw.getCols();
 
-        int[][] fieldTypeGenerator = game.fieldTypeGenerator(obstacleRows, obstacleCols);
-
-        PolygonOptions[][] obstacleOptions = draw.drawObstacles(fieldTypeGenerator);
+        PolygonOptions[][] obstacleOptions = draw.drawObstacles(game.fieldTypeGenerator(obstacleRows, obstacleCols), mLastKnownLocation);
         obstacles = new Polygon[obstacleRows][obstacleCols];
 
         for (int i = 0; i < obstacleRows; i++) {
             for (int j = 0; j < obstacleCols; j++) {
-                if (fieldTypeGenerator[i][j] == 1) {
+                if (obstacleOptions[i][j] != null) {
                     obstacles[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
+                    game.addObstacle(obstacles[i][j]);
                 }
             }
         }

@@ -1,10 +1,13 @@
 package com.chocolateam.galileomap;
 
 import android.graphics.Color;
+import android.location.Location;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.maps.android.PolyUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.maps.android.SphericalUtil.computeDistanceBetween;
@@ -62,7 +65,7 @@ public class DrawClass {
         return options;
     }
 
-    public PolygonOptions[][] drawObstacles(int[][] playfieldArray) {
+    public PolygonOptions[][] drawObstacles(int[][] playfieldArray, Location playerLocation) {
 
         double longRemain = longDist % FIELD_SIZE;
         double latRemain = latDist % FIELD_SIZE;
@@ -93,7 +96,13 @@ public class DrawClass {
 
                 LatLng pt4 = new LatLng(pt3.latitude, pt1.longitude);
 
-                if (playfieldArray[i][j] == 1) {
+                List<LatLng> obstaclePoints = new ArrayList<>();
+                obstaclePoints.add(pt1);
+                obstaclePoints.add(pt2);
+                obstaclePoints.add(pt3);
+                obstaclePoints.add(pt4);
+
+                if (playfieldArray[i][j] == 1 && !PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), obstaclePoints, false)) {
                     obstacles[i][j] = new PolygonOptions();
 
                     obstacles[i][j].add(pt1, pt2, pt3, pt4);
@@ -104,7 +113,6 @@ public class DrawClass {
                 };
             }
         }
-
         return obstacles;
     }
 
