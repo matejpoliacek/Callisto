@@ -45,7 +45,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, Runnable {
 
     private GoogleMap mMap;
     private LatLng lastClickedLocation;
@@ -451,7 +451,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 gameInit();
                 if (game.isValidGame()) {
                     playing();
-                    game.start();
                 } else {
                     stopGame();
                 }
@@ -485,8 +484,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         playing = true;
         playButton.setEnabled(true);
         playButton.setAlpha(1.0f);
-
-
+        this.run();
+        game.start();
     }
 
     private void stopGame() {
@@ -532,6 +531,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     obstacles[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
                     game.addObstacle(obstacles[i][j]);
                 }
+            }
+        }
+    }
+
+    // TODO: We need to send regular updates of position to the game, but running a thread like this blocks the process
+    // could we pass the fusedlocationprovider itself to the game?
+    // do we need a separate class for location provision?
+
+    @Override
+    public void run() {
+        while (playing) {
+            Toast.makeText(getApplicationContext(), "Updating location", Toast.LENGTH_LONG).show();
+            getDeviceLocation();
+            game.setPlayerLocation(mLastKnownLocation);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
