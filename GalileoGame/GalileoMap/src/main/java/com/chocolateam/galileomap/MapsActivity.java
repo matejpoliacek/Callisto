@@ -1,9 +1,14 @@
 package com.chocolateam.galileomap;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -20,12 +25,11 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.PlaceDetectionClient;
@@ -45,7 +49,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, Runnable {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
     private GoogleMap mMap;
     private LatLng lastClickedLocation;
@@ -83,13 +87,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String[] mLikelyPlaceAttributions;
     private LatLng[] mLikelyPlaceLatLngs;
 
-    /** LOCATION VARIABLES **/
-    //private static final String TAG = "LocationActivity";
-    private static final long INTERVAL = 100;
-    private static final long FASTEST_INTERVAL = 100;
-    private LocationRequest mLocationRequest;
-    private GoogleApiClient mGoogleApiClient;
-
     /** GAME VARIABLES **/
     // Drawing class to handle game visuals
     private DrawClass draw;
@@ -102,6 +99,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean firstPoint = true;
     private LatLng point1 = null;
     private LatLng point2 = null;
+
+    private LocationCallback mLocationCallback;
+    private LocationRequest mLocationRequest;
+
+    /** Location manager **/
+    private LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +134,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        //
+        // Location Stuff
+      /**  mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                for (Location location : locationResult.getLocations()) {
+                    if (playing && game != null) {
+                        TextView text = (TextView)findViewById(R.id.locationtext);
+                        text.setText("Location: " + location.toString());
+                        mLastKnownLocation = location;
+                        game.setPlayerLocation(location);
+                    }
+                }
+            }
+        }; **/
+
+        /** Location Manager **/
+        locationManager=(LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, locationListenerGPS);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerGPS);
+            isLocationEnabled();
+        } catch (SecurityException e) {
+            Toast.makeText(getApplicationContext(), "Security exception - locmgr", Toast.LENGTH_LONG).show();
+        }
+
+        // draw class
         draw = new DrawClass();
     }
 
@@ -218,6 +246,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
+        // Location stuff
+        createLocationRequest();
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
     }
@@ -226,7 +256,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Gets the current location of the device, and positions the map's camera.
      */
-    private void getDeviceLocation() {
+   private void getDeviceLocation() {
         /*
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
@@ -433,6 +463,93 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    /***********************/
+    /** Location methods **/
+    /*********************/
+
+
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(500);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //startLocationUpdates();
+        isLocationEnabled();
+    }
+
+    private void startLocationUpdates() {
+        try {
+            if (mLocationPermissionGranted) {
+                mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest,
+                        mLocationCallback,
+                        null /* Looper */);
+                Toast.makeText(getApplicationContext(), "Location requested", Toast.LENGTH_LONG).show();
+            }
+        }
+        catch (SecurityException e) {
+            Toast.makeText(getApplicationContext(), "Security exception", Toast.LENGTH_LONG).show();
+            System.err.println("Security exception");
+        }
+    }
+
+    /** Location Manager **/
+
+    LocationListener locationListenerGPS = new LocationListener() {
+        @Override
+        public void onLocationChanged(android.location.Location location) {
+            TextView text = (TextView)findViewById(R.id.locationtext);
+            text.setText("Location: " + location.toString());
+            if (playing && game != null) {
+                mLastKnownLocation = location;
+                game.setPlayerLocation(location);
+            }
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
+
+    private void isLocationEnabled() {
+        if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+        AlertDialog.Builder alertDialog=new AlertDialog.Builder(getApplicationContext());
+        alertDialog.setTitle("Enable Location");
+        alertDialog.setMessage("Your locations setting is not enabled. Please enabled it in settings menu.");
+        alertDialog.setPositiveButton("Location Settings", new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog, int which){
+                Intent intent=new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        });
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog, int which){
+                dialog.cancel();
+            }
+        });
+        AlertDialog alert=alertDialog.create();
+        alert.show();
+        }
+        else{
+            Toast.makeText(getApplicationContext(), "Location is Enabled", Toast.LENGTH_LONG).show();
+        }
+    }
+
 
     /***************************/
     /** Game related methods **/
@@ -484,11 +601,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         playing = true;
         playButton.setEnabled(true);
         playButton.setAlpha(1.0f);
-        this.run();
+        game.setPlaying(true);
         game.start();
     }
 
     private void stopGame() {
+        game.setPlaying(false);
         gameSetup = false;
         firstPoint = true;
         // re-enable button
@@ -503,7 +621,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (obstacles != null) {
                 for (int i = 0; i < draw.getRows(); i++) {
                     for (int j = 0; j < draw.getCols(); j++) {
-                        if (game.getPlayfieldArray()[i][j] == 1) {
+                        if (obstacles[i][j] != null) {
                             obstacles[i][j].remove();
                         }
                     }
@@ -518,38 +636,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void gameInit() {
         playingArea = mMap.addPolygon(draw.drawRectangle(point1, point2));
 
-        game = new GameClass(point1, point2, mLastKnownLocation, this);
+        game = new GameClass(point1, point2,this, mMap);
+        game.setPlayerLocation(mLastKnownLocation);
+
         int obstacleRows = draw.getRows();
         int obstacleCols = draw.getCols();
 
-        PolygonOptions[][] obstacleOptions = draw.drawObstacles(game.fieldTypeGenerator(obstacleRows, obstacleCols), mLastKnownLocation);
+        int[][] playFieldArray = game.fieldTypeGenerator(obstacleRows, obstacleCols);
+        PolygonOptions[][] obstacleOptions = draw.drawObstacles(playFieldArray,mLastKnownLocation);
         obstacles = new Polygon[obstacleRows][obstacleCols];
 
         for (int i = 0; i < obstacleRows; i++) {
             for (int j = 0; j < obstacleCols; j++) {
                 if (obstacleOptions[i][j] != null) {
                     obstacles[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
-                    game.addObstacle(obstacles[i][j]);
+                    if (playFieldArray[i][j] == 1) {
+                        game.addObstacle(obstacles[i][j]);
+                    } else if (playFieldArray[i][j] == 2) {
+                        game.addCollectible(obstacles[i][j]);
+                    }
                 }
             }
         }
     }
 
-    // TODO: We need to send regular updates of position to the game, but running a thread like this blocks the process
-    // could we pass the fusedlocationprovider itself to the game?
-    // do we need a separate class for location provision?
 
-    @Override
-    public void run() {
-        while (playing) {
-            Toast.makeText(getApplicationContext(), "Updating location", Toast.LENGTH_LONG).show();
-            getDeviceLocation();
-            game.setPlayerLocation(mLastKnownLocation);
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

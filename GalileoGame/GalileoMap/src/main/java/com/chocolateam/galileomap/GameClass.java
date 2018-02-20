@@ -6,8 +6,11 @@ import android.content.DialogInterface;
 import android.graphics.Point;
 import android.location.Location;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
@@ -35,15 +38,18 @@ public class GameClass extends Thread {
     **/
     private List<LatLng> areaPoints;
     private List<List<LatLng>> obstaclePolys = new ArrayList<>();
+    private List<Polygon> collectsPolys = new ArrayList<>();
 
     private Location playerLocation;
 
     private int rows;
     private int cols;
 
-    public GameClass(LatLng startLocation, LatLng endLocation, Location playerLocation, Context context) {
-        this.areaPoints = PointTools.getPoints(startLocation, endLocation);
+    private boolean playing;
+    private GoogleMap mMap;
 
+    public GameClass(LatLng startLocation, LatLng endLocation, Context context, GoogleMap mMap) {
+        this.areaPoints = PointTools.getPoints(startLocation, endLocation);
         /** reference:
         upLeft = points[0];
         upRight = points[1];
@@ -51,9 +57,8 @@ public class GameClass extends Thread {
         downLeft = points[3];
         **/
 
-        this.playerLocation = playerLocation;
-
         this.context = context;
+        this.mMap = mMap;
     }
 
     public int[][] fieldTypeGenerator(int rows, int cols) {
@@ -68,8 +73,16 @@ public class GameClass extends Thread {
             obstacleChooser.add(i);
         }
 
+        int noColletibles = 3;
+
         Collections.shuffle(obstacleChooser);
-        obstacleChooser = obstacleChooser.subList(0, (rows*cols)/OBSTACLE_PROPORTION);
+        obstacleChooser = obstacleChooser.subList(0, ((rows*cols)/OBSTACLE_PROPORTION)+noColletibles);
+
+        for (int i = 0; i < noColletibles; i++) {
+            playfieldArray[obstacleChooser.get(i)/cols][obstacleChooser.get(i) % cols]= 2;
+        }
+
+        obstacleChooser = obstacleChooser.subList(noColletibles, obstacleChooser.size());
 
         for (int i = 0; i < obstacleChooser.size(); i++) {
             playfieldArray[obstacleChooser.get(i)/cols][obstacleChooser.get(i) % cols]= 1;
@@ -86,7 +99,7 @@ public class GameClass extends Thread {
 
         boolean validGame = true;
 
-        if (rows == 0 || cols == 0) {
+        if (rows < 3 || cols < 3) {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setMessage("Playing area too small!")
                     .setCancelable(false)
@@ -99,7 +112,6 @@ public class GameClass extends Thread {
             alert.show();
             validGame = false;
         }
-
         if (!PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), areaPoints, false)) {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setMessage("Make sure you're inside the desired playing area")
@@ -128,35 +140,38 @@ public class GameClass extends Thread {
         obstaclePolys.add(points);
     }
 
-    public void setPlayerLocation(Location newLocation) {
-        playerLocation = newLocation;
+    public void addCollectible(Polygon collectible) {
+
+        collectsPolys.add(collectible);
     }
 
     public void run() {
        try {
-            while (true){
-                Thread.sleep(100);
+            while (playing){
+                Thread.sleep(2000);
+
                 for (int i = 0; i < obstaclePolys.size(); i++) {
                     if (PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), obstaclePolys.get(i), false)) {
-                       AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                       builder.setMessage("You've lost!")
-                                .setCancelable(false)
-                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        //do things
-                                    }
-                                });
-                        AlertDialog alert = builder.create();
-                        alert.show();
+                      playing = false;
+                      break;
                     }
                 }
+                collectsPolys.get(0).remove();
             }
 
         } catch (InterruptedException e) {
             System.err.println("Thread stopped");
-        }
+        } finally {
+          // give some game summary - TODO: create new activity that will have a window with final score, etc
+       }
     }
 
+    public void setPlaying(boolean playing) {
+        this.playing = playing;
+    }
 
+    public void setPlayerLocation(Location location) {
+        this.playerLocation = location;
+    }
 
 }
