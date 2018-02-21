@@ -1,6 +1,6 @@
 package com.chocolateam.galileomap;
 
-import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,9 +10,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -29,7 +31,6 @@ import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.PlaceDetectionClient;
@@ -91,8 +92,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Drawing class to handle game visuals
     private DrawClass draw;
     private Polygon playingArea = null;
-    private Polygon[][] obstacles = null;
-    private GameClass game;
+    private Polygon[][] gameMapObjects = null;
+    private GameFragment game;
+    private Thread gameThread = null;
 
     private boolean gameSetup = false;
     private boolean playing = false;
@@ -602,7 +604,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         playButton.setEnabled(true);
         playButton.setAlpha(1.0f);
         game.setPlaying(true);
-        game.start();
+        gameThread = new Thread(game);
+        gameThread.start();
     }
 
     private void stopGame() {
@@ -618,16 +621,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (playingArea != null) {
             playingArea.remove();
             playingArea = null;
-            if (obstacles != null) {
+            if (gameMapObjects != null) {
                 for (int i = 0; i < draw.getRows(); i++) {
                     for (int j = 0; j < draw.getCols(); j++) {
-                        if (obstacles[i][j] != null) {
-                            obstacles[i][j].remove();
+                        if (gameMapObjects[i][j] != null) {
+                            gameMapObjects[i][j].remove();
                         }
                     }
                 }
-                obstacles = null;
+                gameMapObjects = null;
             }
+        }
+        if (playing) {
+            gameThread.interrupt();
         }
         game = null;
         playing = false;
@@ -636,7 +642,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void gameInit() {
         playingArea = mMap.addPolygon(draw.drawRectangle(point1, point2));
 
-        game = new GameClass(point1, point2,this, mMap);
+
+        // add game as a fragment
+        FragmentManager gamefragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
+
+        game = new GameFragment();
+        fragmentTransaction.commit();
+
+        game.setContext(MapsActivity.this);
+        game.setAreaPoints(point1, point2);
         game.setPlayerLocation(mLastKnownLocation);
 
         int obstacleRows = draw.getRows();
@@ -644,21 +659,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         int[][] playFieldArray = game.fieldTypeGenerator(obstacleRows, obstacleCols);
         PolygonOptions[][] obstacleOptions = draw.drawObstacles(playFieldArray,mLastKnownLocation);
-        obstacles = new Polygon[obstacleRows][obstacleCols];
+        gameMapObjects = new Polygon[obstacleRows][obstacleCols];
 
         for (int i = 0; i < obstacleRows; i++) {
             for (int j = 0; j < obstacleCols; j++) {
                 if (obstacleOptions[i][j] != null) {
-                    obstacles[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
+                    gameMapObjects[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
                     if (playFieldArray[i][j] == 1) {
-                        game.addObstacle(obstacles[i][j]);
+                        game.addObstacle(gameMapObjects[i][j]);
                     } else if (playFieldArray[i][j] == 2) {
-                        game.addCollectible(obstacles[i][j]);
+                        game.addCollectible(i, j, gameMapObjects[i][j]);
                     }
                 }
             }
         }
     }
 
-
+    public void removeMapObjectByIndex(int row, int col) {
+        gameMapObjects[row][col].remove();
+    }
 }

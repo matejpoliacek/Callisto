@@ -1,6 +1,7 @@
 package com.chocolateam.galileomap;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;

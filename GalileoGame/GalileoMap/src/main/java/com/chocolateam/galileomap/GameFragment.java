@@ -1,6 +1,8 @@
 package com.chocolateam.galileomap;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Point;
@@ -15,14 +17,16 @@ import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Matej Poliacek on 16/02/2018.
  */
 
 
-public class GameClass extends Thread {
+public class GameFragment extends Fragment implements Runnable {
 
     private final int OBSTACLE_PROPORTION = 2; // = half
     private int[][] playfieldArray;
@@ -38,7 +42,7 @@ public class GameClass extends Thread {
     **/
     private List<LatLng> areaPoints;
     private List<List<LatLng>> obstaclePolys = new ArrayList<>();
-    private List<Polygon> collectsPolys = new ArrayList<>();
+    private List<MapObjectWithIndex> collectsPolys = new ArrayList<>();
 
     private Location playerLocation;
 
@@ -46,22 +50,15 @@ public class GameClass extends Thread {
     private int cols;
 
     private boolean playing;
-    private GoogleMap mMap;
 
-    public GameClass(LatLng startLocation, LatLng endLocation, Context context, GoogleMap mMap) {
-        this.areaPoints = PointTools.getPoints(startLocation, endLocation);
-        /** reference:
-        upLeft = points[0];
-        upRight = points[1];
-        downRight = points[2];
-        downLeft = points[3];
-        **/
-
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
         this.context = context;
-        this.mMap = mMap;
+
     }
 
-    public int[][] fieldTypeGenerator(int rows, int cols) {
+    public int[][] fieldTypeGenerator(int rows, int cols){
 
         this.rows = rows;
         this.cols = cols;
@@ -69,29 +66,29 @@ public class GameClass extends Thread {
         playfieldArray = new int[rows][cols];
 
         List<Integer> obstacleChooser = new ArrayList<>();
-        for (int i = 0; i < rows*cols; i++) {
+        for (int i = 0; i < rows * cols; i++) {
             obstacleChooser.add(i);
         }
 
         int noColletibles = 3;
 
         Collections.shuffle(obstacleChooser);
-        obstacleChooser = obstacleChooser.subList(0, ((rows*cols)/OBSTACLE_PROPORTION)+noColletibles);
+        obstacleChooser = obstacleChooser.subList(0, ((rows * cols) / OBSTACLE_PROPORTION) + noColletibles);
 
         for (int i = 0; i < noColletibles; i++) {
-            playfieldArray[obstacleChooser.get(i)/cols][obstacleChooser.get(i) % cols]= 2;
+            playfieldArray[obstacleChooser.get(i) / cols][obstacleChooser.get(i) % cols] = 2;
         }
 
         obstacleChooser = obstacleChooser.subList(noColletibles, obstacleChooser.size());
 
         for (int i = 0; i < obstacleChooser.size(); i++) {
-            playfieldArray[obstacleChooser.get(i)/cols][obstacleChooser.get(i) % cols]= 1;
+            playfieldArray[obstacleChooser.get(i) / cols][obstacleChooser.get(i) % cols] = 1;
         }
 
         return playfieldArray;
     }
 
-    public int[][] getPlayfieldArray() {
+    public int[][] getPlayfieldArray () {
         return playfieldArray;
     }
 
@@ -140,30 +137,44 @@ public class GameClass extends Thread {
         obstaclePolys.add(points);
     }
 
-    public void addCollectible(Polygon collectible) {
+    public void addCollectible(int row, int col, Polygon collectible) {
 
-        collectsPolys.add(collectible);
+        List<LatLng> points = new ArrayList<>();
+        // Extract points from received polygon into a list
+        for (int i = 0; i < collectible.getPoints().size(); i++) {
+            points.add(collectible.getPoints().get(i));
+        }
+
+        collectsPolys.add(new MapObjectWithIndex(row, col, points));
     }
 
     public void run() {
-       try {
-            while (playing){
+        try {
+            while (playing) {
                 Thread.sleep(2000);
 
                 for (int i = 0; i < obstaclePolys.size(); i++) {
                     if (PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), obstaclePolys.get(i), false)) {
-                      playing = false;
-                      break;
+                        playing = false;
+                        break;
+                    } else {
+
+                        for (int j = 0; j < collectsPolys.size(); j++) {
+                            if (PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), collectsPolys.get(j).getPoints(), false)) {
+                                // TODO: almost surely this won't work, because it's not on the main thread - verify
+                                ((MapsActivity) getActivity()).removeMapObjectByIndex(collectsPolys.get(j).getRow(), collectsPolys.get(j).getCol());
+                            }
+                        }
                     }
                 }
-                collectsPolys.get(0).remove();
+
             }
 
         } catch (InterruptedException e) {
             System.err.println("Thread stopped");
         } finally {
-          // give some game summary - TODO: create new activity that will have a window with final score, etc
-       }
+            // give some game summary - TODO: create new activity that will have a window with final score, etc
+        }
     }
 
     public void setPlaying(boolean playing) {
@@ -174,4 +185,17 @@ public class GameClass extends Thread {
         this.playerLocation = location;
     }
 
+    public void setAreaPoints(LatLng startLocation, LatLng endLocation) {
+        this.areaPoints =PointTools.getPoints(startLocation, endLocation);
+        /** reference:
+         upLeft = points[0];
+         upRight = points[1];
+         downRight = points[2];
+         downLeft = points[3];
+         **/
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
 }
