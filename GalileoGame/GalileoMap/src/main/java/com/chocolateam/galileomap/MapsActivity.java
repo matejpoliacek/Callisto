@@ -1,6 +1,5 @@
 package com.chocolateam.galileomap;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,7 +20,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -55,6 +53,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private LatLng lastClickedLocation;
     private Button playButton;
+    private TextView scoreText;
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private CameraPosition mCameraPosition;
@@ -107,6 +106,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     /** Location manager **/
     private LocationManager locationManager;
+
+    private Marker mMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,6 +164,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // draw class
         draw = new DrawClass();
+
+        scoreText = (TextView) findViewById(R.id.scoretext);
     }
 
 
@@ -252,6 +255,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         createLocationRequest();
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
+
+        mMarker = mMap.addMarker(new MarkerOptions().position(mDefaultLocation));
     }
 
 
@@ -504,10 +509,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     LocationListener locationListenerGPS = new LocationListener() {
         @Override
         public void onLocationChanged(android.location.Location location) {
-            TextView text = (TextView)findViewById(R.id.locationtext);
-            text.setText("Location: " + location.toString());
+            mLastKnownLocation = location;
+            mMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
             if (playing && game != null) {
-                mLastKnownLocation = location;
                 game.setPlayerLocation(location);
             }
         }
@@ -567,8 +571,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 firstPoint = false;
             } else {
                 point2 = lastClickedLocation;
+                // TODO: gameInit prepares the entire playing field even if the game turns out to be invalid
+                // TODO: we should then check before initialising - address when optimising
                 gameInit();
-                if (game.isValidGame()) {
+                if (game.isLocationValid()) {
                     playing();
                 } else {
                     stopGame();
@@ -603,12 +609,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         playing = true;
         playButton.setEnabled(true);
         playButton.setAlpha(1.0f);
+
+        //show score
+        scoreText.setVisibility(View.VISIBLE);
+
         game.setPlaying(true);
         gameThread = new Thread(game);
         gameThread.start();
     }
 
-    private void stopGame() {
+    public void stopGame() {
         game.setPlaying(false);
         gameSetup = false;
         firstPoint = true;
@@ -616,6 +626,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         playButton.setEnabled(true);
         playButton.setAlpha(1.0f);
         playButton.setText("Play");
+
+        // hide score text
+        scoreText.setVisibility(View.INVISIBLE);
+        showScore(0);
 
         // clear possible existing drawings
         if (playingArea != null) {
@@ -635,13 +649,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (playing) {
             gameThread.interrupt();
         }
-        game = null;
         playing = false;
     }
     // TODO: switch arrays to lists for faster access?
     private void gameInit() {
         playingArea = mMap.addPolygon(draw.drawRectangle(point1, point2));
-
 
         // add game as a fragment
         FragmentManager gamefragmentManager = getSupportFragmentManager();
@@ -667,8 +679,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     gameMapObjects[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
                     if (playFieldArray[i][j] == 1) {
                         game.addObstacle(gameMapObjects[i][j]);
+
                     } else if (playFieldArray[i][j] == 2) {
                         game.addCollectible(i, j, gameMapObjects[i][j]);
+
+                    } else if (playFieldArray[i][j] == 3) {
+                        game.addFinish(gameMapObjects[i][j]);
                     }
                 }
             }
@@ -677,5 +693,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void removeMapObjectByIndex(int row, int col) {
         gameMapObjects[row][col].remove();
+    }
+
+    public void showScore(int score) {
+        scoreText.setText("Score: " + score);
     }
 }

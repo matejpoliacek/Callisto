@@ -35,11 +35,13 @@ public class DrawClass {
     private final int RED_STROKE = Color.argb(175, 255, 0, 0);
     private final int GREEN_FILL = Color.argb(125, 0, 255, 0);
     private final int GREEN_STROKE = Color.argb(175, 0, 255, 0);
+    private final int WHITE_FILL = Color.argb(125, 255, 255, 255);
+    private final int WHITE_STROKE = Color.argb(175, 255, 255, 255);
 
     // one "box" of playing field in metres
-    private final int FIELD_SIZE = 10;
-    // what porportion of the above box should be covered by the obstacle?
-    private final int OBSTACLE_PROPORTION = 3;
+    private final double FIELD_SIZE = 10;
+    // what porportion of the above box should be covered by the obstacle (FIELD_SIZE/OBSTACLE_PROPORTION)?
+    private final double OBSTACLE_PROPORTION = 2.5;
 
     public PolygonOptions drawRectangle(LatLng startLocation, LatLng endLocation) {
 
@@ -52,8 +54,8 @@ public class DrawClass {
         //Also calculate and store distances
         setPlayfieldSize();
 
-        setRows((int)longDist / FIELD_SIZE);
-        setCols((int)latDist / FIELD_SIZE);
+        setRows((int)(longDist / FIELD_SIZE));
+        setCols((int)(latDist / FIELD_SIZE));
 
         PolygonOptions options = new PolygonOptions();
 
@@ -105,21 +107,25 @@ public class DrawClass {
                 obstaclePoints.add(pt4);
 
                 if (playfieldArray[i][j] != 0 && !PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), obstaclePoints, false)) {
+
                     obstacles[i][j] = new PolygonOptions();
                     obstacles[i][j].add(pt1, pt2, pt3, pt4);
-                    if (playfieldArray[i][j] == 1) {
+
+                    if (playfieldArray[i][j] == 1) { // Obstacle
                         obstacles[i][j].fillColor(RED_FILL);
                         obstacles[i][j].strokeColor(RED_STROKE);
                         obstacles[i][j].strokeWidth(10);
-                    }
-
-                    if (playfieldArray[i][j] == 2) {
+                    } else if (playfieldArray[i][j] == 2) { // Collectible
                         obstacles[i][j].fillColor(GREEN_FILL);
                         obstacles[i][j].strokeColor(GREEN_STROKE);
                         obstacles[i][j].strokeWidth(10);
+                    } else if (playfieldArray[i][j] == 3) { // Finish
+                        obstacles[i][j].fillColor(WHITE_FILL);
+                        obstacles[i][j].strokeColor(WHITE_STROKE);
+                        obstacles[i][j].strokeWidth(10);
                     }
 
-                };
+                }
             }
         }
         return obstacles;
