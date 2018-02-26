@@ -109,6 +109,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private Marker mMarker;
 
+    private boolean bDebug = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -510,8 +512,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onLocationChanged(android.location.Location location) {
             mLastKnownLocation = location;
-            mMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
-            if (playing && game != null) {
+            // TODO: bDebug can be removed when debugging is concldued
+            if (playing && game != null && !bDebug) {
                 game.setPlayerLocation(location);
             }
         }
@@ -574,12 +576,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // TODO: gameInit prepares the entire playing field even if the game turns out to be invalid
                 // TODO: we should then check before initialising - address when optimising
                 gameInit();
-                if (game.isLocationValid()) {
+                if (game.isLocationValid() && game.isSizeValid()) {
                     playing();
                 } else {
                     stopGame();
                 }
             }
+            // TODO: delete this else after debugs
+        } else if (playing && bDebug){
+            mMarker.setPosition(point);
+            Location newLoc = mLastKnownLocation;
+            newLoc.setLatitude(point.latitude);
+            newLoc.setLongitude(point.longitude);
+            game.setPlayerLocation(newLoc);
+
         }
     }
 
@@ -612,6 +622,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //show score
         scoreText.setVisibility(View.VISIBLE);
+        showScore(0);
 
         game.setPlaying(true);
         gameThread = new Thread(game);
@@ -646,7 +657,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 gameMapObjects = null;
             }
         }
-        if (playing) {
+        if (playing && !gameThread.isInterrupted()) {
             gameThread.interrupt();
         }
         playing = false;
@@ -660,7 +671,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
 
         game = new GameFragment();
-        fragmentTransaction.commit();
+        fragmentTransaction.add(android.R.id.content, game).commit();
 
         game.setContext(MapsActivity.this);
         game.setAreaPoints(point1, point2);
@@ -668,23 +679,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         int obstacleRows = draw.getRows();
         int obstacleCols = draw.getCols();
-
         int[][] playFieldArray = game.fieldTypeGenerator(obstacleRows, obstacleCols);
-        PolygonOptions[][] obstacleOptions = draw.drawObstacles(playFieldArray,mLastKnownLocation);
-        gameMapObjects = new Polygon[obstacleRows][obstacleCols];
 
-        for (int i = 0; i < obstacleRows; i++) {
-            for (int j = 0; j < obstacleCols; j++) {
-                if (obstacleOptions[i][j] != null) {
-                    gameMapObjects[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
-                    if (playFieldArray[i][j] == 1) {
-                        game.addObstacle(gameMapObjects[i][j]);
+        if (playFieldArray != null) { // playfieldarray will be null if size is too small
+            PolygonOptions[][] obstacleOptions = draw.drawObstacles(playFieldArray, mLastKnownLocation);
+            gameMapObjects = new Polygon[obstacleRows][obstacleCols];
 
-                    } else if (playFieldArray[i][j] == 2) {
-                        game.addCollectible(i, j, gameMapObjects[i][j]);
+            for (int i = 0; i < obstacleRows; i++) {
+                for (int j = 0; j < obstacleCols; j++) {
+                    if (obstacleOptions[i][j] != null) {
+                        gameMapObjects[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
+                        if (playFieldArray[i][j] == 1) {
+                            game.addObstacle(gameMapObjects[i][j]);
 
-                    } else if (playFieldArray[i][j] == 3) {
-                        game.addFinish(gameMapObjects[i][j]);
+                        } else if (playFieldArray[i][j] == 2) {
+                            game.addCollectible(i, j, gameMapObjects[i][j]);
+
+                        } else if (playFieldArray[i][j] == 3) {
+                            game.addFinish(gameMapObjects[i][j]);
+                        }
                     }
                 }
             }
@@ -698,4 +711,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void showScore(int score) {
         scoreText.setText("Score: " + score);
     }
+
+
+    // TODO: this method can be deleted with the debug button when not necessary anymore
+    public void toggleDebug(View view) {
+        Button debugButton = (Button)view;
+        if (bDebug) {
+            debugButton.setText("Start Debugging");
+            bDebug = false;
+        } else {
+            debugButton.setText("Stop Debugging");
+            bDebug = true;
+        }
+
+    }
+
 }

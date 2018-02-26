@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
-public class ScoreActivity extends AppCompatActivity {
+public class ScoreActivity extends MapsActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +23,7 @@ public class ScoreActivity extends AppCompatActivity {
             scoreView.setVisibility(View.VISIBLE);
             scoreView.setText("Score: " + getIntent().getExtras().getInt("score"));
         } else {
-            message.setText("You've won!");
+            message.setText("You've lost!");
             scoreView.setVisibility(View.INVISIBLE);
         }
 

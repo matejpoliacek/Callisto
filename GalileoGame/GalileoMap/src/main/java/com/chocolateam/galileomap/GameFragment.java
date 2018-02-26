@@ -1,7 +1,7 @@
 package com.chocolateam.galileomap;
 
 import android.app.AlertDialog;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,6 +25,7 @@ import java.util.Map;
 public class GameFragment extends Fragment implements Runnable {
 
     private final int OBSTACLE_PROPORTION = 2; // = half
+    private final int COLLECT_PROPORTION = 5; // = fifth
     private int[][] playfieldArray;
 
     private int max_collectibles;
@@ -52,15 +53,15 @@ public class GameFragment extends Fragment implements Runnable {
     private boolean playing;
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         this.context = context;
 
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -79,24 +80,33 @@ public class GameFragment extends Fragment implements Runnable {
             obstacleChooser.add(i);
         }
 
-        int noColletibles = 3;
+        int noColletibles = rows*cols/COLLECT_PROPORTION;
 
-        Collections.shuffle(obstacleChooser);
+        assert rows*cols > ((rows * cols) / OBSTACLE_PROPORTION) + noColletibles + 1 : "Too many objects to be generated";
 
-        // set up finish
-        playfieldArray[obstacleChooser.get(0) / cols][obstacleChooser.get(0) % cols] = 3;
+        if (checkSize()) {
 
-        // 1 as start, and +1 as end to allow for finish
-        obstacleChooser = obstacleChooser.subList(1, ((rows * cols) / OBSTACLE_PROPORTION) + noColletibles + 1);
+            Collections.shuffle(obstacleChooser);
 
-        for (int i = 0; i < noColletibles; i++) {
-            playfieldArray[obstacleChooser.get(i) / cols][obstacleChooser.get(i) % cols] = 2;
-        }
+            // set up finish
+            playfieldArray[obstacleChooser.get(0) / cols][obstacleChooser.get(0) % cols] = 3;
 
-        obstacleChooser = obstacleChooser.subList(noColletibles, obstacleChooser.size());
+            // 1 as start, and +1 as end to allow for finish
+            obstacleChooser = obstacleChooser.subList(1, ((rows * cols) / OBSTACLE_PROPORTION) + noColletibles + 1);
 
-        for (int i = 0; i < obstacleChooser.size(); i++) {
-            playfieldArray[obstacleChooser.get(i) / cols][obstacleChooser.get(i) % cols] = 1;
+            for (int i = 0; i < noColletibles; i++) {
+                playfieldArray[obstacleChooser.get(i) / cols][obstacleChooser.get(i) % cols] = 2;
+            }
+
+            obstacleChooser = obstacleChooser.subList(noColletibles, obstacleChooser.size());
+
+            for (int i = 0; i < obstacleChooser.size(); i++) {
+                playfieldArray[obstacleChooser.get(i) / cols][obstacleChooser.get(i) % cols] = 1;
+            }
+
+        } else {
+            // If we don't have valid size, return empty array
+            playfieldArray = null;
         }
 
         return playfieldArray;
@@ -108,9 +118,9 @@ public class GameFragment extends Fragment implements Runnable {
 
     public boolean isSizeValid() {
 
-        boolean validGame = true;
+        boolean validGame = checkSize();
 
-        if (rows < 3 || cols < 3) {
+        if (!validGame) {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setMessage("Playing area too small!")
                     .setCancelable(false)
@@ -121,6 +131,15 @@ public class GameFragment extends Fragment implements Runnable {
                     });
             AlertDialog alert = builder.create();
             alert.show();
+        }
+        return validGame;
+    }
+
+    private boolean checkSize() {
+
+        boolean validGame = true;
+
+        if (rows < 3 || cols < 3) {
             validGame = false;
         }
 
@@ -131,19 +150,6 @@ public class GameFragment extends Fragment implements Runnable {
 
         boolean validGame = true;
 
-        if (rows < 3 || cols < 3) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setMessage("Playing area too small!")
-                    .setCancelable(false)
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            //do things
-                        }
-                    });
-            AlertDialog alert = builder.create();
-            alert.show();
-            validGame = false;
-        }
         if (!PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), areaPoints, false)) {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setMessage("Make sure you're inside the desired playing area")
@@ -190,15 +196,19 @@ public class GameFragment extends Fragment implements Runnable {
     }
     public void run() {
         boolean won = false;
+        boolean finished = false;
         int collected = 0;
         max_collectibles = collectsPointList.size();
         try {
             while (playing) {
-                Thread.sleep(2000);
+                Thread.sleep(100);
                 // Hit finish
                 if (collected == max_collectibles && PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), finish, false)) {
                     playing = false;
                     won = true;
+                    Thread.currentThread().interrupt();
+                    finished = true;
+                    System.out.println("Hit finish");
                     break;
                 } else {
                     // Hit an obstacle
@@ -206,6 +216,9 @@ public class GameFragment extends Fragment implements Runnable {
                         if (PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), obstaclePointList.get(i), false)) {
                             playing = false;
                             won = false;
+                            Thread.currentThread().interrupt();
+                            finished = true;
+                            System.out.println("Hit obstacle");
                             break;
                         } else {
                             // Hit a collectible
@@ -214,20 +227,21 @@ public class GameFragment extends Fragment implements Runnable {
                                     // Run on UI thread to remove polygon
 
                                     // These variables are declared final to be able to pass them to the inner class
-                                    final int listIndex = j;
-                                    final int finalCollected = collected;
+                                    final int rowIndex = collectsPointList.get(j).getRow();
+                                    final int colIndex = collectsPointList.get(j).getCol();
+                                    final int finalCollected = ++collected;
 
                                     ((MapsActivity) context).runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            ((MapsActivity) context).removeMapObjectByIndex(collectsPointList.get(listIndex).getRow(), collectsPointList.get(listIndex).getCol());
+                                            ((MapsActivity) context).removeMapObjectByIndex(rowIndex, colIndex);
                                             // TODO: score is just a count of collected collectibles, probably do something more engaging
                                             // TODO: e.g. determine max from playfield size, reduce score with time, add points for colletibles
-                                            ((MapsActivity) getActivity()).showScore(finalCollected);
+                                            ((MapsActivity) context).showScore(finalCollected);
                                         }
                                     });
                                     collectsPointList.remove(j);
-                                    collected++;
+                                    break;
                                 }
                             }
                         }
@@ -236,12 +250,22 @@ public class GameFragment extends Fragment implements Runnable {
             }
 
         } catch (InterruptedException e) {
-            System.err.println("Thread stopped");
+            // do nothing
         } finally {
-            // give some game summary - TODO: create new fragment that will have a window with final score, etc
-            Intent intent = new Intent(context, ScoreActivity.class);
-            intent.putExtra("won", won);
-            intent.putExtra("score", collected);
+            if (finished) {
+                Intent scoreIntent = new Intent(context, ScoreActivity.class);
+                scoreIntent.putExtra("won", won);
+                scoreIntent.putExtra("score", collected);
+                startActivity(scoreIntent);
+            }
+
+            // UI cleanup
+            ((MapsActivity) context).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((MapsActivity) context).stopGame();
+                }
+            });
         }
     }
 
@@ -254,7 +278,7 @@ public class GameFragment extends Fragment implements Runnable {
     }
 
     public void setAreaPoints(LatLng startLocation, LatLng endLocation) {
-        this.areaPoints =PointTools.getPoints(startLocation, endLocation);
+        this.areaPoints = PointTools.getPoints(startLocation, endLocation);
         /** reference:
          upLeft = points[0];
          upRight = points[1];
