@@ -69,6 +69,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // not granted.
     private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final int DEFAULT_ZOOM = 15;
+    private static final int GAME_ZOOM = 18;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
@@ -512,9 +513,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onLocationChanged(android.location.Location location) {
             mLastKnownLocation = location;
-            // TODO: bDebug can be removed when debugging is concldued
-            if (playing && game != null && !bDebug) {
-                game.setPlayerLocation(location);
+
+            if (playing && game != null) {
+                updateCameraBearing(mMap, location.getBearing());
+
+                // TODO: the whole if wrapper with bDebug can be removed when debugging is concluded
+                if (!bDebug) {
+                    game.setPlayerLocation(location);
+                }
             }
         }
 
@@ -624,6 +630,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         scoreText.setVisibility(View.VISIBLE);
         showScore(0);
 
+        // disable map scrolling/zooming
+        mMap.getUiSettings().setScrollGesturesEnabled(false);
+        mMap.getUiSettings().setZoomGesturesEnabled(false);
+        // zoom onto the player
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(mLastKnownLocation.getLatitude(),
+                        mLastKnownLocation.getLongitude()), GAME_ZOOM));
+
         game.setPlaying(true);
         gameThread = new Thread(game);
         gameThread.start();
@@ -641,6 +655,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // hide score text
         scoreText.setVisibility(View.INVISIBLE);
         showScore(0);
+
+        // enable map scrolling/zooming
+        mMap.getUiSettings().setScrollGesturesEnabled(true);
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
 
         // clear possible existing drawings
         if (playingArea != null) {
@@ -712,6 +730,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         scoreText.setText("Score: " + score);
     }
 
+    private void updateCameraBearing(GoogleMap googleMap, float bearing) {
+        if ( googleMap == null) return;
+        CameraPosition camPos = CameraPosition
+                .builder(
+                        googleMap.getCameraPosition() // current Camera
+                )
+                .bearing(bearing)
+                .build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos));
+    }
 
     // TODO: this method can be deleted with the debug button when not necessary anymore
     public void toggleDebug(View view) {
