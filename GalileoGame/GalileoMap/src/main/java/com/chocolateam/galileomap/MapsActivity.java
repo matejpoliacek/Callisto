@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -69,7 +73,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // not granted.
     private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final int DEFAULT_ZOOM = 15;
-    private static final int GAME_ZOOM = 18;
+    private static final int GAME_ZOOM = 20;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
@@ -109,6 +113,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationManager locationManager;
 
     private Marker mMarker;
+
+    private SensorManager sensorService;
+    private Sensor sensor;
 
     private boolean bDebug = false;
 
@@ -169,6 +176,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         draw = new DrawClass();
 
         scoreText = (TextView) findViewById(R.id.scoretext);
+
+        // sensor variables for compass
+        sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
+        // TODO: check if TYPE_ORIENTATION is suitable
+        sensor = sensorService.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+        if (sensor != null) {
+            sensorService.registerListener(mySensorEventListener, sensor,
+                    SensorManager.SENSOR_DELAY_GAME);
+        }
     }
 
 
@@ -515,7 +531,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mLastKnownLocation = location;
 
             if (playing && game != null) {
-                updateCameraBearing(mMap, location.getBearing());
 
                 // TODO: the whole if wrapper with bDebug can be removed when debugging is concluded
                 if (!bDebug) {
@@ -629,14 +644,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //show score
         scoreText.setVisibility(View.VISIBLE);
         showScore(0);
+        
+        // zoom onto the player
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(mLastKnownLocation.getLatitude(),
+                        mLastKnownLocation.getLongitude()), GAME_ZOOM));
 
         // disable map scrolling/zooming
         mMap.getUiSettings().setScrollGesturesEnabled(false);
         mMap.getUiSettings().setZoomGesturesEnabled(false);
-        // zoom onto the player
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(mLastKnownLocation.getLatitude(),
-                        mLastKnownLocation.getLongitude()), GAME_ZOOM));
+        mMap.getUiSettings().setRotateGesturesEnabled(false);
 
         game.setPlaying(true);
         gameThread = new Thread(game);
@@ -659,6 +676,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // enable map scrolling/zooming
         mMap.getUiSettings().setScrollGesturesEnabled(true);
         mMap.getUiSettings().setZoomGesturesEnabled(true);
+        mMap.getUiSettings().setRotateGesturesEnabled(true);
 
         // clear possible existing drawings
         if (playingArea != null) {
@@ -679,6 +697,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             gameThread.interrupt();
         }
         playing = false;
+        updateCameraBearing(mMap, 0);
     }
     // TODO: switch arrays to lists for faster access?
     private void gameInit() {
@@ -730,6 +749,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         scoreText.setText("Score: " + score);
     }
 
+    /**********************/
+    /*** SENSOR METHODS **/
+    /********************/
+
+    private SensorEventListener mySensorEventListener = new SensorEventListener() {
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            float azimuth = event.values[0];
+            if (playing) {
+                updateCameraBearing(mMap, azimuth);
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+
+    };
+
     private void updateCameraBearing(GoogleMap googleMap, float bearing) {
         if ( googleMap == null) return;
         CameraPosition camPos = CameraPosition
@@ -740,6 +780,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos));
     }
+
+    /************/
+    /*** MISC ***/
+    /***********/
 
     // TODO: this method can be deleted with the debug button when not necessary anymore
     public void toggleDebug(View view) {
