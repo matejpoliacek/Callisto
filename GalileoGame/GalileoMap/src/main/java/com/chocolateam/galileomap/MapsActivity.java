@@ -191,13 +191,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // sensor variables for compass
         sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
-        // TODO: check if TYPE_ORIENTATION is suitable
+        // TODO: is there a better way?
         sensor = sensorService.getDefaultSensor(Sensor.TYPE_ORIENTATION);
         if (sensor != null) {
             sensorService.registerListener(mySensorEventListener, sensor,
-                    SensorManager.SENSOR_DELAY_NORMAL);
-            // TODO: try different delays
-            // TODO: NORMAL seems to be fastest even though it shouldn't be?
+                    SensorManager.SENSOR_DELAY_GAME);
         }
     }
 
@@ -219,6 +217,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @param menu The options menu.
      * @return Boolean.
      */
+    // TODO: check if required
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.current_place_menu, menu);
@@ -230,6 +231,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @param item The menu item to handle.
      * @return Boolean.
      */
+    // TODO: CHECK if required
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.option_get_place) {
@@ -373,6 +375,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Prompts the user to select the current place from a list of likely places, and shows the
      * current place on the map - provided the user has granted location permission.
      */
+
+    // TODO: check if required
     private void showCurrentPlace() {
         if (mMap == null) {
             return;
@@ -449,6 +453,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Displays a form allowing the user to select a place from a list of likely places.
      */
+
+    // TODO: check if required
     private void openPlacesDialog() {
         // Ask the user to choose the place where they are now.
         DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
@@ -507,6 +513,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /** Location methods **/
     /*********************/
 
+    // TODO: test if we need any of the following 3 methods
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
