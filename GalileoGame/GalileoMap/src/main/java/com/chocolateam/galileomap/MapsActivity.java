@@ -58,6 +58,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng lastClickedLocation;
     private Button playButton;
     private TextView scoreText;
+    private Button zoomButton;
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private CameraPosition mCameraPosition;
@@ -73,7 +74,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // not granted.
     private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final int DEFAULT_ZOOM = 15;
-    private static final int GAME_ZOOM = 20;
+    private static final int GAME_ZOOM_IN = 19;
+    private static final int GAME_ZOOM_OUT = 17;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
@@ -106,6 +108,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng point1 = null;
     private LatLng point2 = null;
 
+    private boolean zoomed = true;
+
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
 
@@ -116,6 +120,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private SensorManager sensorService;
     private Sensor sensor;
+
+    private boolean cameraMoving = false;
+    private final int MAP_ROTATION_SPEED = 300;
 
     private boolean bDebug = false;
 
@@ -176,6 +183,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         draw = new DrawClass();
 
         scoreText = (TextView) findViewById(R.id.scoretext);
+        scoreText.setVisibility(View.INVISIBLE);
+
+        zoomButton = (Button) findViewById(R.id.zoomButton);
+        zoomButton.setVisibility(View.INVISIBLE);
+        zoomButton.setEnabled(false);
 
         // sensor variables for compass
         sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -183,7 +195,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         sensor = sensorService.getDefaultSensor(Sensor.TYPE_ORIENTATION);
         if (sensor != null) {
             sensorService.registerListener(mySensorEventListener, sensor,
-                    SensorManager.SENSOR_DELAY_GAME);
+                    SensorManager.SENSOR_DELAY_NORMAL);
+            // TODO: try different delays
+            // TODO: NORMAL seems to be fastest even though it shouldn't be?
         }
     }
 
@@ -637,24 +651,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void playing() {
         // re-enable button
         gameSetup = false;
-        playing = true;
         playButton.setEnabled(true);
         playButton.setAlpha(1.0f);
+
+        // zoom onto the player
+        priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
 
         //show score
         scoreText.setVisibility(View.VISIBLE);
         showScore(0);
-        
-        // zoom onto the player
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(mLastKnownLocation.getLatitude(),
-                        mLastKnownLocation.getLongitude()), GAME_ZOOM));
+
+        zoomButton.setVisibility(View.VISIBLE);
+        zoomButton.setText("Zoom Out");
+        zoomButton.setEnabled(true);
+        zoomed = true;
 
         // disable map scrolling/zooming
         mMap.getUiSettings().setScrollGesturesEnabled(false);
         mMap.getUiSettings().setZoomGesturesEnabled(false);
         mMap.getUiSettings().setRotateGesturesEnabled(false);
 
+        playing = true;
         game.setPlaying(true);
         gameThread = new Thread(game);
         gameThread.start();
@@ -672,6 +689,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // hide score text
         scoreText.setVisibility(View.INVISIBLE);
         showScore(0);
+
+        zoomButton.setVisibility(View.INVISIBLE);
+        zoomButton.setEnabled(false);
 
         // enable map scrolling/zooming
         mMap.getUiSettings().setScrollGesturesEnabled(true);
@@ -758,7 +778,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onSensorChanged(SensorEvent event) {
             float azimuth = event.values[0];
-            if (playing) {
+            if (playing && !cameraMoving) {
                 updateCameraBearing(mMap, azimuth);
             }
         }
@@ -778,12 +798,44 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 )
                 .bearing(bearing)
                 .build();
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos));
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos), MAP_ROTATION_SPEED, null);
     }
 
-    /************/
+    /*************/
     /*** MISC ***/
     /***********/
+
+    private void priorityCameraZoom(GoogleMap map, LatLng latlng, int zoom) {
+
+        // implementing the cancellable callback allows the zoom to finish before rotating takes over
+
+        cameraMoving = true;
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, zoom),
+                new GoogleMap.CancelableCallback() {
+                    @Override
+                    public void onFinish() {
+                        cameraMoving = false;
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        cameraMoving = false;
+                    }
+                }
+        );
+    }
+
+    public void toggleZoom(View view) {
+        if (zoomed) {
+            zoomButton.setText("Zoom In");
+            priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_OUT);
+            zoomed = false;
+        } else {
+            zoomButton.setText("Zoom Out");
+            priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
+            zoomed = true;
+        }
+    }
 
     // TODO: this method can be deleted with the debug button when not necessary anymore
     public void toggleDebug(View view) {
@@ -791,9 +843,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (bDebug) {
             debugButton.setText("Start Debugging");
             bDebug = false;
+            mMap.getUiSettings().setScrollGesturesEnabled(false);
+            mMap.getUiSettings().setZoomGesturesEnabled(false);
+            mMap.getUiSettings().setRotateGesturesEnabled(false);
         } else {
             debugButton.setText("Stop Debugging");
             bDebug = true;
+            mMap.getUiSettings().setScrollGesturesEnabled(true);
+            mMap.getUiSettings().setZoomGesturesEnabled(true);
+            mMap.getUiSettings().setRotateGesturesEnabled(true);
+
         }
 
     }

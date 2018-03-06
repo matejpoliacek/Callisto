@@ -31,11 +31,24 @@
         android:textColor="#ffffff" />
 
     <Button
+        android:id="@+id/zoomButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/playButton"
+        android:layout_below="@+id/playButton"
+        android:background="@drawable/buttonshape"
+        android:onClick="toggleZoom"
+        android:padding="8dp"
+        android:text="Zoom Out"
+        android:textColor="#ffffff" />
+
+    <Button
         android:id="@+id/debugButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignEnd="@+id/playButton"
-        android:layout_below="@+id/playButton"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="15dp"
         android:background="@drawable/buttonshape"
         android:onClick="toggleDebug"
         android:padding="8dp"
