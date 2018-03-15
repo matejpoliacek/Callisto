@@ -221,10 +221,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
-        // Location stuff
-        createLocationRequest();
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
+        // Location stuff
+        createLocationRequest();
 
         mMarker = mMap.addMarker(new MarkerOptions().position(mDefaultLocation));
     }
@@ -240,6 +240,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
          */
         try {
             if (mLocationPermissionGranted) {
+
+                // TODO: restarting location on the phone removed lastLocation (i believe), we need a better system of getting initial location
+
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
                 locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
                     @Override
@@ -337,8 +340,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(500);
+        mLocationRequest.setInterval(100);
+        mLocationRequest.setFastestInterval(50);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 

@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
-public class ScoreActivity extends MapsActivity {
+public class SummaryActivity extends MapsActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
