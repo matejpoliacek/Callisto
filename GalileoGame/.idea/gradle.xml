@@ -8,8 +8,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/GalAppTest2" />
             <option value="$PROJECT_DIR$/GalileoMap" />
+            <option value="$PROJECT_DIR$/GalileoPVT" />
+            <option value="$PROJECT_DIR$/GalileoSpaceship" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>
