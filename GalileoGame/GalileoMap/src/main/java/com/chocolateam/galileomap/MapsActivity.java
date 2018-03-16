@@ -1,5 +1,7 @@
 package com.chocolateam.galileomap;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,6 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.MutableBoolean;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -31,6 +34,7 @@ import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -94,9 +98,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean zoomed = true;
 
     private LocationRequest mLocationRequest;
+    private LocationCallback mLocationCallback;
 
     /** Location manager **/
     private LocationManager locationManager;
+    private LocationListener mLocationListenerGPS;
 
     private Marker mMarker;
 
@@ -130,12 +136,43 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-
         /** Location Manager **/
-        locationManager=(LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
+        mLocationListenerGPS = new LocationListener() {
+            @Override
+            public void onLocationChanged(android.location.Location location) {
+                mLastKnownLocation = location;
+                System.out.println("Location Changed");
+
+                if (playing && game != null) {
+
+                    // TODO: the whole if wrapper with bDebug can be removed when debugging is concluded
+                    if (!bDebug) {
+                        game.setPlayerLocation(location);
+                    }
+                }
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        };
+
+        locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, locationListenerGPS);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerGPS);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, mLocationListenerGPS);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListenerGPS);
             isLocationEnabled();
         } catch (SecurityException e) {
             Toast.makeText(getApplicationContext(), "Security exception - locmgr", Toast.LENGTH_LONG).show();
@@ -159,6 +196,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             sensorService.registerListener(mySensorEventListener, sensor,
                     SensorManager.SENSOR_DELAY_NORMAL);
         }
+
     }
 
 
@@ -221,12 +259,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
-        // Get the current location of the device and set the position of the map.
-        getDeviceLocation();
         // Location stuff
         createLocationRequest();
 
-        mMarker = mMap.addMarker(new MarkerOptions().position(mDefaultLocation));
+        // Get the current location of the device and set the position of the map.
+        getDeviceLocation();
     }
 
 
@@ -238,26 +275,66 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
          */
+        findViewById(R.id.indeterminateBar).setVisibility(View.VISIBLE);
+        findViewById(R.id.locationText).setVisibility(View.VISIBLE);
         try {
             if (mLocationPermissionGranted) {
-
-                // TODO: restarting location on the phone removed lastLocation (i believe), we need a better system of getting initial location
-
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
                 locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
                     @Override
                     public void onComplete(@NonNull Task<Location> task) {
+
+                        boolean passed = true;
+
                         if (task.isSuccessful()) {
                             // Set the map's camera position to the current location of the device.
-                            mLastKnownLocation = task.getResult();
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(mLastKnownLocation.getLatitude(),
-                                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                        } else {
+                            if (mLastKnownLocation == null) {
+                                mLastKnownLocation = task.getResult();
+                                try {
+                                    if (mLastKnownLocation == null) {
+                                        mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                                        Thread.sleep(3000);
+
+                                        if (mLastKnownLocation == null) {
+                                            mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                                            Thread.sleep(3000);
+
+                                            if (mLastKnownLocation == null) {
+                                                // if we can't get location, advise user
+                                                findViewById(R.id.indeterminateBar).setVisibility(View.GONE);
+                                                findViewById(R.id.locationText).setVisibility(View.GONE);
+                                                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
+                                                alertDialog.setTitle("Can't Locate You");
+                                                alertDialog.setMessage("The signal is not good enough to determine your location - if you're indoors, try going outside. " +
+                                                        "Have a look at the signal and satellite availability by accessing the spaceship from the main menu.");
+                                                alertDialog.setPositiveButton("Return to menu", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        (MapsActivity.this).finish();
+                                                    }
+                                                });
+
+                                                AlertDialog alert = alertDialog.create();
+                                                alert.show();
+                                                passed = false;
+                                            }
+                                        }
+                                    }
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                    passed = false;
+                                }
+                            }
+                            findViewById(R.id.indeterminateBar).setVisibility(View.GONE);
+                            findViewById(R.id.locationText).setVisibility(View.GONE);
+                            if (passed) {
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                        new LatLng(mLastKnownLocation.getLatitude(),
+                                                mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                            }
+                            findViewById(R.id.indeterminateBar).setVisibility(View.GONE);
+                            findViewById(R.id.locationText).setVisibility(View.GONE);
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
-                            mMap.moveCamera(CameraUpdateFactory
-                                    .newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
                             mMap.getUiSettings().setMyLocationButtonEnabled(false);
                         }
                     }
@@ -340,8 +417,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(100);
-        mLocationRequest.setFastestInterval(50);
+        mLocationRequest.setInterval(50);
+        mLocationRequest.setFastestInterval(10);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
@@ -351,40 +428,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         isLocationEnabled();
     }
 
-
-    /** Location Manager **/
-
-    LocationListener locationListenerGPS = new LocationListener() {
-        @Override
-        public void onLocationChanged(android.location.Location location) {
-            mLastKnownLocation = location;
-
-            if (playing && game != null) {
-
-                // TODO: the whole if wrapper with bDebug can be removed when debugging is concluded
-                if (!bDebug) {
-                    game.setPlayerLocation(location);
-                }
-            }
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-    };
-
     private void isLocationEnabled() {
+        System.out.println("Checking Location availability");
         if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(getApplicationContext());
         alertDialog.setTitle("Enable Location");
@@ -404,7 +449,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         alert.show();
         }
         else {
-            // continue
+            System.out.println("Location available");
         }
     }
 
