@@ -16,7 +16,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        GalileoPVT = new com.chocolateam.galileopvt.PVTClass();
     }
 
     public void goToMap(View view) {
@@ -26,6 +25,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void goToSpaceship(View view) {
         Intent intent = new Intent(this, SpaceshipViewActivity.class);
+        startActivity(intent);
+    }
+
+    public void goToPVT(View view) {
+        Intent intent = new Intent(this, com.chocolateam.galileopvt.pvtActivity.class);
         startActivity(intent);
     }
 }
