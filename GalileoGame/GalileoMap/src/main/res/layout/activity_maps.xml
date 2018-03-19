@@ -74,7 +74,10 @@
         android:layout_below="@+id/playButton"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="12dp"
-        android:visibility="visible" />
+        android:indeterminate="true"
+        android:indeterminateTint="@color/colorPrimary"
+        android:visibility="visible"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/locationText"

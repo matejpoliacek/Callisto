@@ -28,4 +28,8 @@ public class SummaryActivity extends MapsActivity {
         }
 
     }
+
+    public void goBack(View view) {
+        (SummaryActivity.this).finish();
+    }
 }

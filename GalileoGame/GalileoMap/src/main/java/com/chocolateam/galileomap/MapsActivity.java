@@ -582,6 +582,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     // TODO: switch arrays to lists for faster access?
     private void gameInit() {
+
+        // TODO: should the drawing here be moved to the game class?
+
         playingArea = mMap.addPolygon(draw.drawRectangle(point1, point2));
 
         // add game as a fragment
