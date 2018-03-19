@@ -32,6 +32,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private int satcount;
     private GnssClock receiverClock;
     private Collection<GnssMeasurement> noisySatellites;
+    private Collection<GnssMeasurement> satellites;
 
     public BlankFragment() {
         // constructor as empty as my wallet before payday
@@ -58,15 +59,11 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     Toast.LENGTH_LONG).show();
             Thread.currentThread().interrupt();
         }
-        mLocationManager.requestLocationUpdates(    // TODO: Do we need this? GPS specific??
-                LocationManager.GPS_PROVIDER, 0, 0, this
-        );
-        /*
-        *******************************
-        GNSS Status for satellite count - not needed since we can just count list items
-        *******************************
-         */
-        /*GnssStatus.Callback gnssStatusCallBack = new GnssStatus.Callback() {
+
+        /******************************************************************************
+        GNSS Status for satellite count - why doesn't sattelite list .getsize() work?
+        ******************************************************************************/
+        GnssStatus.Callback gnssStatusCallBack = new GnssStatus.Callback() {
             @Override
             public void onSatelliteStatusChanged(GnssStatus status) {
                 super.onSatelliteStatusChanged (status);
@@ -89,39 +86,39 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         mLocationManager.registerGnssStatusCallback(gnssStatusCallBack);
         mLocationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER, 0, 0, this
-        );*/
+        );
 
-        /*
-        *******************************************************************************
+        /******************************************************************************
         GNSS Measurements Event for obtaining receiver clock and satellite measurements
-        *******************************************************************************
-         */
+        ******************************************************************************/
         GnssMeasurementsEvent.Callback gnssMeasurementsEventCallback = new GnssMeasurementsEvent.Callback() {
             @Override
             public void onGnssMeasurementsReceived (GnssMeasurementsEvent eventArgs) {
-                receiverClock = eventArgs.getClock();
                 noisySatellites = eventArgs.getMeasurements();
-                satcount = noisySatellites.size();
+                // satcount = noisySatellites.size();
+                //((pvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount)); TODO: Why doesn't satcount display anything if I use this instad of gnssStatus?
+
+                receiverClock = eventArgs.getClock(); // TODO: if clock discontinuity is different from previous clock, use previous clock object and write error message
+                ((pvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
+
+                //   TODO: Next step: create another list of satellites ("satellites") filtered for ones with bad signal
             }
         };
         mLocationManager.registerGnssMeasurementsCallback(gnssMeasurementsEventCallback);
 
-        /*
-        TODO: Next step: create another list of satellites filtered for ones with bad signal. Then carry on with that one.
-         */
     }
 
     public void setContext(Context context) {
         this.context = context;
     }
 
-    /*
+    /*****************************************
     LocationListener boilerplate including:
         onLocationChanged
         onStatusChanged
         onProviderEnabled
         onProviderDisabled
-     */
+     ****************************************/
     @Override
     public void onLocationChanged(Location location) {
 

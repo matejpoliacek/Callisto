@@ -13,6 +13,7 @@ import org.w3c.dom.Text;
 public class pvtActivity extends AppCompatActivity {
 
     private TextView msg_satcount;
+    private TextView msg_discont;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +37,11 @@ public class pvtActivity extends AppCompatActivity {
 
         msg_satcount = (TextView)findViewById(R.id.text_satcount);
         msg_satcount.setText(input);
+    }
+
+    public void publishDiscontinuity(String input) {
+        msg_discont = (TextView)findViewById(R.id.text_discont);
+        msg_discont.setText(input);
     }
 
     public void onFragmentInteraction(Uri uri) {

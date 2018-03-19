@@ -9,8 +9,6 @@ import com.chocolateam.galileospaceship.SpaceshipViewActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    com.chocolateam.galileopvt.PVTClass GalileoPVT;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
