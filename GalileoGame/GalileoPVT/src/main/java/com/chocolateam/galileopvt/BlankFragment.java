@@ -13,20 +13,26 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 import static android.content.Context.LOCATION_SERVICE;
 
-
 public class BlankFragment extends Fragment implements Runnable, LocationListener {
+    public static final int MAX_CARRIER_TO_NOISE = 28;
+
     private Context context;
     private LocationManager mLocationManager;
     private int satcount;
@@ -63,7 +69,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         /******************************************************************************
         GNSS Status for satellite count - why doesn't sattelite list .getsize() work?
         ******************************************************************************/
-        GnssStatus.Callback gnssStatusCallBack = new GnssStatus.Callback() {
+        /*GnssStatus.Callback gnssStatusCallBack = new GnssStatus.Callback() {
             @Override
             public void onSatelliteStatusChanged(GnssStatus status) {
                 super.onSatelliteStatusChanged (status);
@@ -83,10 +89,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     Toast.LENGTH_LONG).show();
             Thread.currentThread().interrupt();
         }
-        mLocationManager.registerGnssStatusCallback(gnssStatusCallBack);
-        mLocationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER, 0, 0, this
-        );
+        mLocationManager.registerGnssStatusCallback(gnssStatusCallBack);*/
+
 
         /******************************************************************************
         GNSS Measurements Event for obtaining receiver clock and satellite measurements
@@ -94,17 +98,33 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         GnssMeasurementsEvent.Callback gnssMeasurementsEventCallback = new GnssMeasurementsEvent.Callback() {
             @Override
             public void onGnssMeasurementsReceived (GnssMeasurementsEvent eventArgs) {
+                super.onGnssMeasurementsReceived (eventArgs);
                 noisySatellites = eventArgs.getMeasurements();
-                // satcount = noisySatellites.size();
-                //((pvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount)); TODO: Why doesn't satcount display anything if I use this instad of gnssStatus?
+                satcount = noisySatellites.size();
+                //((pvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount)); //TODO: Everything is ok in logs but doesn't appear in Activity. Y THO? Publishing causes binder error in logs.
 
-                receiverClock = eventArgs.getClock(); // TODO: if clock discontinuity is different from previous clock, use previous clock object and write error message
-                ((pvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
+                receiverClock = eventArgs.getClock();
+                //((pvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
 
-                //   TODO: Next step: create another list of satellites ("satellites") filtered for ones with bad signal
+                // Filter for bad carrier to noise ration in satellites
+                satellites = new <GnssMeasurement>ArrayList();
+                for (GnssMeasurement m : noisySatellites) {
+                    if (m.getCn0DbHz() < MAX_CARRIER_TO_NOISE) {
+                        satellites.add(m);
+                        Log.e("SAT MEASUREMENT ADDED", String.valueOf(m));
+                    }
+                }
+
+                Log.e("counts", String.valueOf(satellites.size()));
+                Log.e("clock", String.valueOf(receiverClock));
             }
         };
+
+
         mLocationManager.registerGnssMeasurementsCallback(gnssMeasurementsEventCallback);
+        mLocationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER, 0, 0, this
+        );
 
     }
 
