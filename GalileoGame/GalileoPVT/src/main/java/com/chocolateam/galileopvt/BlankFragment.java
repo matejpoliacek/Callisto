@@ -31,7 +31,7 @@ import java.util.List;
 import static android.content.Context.LOCATION_SERVICE;
 
 public class BlankFragment extends Fragment implements Runnable, LocationListener {
-    public static final int MAX_CARRIER_TO_NOISE = 28;
+    private static final int MAX_CARRIER_TO_NOISE = 28;
 
     private Context context;
     private LocationManager mLocationManager;
@@ -39,6 +39,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private GnssClock receiverClock;
     private Collection<GnssMeasurement> noisySatellites;
     private Collection<GnssMeasurement> satellites;
+    private Collection<GnssMeasurement> galileoSatellites;
+    private Collection<GnssMeasurement> gpsSatellites;
 
     public BlankFragment() {
         // constructor as empty as my wallet before payday
@@ -47,6 +49,12 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        satellites = new <GnssMeasurement>ArrayList();
+        galileoSatellites = new <GnssMeasurement>ArrayList();
+        gpsSatellites = new <GnssMeasurement>ArrayList();
+        // TODO: instantiate receiver clock
+
         this.run();
     }
 
@@ -67,32 +75,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         }
 
         /******************************************************************************
-        GNSS Status for satellite count - why doesn't sattelite list .getsize() work?
-        ******************************************************************************/
-        /*GnssStatus.Callback gnssStatusCallBack = new GnssStatus.Callback() {
-            @Override
-            public void onSatelliteStatusChanged(GnssStatus status) {
-                super.onSatelliteStatusChanged (status);
-                satcount = status.getSatelliteCount();
-                ((pvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount));
-            }
-
-            @Override
-            public void onStarted() {
-                ((pvtActivity)context).publishSatcount("started");
-            }
-        };
-        if (ContextCompat.checkSelfPermission((pvtActivity)context, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Code for when permission is not granted.
-            Toast.makeText(getActivity(), "Y THO",
-                    Toast.LENGTH_LONG).show();
-            Thread.currentThread().interrupt();
-        }
-        mLocationManager.registerGnssStatusCallback(gnssStatusCallBack);*/
-
-
-        /******************************************************************************
         GNSS Measurements Event for obtaining receiver clock and satellite measurements
         ******************************************************************************/
         GnssMeasurementsEvent.Callback gnssMeasurementsEventCallback = new GnssMeasurementsEvent.Callback() {
@@ -106,26 +88,49 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                 receiverClock = eventArgs.getClock();
                 //((pvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
 
-                // Filter for bad carrier to noise ration in satellites
-                satellites = new <GnssMeasurement>ArrayList();
+                // Filter for bad carrier to noise ration in satellites and Galileo / GPS satellites
+
+
                 for (GnssMeasurement m : noisySatellites) {
                     if (m.getCn0DbHz() < MAX_CARRIER_TO_NOISE) {
                         satellites.add(m);
                         Log.e("SAT MEASUREMENT ADDED", String.valueOf(m));
+                        if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
+                            galileoSatellites.add(m);
+                        } else if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
+                            gpsSatellites.add(m);
+                        }
                     }
                 }
-
-                Log.e("counts", String.valueOf(satellites.size()));
-                Log.e("clock", String.valueOf(receiverClock));
+                Log.e("GPS", String.valueOf(gpsSatellites.size()));
+                Log.e("GALILEO", String.valueOf(galileoSatellites.size()));
+                //Log.e("clock", String.valueOf(receiverClock));
             }
         };
-
 
         mLocationManager.registerGnssMeasurementsCallback(gnssMeasurementsEventCallback);
         mLocationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER, 0, 0, this
         );
 
+        while(true) {
+            if (galileoSatellites.size() > 3) {
+                // TODO: continue computation with the following:
+                /*
+                    stuff we're passing to the satellite:
+                    GNSSClock.TimeNanos
+                   GNSSClock.FullBiasNanos
+                    GNSSClock.BIasNanos
+                    GNSSMeasurement.TimeOffsetNanos
+                       GNSSClock.FullBiasNanos
+                 */
+                for (GnssMeasurement sat : galileoSatellites) {
+                    // TODO: do stuff with satellite class
+                    // create new satellite class instance
+                    // pass parameters from sat to satellite's setter and then make a private satellite function to compute
+                };
+            }
+        }
     }
 
     public void setContext(Context context) {
