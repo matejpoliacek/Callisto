@@ -5,23 +5,27 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
-import com.chocolateam.galileomap.MapsActivity;
+import com.chocolateam.galileospaceship.SpaceshipViewActivity;
 
 public class MainActivity extends AppCompatActivity {
+
+    com.chocolateam.galileopvt.PVTClass GalileoPVT;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        GalileoPVT = new com.chocolateam.galileopvt.PVTClass();
     }
 
     public void goToMap(View view) {
-        Intent intent = new Intent(this, MapsActivity.class);
+        Intent intent = new Intent(this, com.chocolateam.galileomap.MapsActivity.class);
         startActivity(intent);
     }
 
     public void goToSpaceship(View view) {
-        Intent intent = new Intent(this, com.example.lionelgarcia.galapptest2.SpaceshipViewActivity.class);
+        Intent intent = new Intent(this, SpaceshipViewActivity.class);
         startActivity(intent);
     }
 }
