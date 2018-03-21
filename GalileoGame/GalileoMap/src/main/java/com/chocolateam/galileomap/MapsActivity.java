@@ -1,9 +1,15 @@
 package com.chocolateam.galileomap;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -17,8 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.util.MutableBoolean;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -29,12 +34,8 @@ import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.GeoDataClient;
-import com.google.android.gms.location.places.PlaceDetectionClient;
-import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBufferResponse;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -54,13 +55,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng lastClickedLocation;
     private Button playButton;
     private TextView scoreText;
+    private Button zoomButton;
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private CameraPosition mCameraPosition;
 
-    // The entry points to the Places API.
-    private GeoDataClient mGeoDataClient;
-    private PlaceDetectionClient mPlaceDetectionClient;
 
     // The entry point to the Fused Location Provider.
     private FusedLocationProviderClient mFusedLocationProviderClient;
@@ -69,6 +68,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // not granted.
     private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final int DEFAULT_ZOOM = 15;
+    private static final int GAME_ZOOM_IN = 19;
+    private static final int GAME_ZOOM_OUT = 17;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
@@ -79,13 +80,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Keys for storing activity state.
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
-
-    // Used for selecting the current place.
-    private static final int M_MAX_ENTRIES = 5;
-    private String[] mLikelyPlaceNames;
-    private String[] mLikelyPlaceAddresses;
-    private String[] mLikelyPlaceAttributions;
-    private LatLng[] mLikelyPlaceLatLngs;
 
     /** GAME VARIABLES **/
     // Drawing class to handle game visuals
@@ -101,13 +95,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng point1 = null;
     private LatLng point2 = null;
 
-    private LocationCallback mLocationCallback;
+    private boolean zoomed = true;
+
     private LocationRequest mLocationRequest;
+    private LocationCallback mLocationCallback;
 
     /** Location manager **/
     private LocationManager locationManager;
+    private LocationListener mLocationListenerGPS;
 
     private Marker mMarker;
+
+    private SensorManager sensorService;
+    private Sensor sensor;
+
+    private boolean cameraMoving = false;
+    private final int MAP_ROTATION_SPEED = 200;
 
     private boolean bDebug = false;
 
@@ -124,12 +127,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
 
-        // Construct a GeoDataClient.
-        mGeoDataClient = Places.getGeoDataClient(this, null);
-
-        // Construct a PlaceDetectionClient.
-        mPlaceDetectionClient = Places.getPlaceDetectionClient(this, null);
-
         // Construct a FusedLocationProviderClient.
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -139,26 +136,43 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        // Location Stuff
-      /**  mLocationCallback = new LocationCallback() {
+        /** Location Manager **/
+
+        mLocationListenerGPS = new LocationListener() {
             @Override
-            public void onLocationResult(LocationResult locationResult) {
-                for (Location location : locationResult.getLocations()) {
-                    if (playing && game != null) {
-                        TextView text = (TextView)findViewById(R.id.locationtext);
-                        text.setText("Location: " + location.toString());
-                        mLastKnownLocation = location;
+            public void onLocationChanged(android.location.Location location) {
+                mLastKnownLocation = location;
+                System.out.println("Location Changed");
+
+                if (playing && game != null) {
+
+                    // TODO: the whole if wrapper with bDebug can be removed when debugging is concluded
+                    if (!bDebug) {
                         game.setPlayerLocation(location);
                     }
                 }
             }
-        }; **/
 
-        /** Location Manager **/
-        locationManager=(LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        };
+
+        locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, locationListenerGPS);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerGPS);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, mLocationListenerGPS);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListenerGPS);
             isLocationEnabled();
         } catch (SecurityException e) {
             Toast.makeText(getApplicationContext(), "Security exception - locmgr", Toast.LENGTH_LONG).show();
@@ -168,6 +182,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         draw = new DrawClass();
 
         scoreText = (TextView) findViewById(R.id.scoretext);
+        scoreText.setVisibility(View.INVISIBLE);
+
+        zoomButton = (Button) findViewById(R.id.zoomButton);
+        zoomButton.setVisibility(View.INVISIBLE);
+        zoomButton.setEnabled(false);
+
+        // sensor variables for compass
+        sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
+        // TODO: is there a better way?
+        sensor = sensorService.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+        if (sensor != null) {
+            sensorService.registerListener(mySensorEventListener, sensor,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
     }
 
 
@@ -183,29 +212,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    /**
-     * Sets up the options menu.
-     * @param menu The options menu.
-     * @return Boolean.
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.current_place_menu, menu);
-        return true;
-    }
-
-    /**
-     * Handles a click on the menu option to get a place.
-     * @param item The menu item to handle.
-     * @return Boolean.
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.option_get_place) {
-            showCurrentPlace();
-        }
-        return true;
-    }
 
     /**
      * Manipulates the map once available.
@@ -255,10 +261,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Location stuff
         createLocationRequest();
+
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
-
-        mMarker = mMap.addMarker(new MarkerOptions().position(mDefaultLocation));
     }
 
 
@@ -270,23 +275,62 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
          */
+        findViewById(R.id.locationText).setVisibility(View.VISIBLE);
         try {
             if (mLocationPermissionGranted) {
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
                 locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
                     @Override
                     public void onComplete(@NonNull Task<Location> task) {
+
+                        boolean passed = true;
+
                         if (task.isSuccessful()) {
                             // Set the map's camera position to the current location of the device.
-                            mLastKnownLocation = task.getResult();
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(mLastKnownLocation.getLatitude(),
-                                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                        } else {
+                            if (mLastKnownLocation == null) {
+                                mLastKnownLocation = task.getResult();
+                                try {
+                                    if (mLastKnownLocation == null) {
+                                        Thread.sleep(3000);
+                                        mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+                                        if (mLastKnownLocation == null) {
+                                            Thread.sleep(3000);
+                                            mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+                                            if (mLastKnownLocation == null) {
+                                                // if we can't get location, advise user
+                                                findViewById(R.id.locationText).setVisibility(View.GONE);
+                                                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
+                                                alertDialog.setTitle("Can't Locate You");
+                                                alertDialog.setMessage("The signal is not good enough to determine your location - if you're indoors, try going outside. " +
+                                                        "Have a look at the signal and satellite availability by accessing the spaceship from the main menu.");
+                                                alertDialog.setPositiveButton("Return to menu", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        (MapsActivity.this).finish();
+                                                    }
+                                                });
+
+                                                AlertDialog alert = alertDialog.create();
+                                                alert.show();
+                                                passed = false;
+                                            }
+                                        }
+                                    }
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                    passed = false;
+                                }
+                            }
+                            findViewById(R.id.locationText).setVisibility(View.GONE);
+                            if (passed) {
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                        new LatLng(mLastKnownLocation.getLatitude(),
+                                                mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                            }
+                            findViewById(R.id.locationText).setVisibility(View.GONE);
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
-                            mMap.moveCamera(CameraUpdateFactory
-                                    .newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
                             mMap.getUiSettings().setMyLocationButtonEnabled(false);
                         }
                     }
@@ -338,117 +382,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         updateLocationUI();
     }
 
-    /**
-     * Prompts the user to select the current place from a list of likely places, and shows the
-     * current place on the map - provided the user has granted location permission.
-     */
-    private void showCurrentPlace() {
-        if (mMap == null) {
-            return;
-        }
-
-        if (mLocationPermissionGranted) {
-            // Get the likely places - that is, the businesses and other points of interest that
-            // are the best match for the device's current location.
-            @SuppressWarnings("MissingPermission") final Task<PlaceLikelihoodBufferResponse> placeResult =
-                    mPlaceDetectionClient.getCurrentPlace(null);
-            placeResult.addOnCompleteListener
-                    (new OnCompleteListener<PlaceLikelihoodBufferResponse>() {
-                        @Override
-                        public void onComplete(@NonNull Task<PlaceLikelihoodBufferResponse> task) {
-                            if (task.isSuccessful() && task.getResult() != null) {
-                                PlaceLikelihoodBufferResponse likelyPlaces = task.getResult();
-
-                                // Set the count, handling cases where less than 5 entries are returned.
-                                int count;
-                                if (likelyPlaces.getCount() < M_MAX_ENTRIES) {
-                                    count = likelyPlaces.getCount();
-                                } else {
-                                    count = M_MAX_ENTRIES;
-                                }
-
-                                int i = 0;
-                                mLikelyPlaceNames = new String[count];
-                                mLikelyPlaceAddresses = new String[count];
-                                mLikelyPlaceAttributions = new String[count];
-                                mLikelyPlaceLatLngs = new LatLng[count];
-
-                                for (PlaceLikelihood placeLikelihood : likelyPlaces) {
-                                    // Build a list of likely places to show the user.
-                                    mLikelyPlaceNames[i] = (String) placeLikelihood.getPlace().getName();
-                                    mLikelyPlaceAddresses[i] = (String) placeLikelihood.getPlace()
-                                            .getAddress();
-                                    mLikelyPlaceAttributions[i] = (String) placeLikelihood.getPlace()
-                                            .getAttributions();
-                                    mLikelyPlaceLatLngs[i] = placeLikelihood.getPlace().getLatLng();
-
-                                    i++;
-                                    if (i > (count - 1)) {
-                                        break;
-                                    }
-                                }
-
-                                // Release the place likelihood buffer, to avoid memory leaks.
-                                likelyPlaces.release();
-
-                                // Show a dialog offering the user the list of likely places, and add a
-                                // marker at the selected place.
-                                openPlacesDialog();
-
-                            } else {
-                                Log.e(TAG, "Exception: %s", task.getException());
-                            }
-                        }
-                    });
-        } else {
-            // The user has not granted permission.
-            Log.i(TAG, "The user did not grant location permission.");
-
-            // Add a default marker, because the user hasn't selected a place.
-            mMap.addMarker(new MarkerOptions()
-                    .title(getString(R.string.default_info_title))
-                    .position(mDefaultLocation)
-                    .snippet(getString(R.string.default_info_snippet)));
-
-            // Prompt the user for permission.
-            //  getLocationPermission();
-        }
-    }
-
-    /**
-     * Displays a form allowing the user to select a place from a list of likely places.
-     */
-    private void openPlacesDialog() {
-        // Ask the user to choose the place where they are now.
-        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // The "which" argument contains the position of the selected item.
-                LatLng markerLatLng = mLikelyPlaceLatLngs[which];
-                String markerSnippet = mLikelyPlaceAddresses[which];
-                if (mLikelyPlaceAttributions[which] != null) {
-                    markerSnippet = markerSnippet + "\n" + mLikelyPlaceAttributions[which];
-                }
-
-                // Add a marker for the selected place, with an info window
-                // showing information about that place.
-                mMap.addMarker(new MarkerOptions()
-                        .title(mLikelyPlaceNames[which])
-                        .position(markerLatLng)
-                        .snippet(markerSnippet));
-
-                // Position the map's camera at the location of the marker.
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLatLng,
-                        DEFAULT_ZOOM));
-            }
-        };
-
-        // Display the dialog.
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.pick_place)
-                .setItems(mLikelyPlaceNames, listener)
-                .show();
-    }
 
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
@@ -476,65 +409,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /** Location methods **/
     /*********************/
 
+    // TODO: test if we need any of the following 3 methods
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(500);
+        mLocationRequest.setInterval(50);
+        mLocationRequest.setFastestInterval(10);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //startLocationUpdates();
         isLocationEnabled();
     }
 
-    private void startLocationUpdates() {
-        try {
-            if (mLocationPermissionGranted) {
-                mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest,
-                        mLocationCallback,
-                        null /* Looper */);
-                Toast.makeText(getApplicationContext(), "Location requested", Toast.LENGTH_LONG).show();
-            }
-        }
-        catch (SecurityException e) {
-            Toast.makeText(getApplicationContext(), "Security exception", Toast.LENGTH_LONG).show();
-            System.err.println("Security exception");
-        }
-    }
-
-    /** Location Manager **/
-
-    LocationListener locationListenerGPS = new LocationListener() {
-        @Override
-        public void onLocationChanged(android.location.Location location) {
-            mLastKnownLocation = location;
-            // TODO: bDebug can be removed when debugging is concldued
-            if (playing && game != null && !bDebug) {
-                game.setPlayerLocation(location);
-            }
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-    };
-
     private void isLocationEnabled() {
+        System.out.println("Checking Location availability");
         if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(getApplicationContext());
         alertDialog.setTitle("Enable Location");
@@ -553,8 +444,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         AlertDialog alert=alertDialog.create();
         alert.show();
         }
-        else{
-            Toast.makeText(getApplicationContext(), "Location is Enabled", Toast.LENGTH_LONG).show();
+        else {
+            System.out.println("Location available");
         }
     }
 
@@ -603,8 +494,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(getApplicationContext(), "Select 2 points to mark playing area", Toast.LENGTH_LONG).show();
             gameSetup = true;
             firstPoint = true;
-            LatLng point1 = null;
-            LatLng point2 = null;
+            point1 = null;
+            point2 = null;
 
             // add some button behavior (disable?)
             playButton.setEnabled(false);
@@ -616,14 +507,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void playing() {
         // re-enable button
         gameSetup = false;
-        playing = true;
         playButton.setEnabled(true);
         playButton.setAlpha(1.0f);
+
+        // zoom onto the player
+        priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
 
         //show score
         scoreText.setVisibility(View.VISIBLE);
         showScore(0);
 
+        // reset the zoom button
+        zoomButton.setVisibility(View.VISIBLE);
+        zoomButton.setText("Zoom Out");
+        zoomButton.setEnabled(true);
+        zoomed = true;
+
+        // disable map scrolling/zooming
+        mMap.getUiSettings().setScrollGesturesEnabled(false);
+        mMap.getUiSettings().setZoomGesturesEnabled(false);
+        mMap.getUiSettings().setRotateGesturesEnabled(false);
+
+        playing = true;
         game.setPlaying(true);
         gameThread = new Thread(game);
         gameThread.start();
@@ -641,6 +546,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // hide score text
         scoreText.setVisibility(View.INVISIBLE);
         showScore(0);
+
+        zoomButton.setVisibility(View.INVISIBLE);
+        zoomButton.setEnabled(false);
+
+        // enable map scrolling/zooming
+        mMap.getUiSettings().setScrollGesturesEnabled(true);
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
+        mMap.getUiSettings().setRotateGesturesEnabled(true);
 
         // clear possible existing drawings
         if (playingArea != null) {
@@ -661,9 +574,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             gameThread.interrupt();
         }
         playing = false;
+        updateCameraBearing(mMap, 0);
     }
     // TODO: switch arrays to lists for faster access?
     private void gameInit() {
+
+        // TODO: should the drawing here be moved to the game class?
+
         playingArea = mMap.addPolygon(draw.drawRectangle(point1, point2));
 
         // add game as a fragment
@@ -712,6 +629,73 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         scoreText.setText("Score: " + score);
     }
 
+    /**********************/
+    /*** SENSOR METHODS **/
+    /********************/
+
+    private SensorEventListener mySensorEventListener = new SensorEventListener() {
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            float azimuth = event.values[0];
+            if (playing && !cameraMoving) {
+                updateCameraBearing(mMap, azimuth);
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+
+    };
+
+    private void updateCameraBearing(GoogleMap googleMap, float bearing) {
+        if ( googleMap == null) return;
+        CameraPosition camPos = CameraPosition
+                .builder(
+                        googleMap.getCameraPosition() // current Camera
+                )
+                .bearing(bearing)
+                .build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos), MAP_ROTATION_SPEED, null);
+    }
+
+    /*************/
+    /*** MISC ***/
+    /***********/
+
+    private void priorityCameraZoom(GoogleMap map, LatLng latlng, int zoom) {
+
+        // implementing the cancellable callback allows the zoom to finish before rotating takes over
+
+        cameraMoving = true;
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, zoom),
+                new GoogleMap.CancelableCallback() {
+                    @Override
+                    public void onFinish() {
+                        cameraMoving = false;
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        cameraMoving = false;
+                    }
+                }
+        );
+    }
+
+    public void toggleZoom(View view) {
+        if (zoomed) {
+            zoomButton.setText("Zoom In");
+            priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_OUT);
+            zoomed = false;
+        } else {
+            zoomButton.setText("Zoom Out");
+            priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
+            zoomed = true;
+        }
+    }
 
     // TODO: this method can be deleted with the debug button when not necessary anymore
     public void toggleDebug(View view) {
@@ -719,11 +703,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (bDebug) {
             debugButton.setText("Start Debugging");
             bDebug = false;
+            mMap.getUiSettings().setScrollGesturesEnabled(false);
+            mMap.getUiSettings().setZoomGesturesEnabled(false);
+            mMap.getUiSettings().setRotateGesturesEnabled(false);
         } else {
             debugButton.setText("Stop Debugging");
             bDebug = true;
+            mMap.getUiSettings().setScrollGesturesEnabled(true);
+            mMap.getUiSettings().setZoomGesturesEnabled(true);
+            mMap.getUiSettings().setRotateGesturesEnabled(true);
         }
-
     }
 
 }

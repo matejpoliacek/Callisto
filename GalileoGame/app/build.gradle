@@ -31,6 +31,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     debugImplementation project(':GalileoMap')
     releaseImplementation project(':GalileoMap')
-    debugImplementation project(':GalAppTest2')
-    releaseImplementation project(':GalAppTest2')
+    debugImplementation project(':GalileoSpaceship')
+    releaseImplementation project(':GalileoSpaceship')
+    debugImplementation project(':GalileoPVT')
+    releaseImplementation project(':GalileoPVT')
 }

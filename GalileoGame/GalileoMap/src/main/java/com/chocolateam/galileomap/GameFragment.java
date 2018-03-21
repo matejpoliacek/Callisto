@@ -15,7 +15,6 @@ import com.google.maps.android.PolyUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Matej Poliacek on 16/02/2018.
@@ -84,7 +83,7 @@ public class GameFragment extends Fragment implements Runnable {
 
         assert rows*cols > ((rows * cols) / OBSTACLE_PROPORTION) + noColletibles + 1 : "Too many objects to be generated";
 
-        if (checkSize()) {
+        if (checkSize() == 1) {
 
             Collections.shuffle(obstacleChooser);
 
@@ -118,9 +117,9 @@ public class GameFragment extends Fragment implements Runnable {
 
     public boolean isSizeValid() {
 
-        boolean validGame = checkSize();
+        boolean validGame = false;
 
-        if (!validGame) {
+        if (checkSize() == 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setMessage("Playing area too small!")
                     .setCancelable(false)
@@ -131,16 +130,36 @@ public class GameFragment extends Fragment implements Runnable {
                     });
             AlertDialog alert = builder.create();
             alert.show();
+        } else if (checkSize() == -1) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setMessage("Playing area too big!")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            //do things
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        } else {
+            validGame = true;
         }
         return validGame;
     }
 
-    private boolean checkSize() {
+    /**
+     * Method to check if the size of the playing area is valid.
+     *
+     * @return integer indicating check result: -1 for too big, 0 for too small, 1 for valid
+     */
+    private int checkSize() {
 
-        boolean validGame = true;
+        int validGame = 1;
 
         if (rows < 3 || cols < 3) {
-            validGame = false;
+            validGame = 0; // too small
+        } else if (rows > 15 || cols > 15) {
+            validGame = -1; // too big
         }
 
         return validGame;
@@ -198,54 +217,83 @@ public class GameFragment extends Fragment implements Runnable {
         boolean won = false;
         boolean finished = false;
         int collected = 0;
+
+        ScoreClass scoreObj = new ScoreClass(playfieldArray.length * playfieldArray[0].length);
+
         max_collectibles = collectsPointList.size();
+
+        LatLng currentLatLng;
+
         try {
             while (playing) {
                 Thread.sleep(100);
+
+                currentLatLng = new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude());
+
                 // Hit finish
-                if (collected == max_collectibles && PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), finish, false)) {
+                if (collected == max_collectibles && PolyUtil.containsLocation(currentLatLng, finish, false)) {
                     playing = false;
                     won = true;
                     Thread.currentThread().interrupt();
                     finished = true;
                     System.out.println("Hit finish");
-                    break;
                 } else {
-                    // Hit an obstacle
-                    for (int i = 0; i < obstaclePointList.size(); i++) {
-                        if (PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), obstaclePointList.get(i), false)) {
-                            playing = false;
-                            won = false;
-                            Thread.currentThread().interrupt();
-                            finished = true;
-                            System.out.println("Hit obstacle");
-                            break;
-                        } else {
-                            // Hit a collectible
-                            for (int j = 0; j < collectsPointList.size(); j++) {
-                                if (PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), collectsPointList.get(j).getPoints(), false)) {
-                                    // Run on UI thread to remove polygon
+                    // Check if out of bounds
+                    if (!PolyUtil.containsLocation(currentLatLng, areaPoints, false)) {
+                        System.out.println("Out of bounds");
+                        scoreObj.applyObstaclePenalty();
+                    } else {
+                        // Hit an obstacle
+                        for (int i = 0; i < obstaclePointList.size(); i++) {
+                            if (PolyUtil.containsLocation(currentLatLng, obstaclePointList.get(i), false)) {
+                                scoreObj.applyObstaclePenalty();
+                                System.out.println("Hit obstacle");
+                                break;
 
-                                    // These variables are declared final to be able to pass them to the inner class
-                                    final int rowIndex = collectsPointList.get(j).getRow();
-                                    final int colIndex = collectsPointList.get(j).getCol();
-                                    final int finalCollected = ++collected;
+                            } else {
+                                // Hit a collectible
+                                for (int j = 0; j < collectsPointList.size(); j++) {
+                                    if (PolyUtil.containsLocation(currentLatLng, collectsPointList.get(j).getPoints(), false)) {
+                                        scoreObj.increaseScore();
+                                        // Run on UI thread to remove polygon
+                                        // These variables are declared final to be able to pass them to the inner class
+                                        final int rowIndex = collectsPointList.get(j).getRow();
+                                        final int colIndex = collectsPointList.get(j).getCol();
 
-                                    ((MapsActivity) context).runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            ((MapsActivity) context).removeMapObjectByIndex(rowIndex, colIndex);
-                                            // TODO: score is just a count of collected collectibles, probably do something more engaging
-                                            // TODO: e.g. determine max from playfield size, reduce score with time, add points for colletibles
-                                            ((MapsActivity) context).showScore(finalCollected);
-                                        }
-                                    });
-                                    collectsPointList.remove(j);
-                                    break;
+                                        ((MapsActivity) context).runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                ((MapsActivity) context).removeMapObjectByIndex(rowIndex, colIndex);
+                                            }
+                                        });
+
+                                        collectsPointList.remove(j);
+                                        collected++;
+
+                                        break;
+
+                                    }
                                 }
                             }
                         }
                     }
+                }
+                // update score info
+                final int score = scoreObj.getScore();
+                ((MapsActivity) context).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((MapsActivity) context).showScore(score);
+                    }
+                });
+                // check if the game is lost
+                if (scoreObj.getScore() <= 0) {
+                    playing = false;
+                    won = false;
+                    Thread.currentThread().interrupt();
+                    finished = true;
+                } else { // if not, apply time penalty
+                    scoreObj.applyTimePenalty();
                 }
             }
 
@@ -253,9 +301,9 @@ public class GameFragment extends Fragment implements Runnable {
             // do nothing
         } finally {
             if (finished) {
-                Intent scoreIntent = new Intent(context, ScoreActivity.class);
+                Intent scoreIntent = new Intent(context, SummaryActivity.class);
                 scoreIntent.putExtra("won", won);
-                scoreIntent.putExtra("score", collected);
+                scoreIntent.putExtra("score", scoreObj.getScore());
                 startActivity(scoreIntent);
             }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -31,11 +32,24 @@
         android:textColor="#ffffff" />
 
     <Button
+        android:id="@+id/zoomButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/playButton"
+        android:layout_below="@+id/playButton"
+        android:background="@drawable/buttonshape"
+        android:onClick="toggleZoom"
+        android:padding="8dp"
+        android:text="Zoom Out"
+        android:textColor="#ffffff" />
+
+    <Button
         android:id="@+id/debugButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignEnd="@+id/playButton"
-        android:layout_below="@+id/playButton"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="15dp"
         android:background="@drawable/buttonshape"
         android:onClick="toggleDebug"
         android:padding="8dp"
@@ -51,5 +65,15 @@
         android:layout_alignParentStart="true"
         android:layout_marginStart="54dp"
         android:text="Score:" />
+
+    <TextView
+        android:id="@+id/locationText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:text="Retrieving your location"
+        android:textAlignment="center"
+        android:visibility="visible" />
 
 </RelativeLayout>
