@@ -275,7 +275,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
          */
-        findViewById(R.id.indeterminateBar).setVisibility(View.VISIBLE);
         findViewById(R.id.locationText).setVisibility(View.VISIBLE);
         try {
             if (mLocationPermissionGranted) {
@@ -292,16 +291,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 mLastKnownLocation = task.getResult();
                                 try {
                                     if (mLastKnownLocation == null) {
-                                        mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                                         Thread.sleep(3000);
+                                        mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
                                         if (mLastKnownLocation == null) {
-                                            mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                                             Thread.sleep(3000);
+                                            mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
                                             if (mLastKnownLocation == null) {
                                                 // if we can't get location, advise user
-                                                findViewById(R.id.indeterminateBar).setVisibility(View.GONE);
                                                 findViewById(R.id.locationText).setVisibility(View.GONE);
                                                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
                                                 alertDialog.setTitle("Can't Locate You");
@@ -324,14 +322,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     passed = false;
                                 }
                             }
-                            findViewById(R.id.indeterminateBar).setVisibility(View.GONE);
                             findViewById(R.id.locationText).setVisibility(View.GONE);
                             if (passed) {
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(mLastKnownLocation.getLatitude(),
                                                 mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                             }
-                            findViewById(R.id.indeterminateBar).setVisibility(View.GONE);
                             findViewById(R.id.locationText).setVisibility(View.GONE);
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());

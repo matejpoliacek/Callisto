@@ -66,36 +66,14 @@
         android:layout_marginStart="54dp"
         android:text="Score:" />
 
-    <ProgressBar
-        android:id="@+id/indeterminateBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        android:layout_below="@+id/playButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="12dp"
-        android:indeterminate="true"
-        android:indeterminateTint="@color/colorPrimary"
-        android:visibility="visible"
-        tools:visibility="visible" />
-
     <TextView
         android:id="@+id/locationText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/zoomButton"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="52dp"
+        android:layout_centerVertical="true"
         android:text="Retrieving your location"
         android:textAlignment="center"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/indeterminateBar"
-        app:layout_constraintVertical_bias="0.877" />
+        android:visibility="visible" />
 
 </RelativeLayout>
