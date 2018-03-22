@@ -25,6 +25,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.MutableBoolean;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -184,6 +185,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         scoreText = (TextView) findViewById(R.id.scoretext);
         scoreText.setVisibility(View.INVISIBLE);
 
+        playButton = (Button) findViewById(R.id.playButton);
+
         zoomButton = (Button) findViewById(R.id.zoomButton);
         zoomButton.setVisibility(View.INVISIBLE);
         zoomButton.setEnabled(false);
@@ -275,7 +278,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
          */
-        findViewById(R.id.locationText).setVisibility(View.VISIBLE);
         try {
             if (mLocationPermissionGranted) {
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
@@ -322,12 +324,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     passed = false;
                                 }
                             }
-                            findViewById(R.id.locationText).setVisibility(View.GONE);
+
+                            if (findViewById(R.id.locationText) != null) {
+                                findViewById(R.id.locationText).setVisibility(View.GONE);
+                            }
+
                             if (passed) {
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(mLastKnownLocation.getLatitude(),
                                                 mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                             }
+                        } else {
                             findViewById(R.id.locationText).setVisibility(View.GONE);
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
@@ -475,7 +482,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             // TODO: delete this else after debugs
         } else if (playing && bDebug){
-            mMarker.setPosition(point);
+            if (mMarker == null) {
+                mMarker = mMap.addMarker(new MarkerOptions().position(point));
+            } else {
+                mMarker.setPosition(point);
+            }
             Location newLoc = mLastKnownLocation;
             newLoc.setLatitude(point.latitude);
             newLoc.setLongitude(point.longitude);
@@ -485,7 +496,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void startGame(View view) {
-        playButton = (Button)view;
 
         // if we're already playing, make next click stop the game first
         if (playing == true) {
@@ -505,6 +515,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void playing() {
+
+        // keep screen on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         // re-enable button
         gameSetup = false;
         playButton.setEnabled(true);
@@ -535,6 +549,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void stopGame() {
+
+        // disable keeping screen on
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         game.setPlaying(false);
         gameSetup = false;
         firstPoint = true;
