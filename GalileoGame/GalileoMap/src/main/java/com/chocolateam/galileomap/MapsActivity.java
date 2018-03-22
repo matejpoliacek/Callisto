@@ -114,6 +114,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final int MAP_ROTATION_SPEED = 200;
 
     private boolean bDebug = false;
+    private boolean bGraphicsDebug = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,6 +191,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         zoomButton = (Button) findViewById(R.id.zoomButton);
         zoomButton.setVisibility(View.INVISIBLE);
         zoomButton.setEnabled(false);
+
+        playButton = (Button) findViewById(R.id.playButton);
+        playButton.setVisibility(View.VISIBLE);
 
         // sensor variables for compass
         sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -730,6 +734,35 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.getUiSettings().setScrollGesturesEnabled(true);
             mMap.getUiSettings().setZoomGesturesEnabled(true);
             mMap.getUiSettings().setRotateGesturesEnabled(true);
+        }
+    }
+
+    // TODO: this method can be deleted with the debug button when not necessary anymore
+    public void toggleGraphicsDebug(View view) {
+        Button debugGraphicsButton = (Button)view;
+        if (bGraphicsDebug) {
+            debugGraphicsButton .setText("Start Graphics Debugging");
+            bGraphicsDebug = false;
+            stopGame();
+        } else {
+            debugGraphicsButton .setText("Stop Graphics Debugging");
+            bGraphicsDebug = true;
+            point1 = new LatLng(52.216596, 4.420682);
+            point2 = new LatLng(52.215974, 4.422007);
+            gameSetup = false;
+
+            Location fakeLocation = new Location("fake_provider");
+            fakeLocation.setAltitude(0);
+            fakeLocation.setLatitude(52.216523);
+            fakeLocation.setLongitude(4.421139);
+            fakeLocation.setSpeed(0);
+
+            mLastKnownLocation = fakeLocation;
+
+            gameInit();
+            Log.e("Size valid", String.valueOf(game.isSizeValid()));
+            Log.e("Location valid", String.valueOf(game.isLocationValid()));
+            playing();
         }
     }
 

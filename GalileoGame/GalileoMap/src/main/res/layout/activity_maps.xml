@@ -56,6 +56,21 @@
         android:text="Start Debugging"
         android:textColor="#ffffff" />
 
+    <Button
+        android:id="@+id/debugGraphicsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/debugButton"
+        android:layout_alignStart="@+id/debugButton"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/buttonshape"
+        android:onClick="toggleGraphicsDebug"
+        android:layout_margin="16dp"
+        android:padding="8dp"
+        android:text="Start Graphics Debugging"
+        android:textColor="#ffffff" />
+
     <TextView
         android:id="@+id/scoretext"
         android:layout_width="wrap_content"
@@ -75,5 +90,14 @@
         android:text="Retrieving your location"
         android:textAlignment="center"
         android:visibility="visible" />
+
+    <com.chocolateam.galileomap.GamePanel
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible">
+
+    </com.chocolateam.galileomap.GamePanel>
 
 </RelativeLayout>
