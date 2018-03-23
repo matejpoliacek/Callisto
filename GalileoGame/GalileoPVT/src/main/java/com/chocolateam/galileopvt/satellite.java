@@ -23,6 +23,8 @@ public class satellite {
                        GNSSClock.FullBiasNanos
                  */
 
+    // TODO: change the parameters inside computeX() functions to starting points of calculations
+
     public long getGnssTime() {
         return gnssTime;
     }

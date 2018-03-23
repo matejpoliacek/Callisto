@@ -14,6 +14,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -31,8 +32,10 @@ import java.util.List;
 import static android.content.Context.LOCATION_SERVICE;
 
 public class BlankFragment extends Fragment implements Runnable, LocationListener {
-    private static final int MAX_CARRIER_TO_NOISE = 28;
+    public static final int MAX_CARRIER_TO_NOISE = 28;
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 
+    private static String CONSTELLATION_SWITCH = "GPS"; // possible values: GPS, GALILEO
     private Context context;
     private LocationManager mLocationManager;
     private int satcount;
@@ -42,6 +45,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private Collection<GnssMeasurement> galileoSatellites;
     private Collection<GnssMeasurement> gpsSatellites;
 
+    private double pseudoRange;
+
     public BlankFragment() {
         // constructor as empty as my wallet before payday
     }
@@ -49,34 +54,16 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        satellites = new <GnssMeasurement>ArrayList();
-        galileoSatellites = new <GnssMeasurement>ArrayList();
-        gpsSatellites = new <GnssMeasurement>ArrayList();
-        // TODO: instantiate receiver clock
-
-        this.run();
+        run();
     }
 
     public void run() {
         mLocationManager =
                 (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
-        /*
-        ************************
-        Location user permission
-        ************************
-         */
-        if (ContextCompat.checkSelfPermission((pvtActivity)context, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Code for when permission is not granted.
-            Toast.makeText(getActivity(), "Y THO",
-                    Toast.LENGTH_LONG).show();
-            Thread.currentThread().interrupt();
-        }
 
-        /******************************************************************************
-        GNSS Measurements Event for obtaining receiver clock and satellite measurements
-        ******************************************************************************/
+        /*******************************************************************************
+         GNSS Measurements Event for obtaining receiver clock and satellite measurements
+         ******************************************************************************/
         GnssMeasurementsEvent.Callback gnssMeasurementsEventCallback = new GnssMeasurementsEvent.Callback() {
             @Override
             public void onGnssMeasurementsReceived (GnssMeasurementsEvent eventArgs) {
@@ -88,12 +75,13 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                 receiverClock = eventArgs.getClock();
                 //((pvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
 
-                // Filter for bad carrier to noise ration in satellites and Galileo / GPS satellites
+                // Reset list of Galileo and GPS satellites
+                galileoSatellites = new <GnssMeasurement>ArrayList();
+                gpsSatellites = new <GnssMeasurement>ArrayList();
 
-
+                // Filter for bad carrier to noise ration in satellites
                 for (GnssMeasurement m : noisySatellites) {
                     if (m.getCn0DbHz() < MAX_CARRIER_TO_NOISE) {
-                        satellites.add(m);
                         Log.e("SAT MEASUREMENT ADDED", String.valueOf(m));
                         if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
                             galileoSatellites.add(m);
@@ -105,45 +93,87 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                 Log.e("GPS", String.valueOf(gpsSatellites.size()));
                 Log.e("GALILEO", String.valueOf(galileoSatellites.size()));
                 //Log.e("clock", String.valueOf(receiverClock));
+
+
+                /******************************************************
+                 Calculate pseudorange every callback, i.e. every second - alternative is to do it outside of this function with locks
+                ******************************************************/
+                // Careful, pseudorange can be null
+
+                if (CONSTELLATION_SWITCH.equals("GPS") && (gpsSatellites.size() > 3)) {
+                    pseudoRange = calcPseudoRange_GPS();
+                }
+                if (CONSTELLATION_SWITCH.equals("GALILEO")&& (galileoSatellites.size() > 3)) {
+                    pseudoRange = calcPseudoRange_Galileo();
+                }
+
+                /***********************************************************************
+                 Add corrections to pseudorange if not null to get corrected pseudorange
+                 **********************************************************************/
+                // Enter your code here
+
+                /*************************
+                 Calculate computed range
+                 ************************/
+                // Enter your code here
+
+
+                /***************************************************************
+                 If computed range not null, perform Linearisation and get x y z
+                 **************************************************************/
+                // Enter your code here
             }
         };
 
+        ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION); // To avoid errors with registering callbacks
         mLocationManager.registerGnssMeasurementsCallback(gnssMeasurementsEventCallback);
         mLocationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER, 0, 0, this
         );
 
-        while(true) {
-            if (galileoSatellites.size() > 3) {
-                // TODO: continue computation with the following:
-                /*
-                    stuff we're passing to the satellite:
-                    GNSSClock.TimeNanos
-                   GNSSClock.FullBiasNanos
-                    GNSSClock.BIasNanos
-                    GNSSMeasurement.TimeOffsetNanos
-                       GNSSClock.FullBiasNanos
-                 */
-                for (GnssMeasurement sat : galileoSatellites) {
-                    // TODO: do stuff with satellite class
-                    // create new satellite class instance
-                    // pass parameters from sat to satellite's setter and then make a private satellite function to compute
-                };
-            }
-        }
     }
+
+    /****************************************************
+    Pseudorange calculation functions for GPS and Galileo
+    ****************************************************/
+    public double calcPseudoRange_GPS() {
+            // TODO: continue computation with the following:
+                    /*
+                        stuff we're passing to the satellite:
+                        GNSSClock.TimeNanos
+                       GNSSClock.FullBiasNanos
+                        GNSSClock.BIasNanos
+                        GNSSMeasurement.TimeOffsetNanos
+                           GNSSClock.FullBiasNanos
+                     */
+            for (GnssMeasurement sat : gpsSatellites) {
+                // TODO: do stuff with satellite class
+                // create new satellite class instance
+                // pass parameters from sat to satellite's setter and then make a private satellite function to compute
+            }
+        return 0.0;
+    }
+
+    public double calcPseudoRange_Galileo() {
+        return 0.0;
+    }
+
+
+    /***
+    Misc
+    ***/
 
     public void setContext(Context context) {
         this.context = context;
     }
 
-    /*****************************************
-    LocationListener boilerplate including:
-        onLocationChanged
-        onStatusChanged
-        onProviderEnabled
-        onProviderDisabled
-     ****************************************/
+    public void switchConstellation(String constellation) {
+        CONSTELLATION_SWITCH = constellation;
+    }
+
+    /****************************
+     LocationListener boilerplate
+     ***************************/
     @Override
     public void onLocationChanged(Location location) {
 
