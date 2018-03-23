@@ -1,6 +1,7 @@
 package com.chocolateam.galileomap;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polygon;
 
 import java.util.ArrayList;
@@ -60,5 +61,17 @@ public class PointTools {
         double longitudeResult = (lonRad + a + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
 
         return new LatLng(Math.toDegrees(latitudeResult), Math.toDegrees(longitudeResult));
+    }
+
+    public static LatLngBounds polygonBounds(Polygon polygon){
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for(int i = 0; i < polygon.getPoints().size();i++){
+            builder.include(polygon.getPoints().get(i));
+        }
+
+        LatLngBounds bounds = builder.build();
+
+        return bounds;
     }
 }

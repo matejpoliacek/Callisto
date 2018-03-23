@@ -24,10 +24,10 @@
             android:layout_width="157dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:alpha="0.5"
             android:fontFamily="@font/robotomono_bold"
             android:gravity="center"
             android:text="0"
-            android:alpha="0.5"
             android:textColor="#FFFFFF"
             android:textSize="20sp" />
 

@@ -237,9 +237,9 @@ public class GameFragment extends Fragment implements Runnable {
                 if (collected == max_collectibles && PolyUtil.containsLocation(currentLatLng, finish, false)) {
                     playing = false;
                     won = true;
-                    Thread.currentThread().interrupt();
                     finished = true;
                     System.out.println("Hit finish");
+                    Thread.currentThread().interrupt();
                 } else {
                     // Check if out of bounds
                     if (!PolyUtil.containsLocation(currentLatLng, areaPoints, false)) {
@@ -283,7 +283,7 @@ public class GameFragment extends Fragment implements Runnable {
                 }
                 // update score info
                 final int points = scoreObj.getPoints();
-                final int secs_passed = scoreObj.actualSecsPassed();
+                final int secs_passed = scoreObj.getTimeSecs();
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -291,11 +291,11 @@ public class GameFragment extends Fragment implements Runnable {
                     }
                 });
                 // check if the game is lost
-                if (scoreObj.getScore() <= 0) {
+                if (scoreObj.getTimeSecs() <= 0) {
                     playing = false;
                     won = false;
-                    Thread.currentThread().interrupt();
                     finished = true;
+                    Thread.currentThread().interrupt();
                 } else { // if not, apply time penalty
                     scoreObj.applyTimePenalty();
                 }
@@ -307,7 +307,7 @@ public class GameFragment extends Fragment implements Runnable {
             if (finished) {
                 Intent scoreIntent = new Intent(context, SummaryActivity.class);
                 scoreIntent.putExtra("won", won);
-                scoreIntent.putExtra("score", scoreObj.getScore());
+                scoreIntent.putExtra("score", scoreObj.getTimeSecs());
                 startActivity(scoreIntent);
             }
 

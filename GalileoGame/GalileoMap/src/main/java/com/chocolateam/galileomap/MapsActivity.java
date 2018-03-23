@@ -103,6 +103,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng point1 = null;
     private LatLng point2 = null;
 
+    private GraphicalPolygon gp;
+
     private boolean zoomed = true;
 
     private LocationRequest mLocationRequest;
@@ -591,16 +593,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (playingArea != null) {
             playingArea.remove();
             playingArea = null;
-            if (gameMapObjects != null) {
-                for (int i = 0; i < draw.getRows(); i++) {
-                    for (int j = 0; j < draw.getCols(); j++) {
-                        if (gameMapObjects[i][j] != null) {
-                            gameMapObjects[i][j].remove();
-                        }
-                    }
-                }
-                gameMapObjects = null;
-            }
+            gp.removeAllObjects();
         }
         if (playing && !gameThread.isInterrupted()) {
             gameThread.interrupt();
@@ -632,30 +625,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (playFieldArray != null) { // playfieldarray will be null if size is too small
             PolygonOptions[][] obstacleOptions = draw.drawObstacles(playFieldArray, mLastKnownLocation);
-            gameMapObjects = new Polygon[obstacleRows][obstacleCols];
+            gp = new GraphicalPolygon(obstacleOptions);
+            //gameMapObjects = new Polygon[obstacleRows][obstacleCols];
+            gp.populateMap(mMap);
 
             for (int i = 0; i < obstacleRows; i++) {
                 for (int j = 0; j < obstacleCols; j++) {
                     if (obstacleOptions[i][j] != null) {
-                        gameMapObjects[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
-
-//                      ## Test - Lionel
-
-                        GroundOverlayOptions newarkMap = new GroundOverlayOptions()
-                                .image(BitmapDescriptorFactory.fromResource(R.drawable.menu_button))
-                                .positionFromBounds(polygonBounds(gameMapObjects[i][j]));
-                        newarkMap.zIndex(5);
-
-                        mMap.addGroundOverlay(newarkMap);
-//
                         if (playFieldArray[i][j] == 1) {
-                            game.addObstacle(gameMapObjects[i][j]);
+                            game.addObstacle(gp.getGameMapObject(i,j));
 
                         } else if (playFieldArray[i][j] == 2) {
-                            game.addCollectible(i, j, gameMapObjects[i][j]);
+                            game.addCollectible(i, j, gp.getGameMapObject(i,j));
 
                         } else if (playFieldArray[i][j] == 3) {
-                            game.addFinish(gameMapObjects[i][j]);
+                            game.addFinish(gp.getGameMapObject(i,j));
                         }
                     }
                 }
@@ -664,20 +648,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void removeMapObjectByIndex(int row, int col) {
-        gameMapObjects[row][col].remove();
+        gp.removeGameMapObject(row, col);
     }
 
     public void showScore(int score, int secs_passed) {
         inGameScore.setMscore(score);
-
-//        To be deleted
-//        scoreText.setText("Score: " + score);
-
         gameBottomPanel.setClock(secs_passed);
-    }
-
-    public void updateClock(int sec_passed) {
-
     }
 
     /**********************/
@@ -711,19 +687,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos), MAP_ROTATION_SPEED, null);
     }
-
-    private LatLngBounds polygonBounds(Polygon polygon){
-
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for(int i = 0; i < polygon.getPoints().size();i++){
-            builder.include(polygon.getPoints().get(i));
-        }
-
-        LatLngBounds bounds = builder.build();
-
-        return bounds;
-    }
-
 
     /*************/
     /*** MISC ***/
