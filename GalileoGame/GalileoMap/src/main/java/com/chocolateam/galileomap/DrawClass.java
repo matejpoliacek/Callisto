@@ -31,8 +31,8 @@ public class DrawClass {
 
     private final int HOLO_BLUE_FILL = Color.argb(100, 51, 181, 229);
     private final int HOLO_BLUE_STROKE = Color.argb(150, 51, 181, 229);
-    private final int RED_FILL = Color.argb(125, 255, 0, 0);
-    private final int RED_STROKE = Color.argb(175, 255, 0, 0);
+    private final int RED_FILL = Color.argb(0, 0, 0, 0);
+    private final int RED_STROKE = Color.argb(0, 255, 255, 255);
     private final int GREEN_FILL = Color.argb(125, 0, 255, 0);
     private final int GREEN_STROKE = Color.argb(175, 0, 255, 0);
     private final int WHITE_FILL = Color.argb(125, 255, 255, 255);

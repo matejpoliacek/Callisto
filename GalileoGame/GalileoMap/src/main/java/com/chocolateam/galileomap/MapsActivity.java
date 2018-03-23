@@ -41,14 +41,19 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
@@ -57,6 +62,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Button playButton;
     private TextView scoreText;
     private Button zoomButton;
+    private GameScore inGameScore;
+    private GamePanel gameBottomPanel;
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private CameraPosition mCameraPosition;
@@ -193,7 +200,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         zoomButton.setEnabled(false);
 
         playButton = (Button) findViewById(R.id.playButton);
-        playButton.setVisibility(View.VISIBLE);
+        playButton.setVisibility(View.INVISIBLE);
+
+        inGameScore = findViewById(R.id.in_game_score);
+        gameBottomPanel = findViewById(R.id.game_bottom_panel);
 
         // sensor variables for compass
         sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -532,8 +542,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
 
         //show score
-        scoreText.setVisibility(View.VISIBLE);
-        showScore(0);
+//        scoreText.setVisibility(View.VISIBLE);
+        showScore(0, 0);
 
         // reset the zoom button
         zoomButton.setVisibility(View.VISIBLE);
@@ -567,7 +577,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // hide score text
         scoreText.setVisibility(View.INVISIBLE);
-        showScore(0);
+        showScore(0,0);
 
         zoomButton.setVisibility(View.INVISIBLE);
         zoomButton.setEnabled(false);
@@ -628,6 +638,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 for (int j = 0; j < obstacleCols; j++) {
                     if (obstacleOptions[i][j] != null) {
                         gameMapObjects[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
+
+//                      ## Test - Lionel
+
+                        GroundOverlayOptions newarkMap = new GroundOverlayOptions()
+                                .image(BitmapDescriptorFactory.fromResource(R.drawable.menu_button))
+                                .positionFromBounds(polygonBounds(gameMapObjects[i][j]));
+                        newarkMap.zIndex(5);
+
+                        mMap.addGroundOverlay(newarkMap);
+//
                         if (playFieldArray[i][j] == 1) {
                             game.addObstacle(gameMapObjects[i][j]);
 
@@ -647,8 +667,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         gameMapObjects[row][col].remove();
     }
 
-    public void showScore(int score) {
-        scoreText.setText("Score: " + score);
+    public void showScore(int score, int secs_passed) {
+        inGameScore.setMscore(score);
+
+//        To be deleted
+//        scoreText.setText("Score: " + score);
+
+        gameBottomPanel.setClock(secs_passed);
+    }
+
+    public void updateClock(int sec_passed) {
+
     }
 
     /**********************/
@@ -682,6 +711,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos), MAP_ROTATION_SPEED, null);
     }
+
+    private LatLngBounds polygonBounds(Polygon polygon){
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for(int i = 0; i < polygon.getPoints().size();i++){
+            builder.include(polygon.getPoints().get(i));
+        }
+
+        LatLngBounds bounds = builder.build();
+
+        return bounds;
+    }
+
 
     /*************/
     /*** MISC ***/

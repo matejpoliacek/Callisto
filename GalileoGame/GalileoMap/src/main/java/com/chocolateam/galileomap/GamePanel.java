@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
+
 /**
  * Created by Lionel Garcia on 22/03/2018.
  */
@@ -36,8 +38,12 @@ public class GamePanel extends ConstraintLayout {
 
     }
 
-    public void startClock(){
+    public void setClock(int secs_passed){
+        DecimalFormat df = new DecimalFormat("00");
+        String minutes = df.format(secs_passed/60);
+        String seconds = df.format(secs_passed%60);
 
+        mclock.setText(minutes + ":" + seconds);
     }
 
     public void stopClock(){

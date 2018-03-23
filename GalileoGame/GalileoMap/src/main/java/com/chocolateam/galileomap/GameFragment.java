@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polygon;
@@ -30,6 +31,7 @@ public class GameFragment extends Fragment implements Runnable {
     private int max_collectibles;
 
     private Context context;
+    private FragmentActivity parentActivity;
 
     // game boundaries
     /**
@@ -54,6 +56,7 @@ public class GameFragment extends Fragment implements Runnable {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        parentActivity = getActivity();
     }
 
     @Override
@@ -279,11 +282,12 @@ public class GameFragment extends Fragment implements Runnable {
                     }
                 }
                 // update score info
-                final int score = scoreObj.getScore();
-                ((MapsActivity) context).runOnUiThread(new Runnable() {
+                final int points = scoreObj.getPoints();
+                final int secs_passed = scoreObj.actualSecsPassed();
+                getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ((MapsActivity) context).showScore(score);
+                        ((MapsActivity) context).showScore(points, secs_passed);
                     }
                 });
                 // check if the game is lost
