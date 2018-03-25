@@ -11,12 +11,15 @@ import android.location.GnssStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.cts.nano.Ephemeris;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -101,7 +104,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
 
                     for (GnssMeasurement m : noisySatellites) {
                         // Filter satellites for bad carrier to noise ratio and bad state
-                        // TODO the state MscAmbiguous is tailored for GPS. Reformulate for Galileo (E1C2nd)
                         if (m.getCn0DbHz() >= MIN_CARRIER_TO_NOISE) {
                             if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
                                 if ((m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED) {
@@ -117,6 +119,13 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     Log.e("Total cleaned GPS: ", String.valueOf(gpsSatellites.size()));
                     Log.e("Total cleaned Galileo: ", String.valueOf(galileoSatellites.size()));
 
+                    Log.e("","");
+
+                    Log.e("TROPO_mapping: ", String.valueOf(corrections.computeTropoCorrection_SAAS_withMapping(0.9104, 0.005,1.5708  )));
+                    Log.e("goGPS_tropo: ", String.valueOf(corrections.computeTropoCorrection_SAAS_goGPS(1.5708,5)));
+                    Log.e("simple_tropo: ", String.valueOf(corrections.computeTropoCorrection_SAAS_simple(1.5708)));
+
+                    Log.e("","");
 
                     /************************************************************
                      Calculate pseudorange of every satellite during the callback

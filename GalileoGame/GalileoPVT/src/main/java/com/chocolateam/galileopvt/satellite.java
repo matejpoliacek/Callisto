@@ -23,7 +23,6 @@ public class satellite {
     public satellite(int id) {
         this.id = id;
     }
-    // TODO: change the parameters inside computeX() functions to starting points of calculations
 
     public void computeGnssTime(long timeNanos, double timeOffsetNanos, long fullBiasNanos, double biasNanos) {
         this.gnssTime = timeNanos + (long)timeOffsetNanos - (fullBiasNanos + (long)biasNanos);
