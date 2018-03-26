@@ -11,12 +11,15 @@ import android.location.GnssStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.cts.nano.Ephemeris;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -181,6 +184,35 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
 
     public void switchConstellation(String constellation) {
         CONSTELLATION_SWITCH = constellation;
+    }
+
+    public void cellIDLocation(){
+        ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+        ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+        TelephonyManager telephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        GsmCellLocation cellLocation = (GsmCellLocation) telephonyManager.getCellLocation();
+        int cellId = cellLocation.getCid();
+        int celLac = cellLocation.getLac();
+        String cellPosition = cellLocation.toString();
+
+        Log.e("All cell info", String.valueOf(telephonyManager.getAllCellInfo()));
+        NavReader nav = new NavReader();
+        // This has to be changed to a dynamic value from the Google Geolocation API
+        nav.setReferencePosition(52.161068, 4.499513, 0);
+        try {
+            Ephemeris.GpsEphemerisProto[] ephem = nav.getSuplMessage().ephemerids;
+            for (Ephemeris.GpsEphemerisProto o : ephem){
+                Log.e("EPHEM", String.valueOf(o.omegaDot));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Log.e("NAV MESSAGE OKAY", String.valueOf(nav.getSuplMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /****************************

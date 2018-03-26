@@ -35,7 +35,15 @@ public class pvtActivity extends AppCompatActivity {
         fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
         pvtFrag.setContext(pvtActivity.this);
     }
-
+/*
+    public void createNavMsgFrag(){
+        FragmentManager gameFragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = gameFragmentManager.beginTransaction();
+        NavReader navmsgFrag = new NavReader();
+        fragmentTransaction.add(android.R.id.content,navmsgFrag).commit();
+        navmsgFrag.setContext(pvtActivity.this);
+    }
+*/
     public void requestPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {

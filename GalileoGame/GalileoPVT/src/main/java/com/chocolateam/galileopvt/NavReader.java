@@ -27,12 +27,13 @@ public class NavReader extends Fragment implements LocationListener {
     private static final String SUPL_SERVER_NAME = "supl.google.com";
     private static final int SUPL_SERVER_PORT = 7276;
     private GpsNavMessageProto mHardwareGpsNavMessageProto = null;
-    private int[] mReferenceLocation = null;
+    private double[] mReferenceLocation = null;
     private LocationManager mLocationManager;
+    private Context context;
 
-    public void setReferencePosition(int lat, int lng, int alt) {
+    public void setReferencePosition(double lat, double lng, double alt) {
         if (mReferenceLocation == null) {
-            mReferenceLocation = new int[3];
+            mReferenceLocation = new double[3];
         }
         // location coordinates LAT/LONG/ALT
         mReferenceLocation[0] = lat;
@@ -42,7 +43,7 @@ public class NavReader extends Fragment implements LocationListener {
     }
 
     @SuppressLint("MissingPermission")
-    public GpsNavMessageProto getSuplMessage(int[] mReferenceLocation) throws Exception {
+    public GpsNavMessageProto getSuplMessage() throws Exception {
         GpsNavMessageProto navMessage;
         if (mReferenceLocation == null)
         {
@@ -52,12 +53,12 @@ public class NavReader extends Fragment implements LocationListener {
              ***/
             mReferenceLocation = cellIDLocation();
         }
-        navMessage = getSuplNavMessage(mReferenceLocation[0], mReferenceLocation[1]);
+        navMessage = getSuplNavMessage((long) mReferenceLocation[0], (long) mReferenceLocation[1]);
         return navMessage;
     }
 
     @SuppressLint("MissingPermission")
-    private int[] cellIDLocation(){
+    private double[] cellIDLocation(){
         /**
         Here should be the function that returns cellIDLocation
          **/
@@ -95,5 +96,9 @@ public class NavReader extends Fragment implements LocationListener {
     @Override
     public void onProviderDisabled(String s) {
 
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
     }
 }
