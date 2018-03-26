@@ -32,10 +32,4 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    implementation files('C:/Users/Peto/Documents/Galileo/GalileoGameApp/GalileoGame/app/libs/suplClient.jar')
-    implementation files('C:/Users/Peto/Documents/Galileo/GalileoGameApp/GalileoGame/app/libs/protobuf-nano.jar')
-    implementation files('C:/Users/Peto/Documents/Galileo/GalileoGameApp/GalileoGame/app/libs/asn1-supl2.jar')
-    implementation files('C:/Users/Peto/Documents/Galileo/GalileoGameApp/GalileoGame/app/libs/asn1-base.jar')
-    implementation files('C:/Users/Peto/Documents/Galileo/GalileoGameApp/GalileoGame/app/libs/commons-codec-1.10.jar')
-    implementation files('C:/Users/Peto/Documents/Galileo/GalileoGameApp/GalileoGame/app/libs/guava-22.0-android.jar')
 }

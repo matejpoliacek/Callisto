@@ -7,25 +7,25 @@ import android.util.Log;
  * Class containing calculated measurement attributes of a satellite
  */
 
-public class satellite {
-    private static final double NUMBERNANOSECONDSWEEK = 604800e9;
-    private static final long LIGHTSPEED = 299792458;
+public class Satellite {
+    public static final double NUMBERNANOSECONDSWEEK = 604800e9;
+    public static final long LIGHTSPEED = 299792458;
 
     private int id;
-    private long gnssTime;
-    private long receivedTime;
+    private double gnssTime;
+    private double receivedTime;
     private long transmittedTime;
     private double pseudoRange;
 
     private long milliSecondsNumberNanos;
     private long weekNumberNanos;
 
-    public satellite(int id) {
+    public Satellite(int id) {
         this.id = id;
     }
 
     public void computeGnssTime(long timeNanos, double timeOffsetNanos, long fullBiasNanos, double biasNanos) {
-        this.gnssTime = timeNanos + (long)timeOffsetNanos - (fullBiasNanos + (long)biasNanos);
+        this.gnssTime = timeNanos + timeOffsetNanos - (fullBiasNanos + biasNanos);
     }
 
     public void computeWeekNumberNanos(long fullBiasNanos){
@@ -52,7 +52,7 @@ public class satellite {
         this.milliSecondsNumberNanos = milliSecondsNumberNanos;
     }
     // Getters
-    public long getReceivedTime(){
+    public double getReceivedTime(){
         return this.receivedTime;
     }
 

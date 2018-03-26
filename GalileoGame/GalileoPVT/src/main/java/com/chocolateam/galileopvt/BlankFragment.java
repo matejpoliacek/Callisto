@@ -47,14 +47,17 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private Context context;
     private LocationManager mLocationManager;
     private GnssClock receiverClock;
+    private long fullBiasNanos;
+    private boolean fullBiasNanosSet;
+    private double biasNanos;
+    private boolean biasNanosSet;
     private Collection<GnssMeasurement> noisySatellites;
     private ArrayList<GnssMeasurement> galileoSatellites;
     private ArrayList<GnssMeasurement> gpsSatellites;
-    private ArrayList<satellite> pseudoGalSats;
-    private ArrayList<satellite> pseudoGpsSats;
+    private ArrayList<Satellite> pseudoGalSats;
+    private ArrayList<Satellite> pseudoGpsSats;
 
     public BlankFragment() {
-        // constructor as empty as my wallet before payday
     }
 
     @Override
@@ -64,6 +67,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     }
 
     public void run() {
+        biasNanosSet = false;
+        fullBiasNanosSet = false;
         mLocationManager =
                 (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
 
@@ -78,6 +83,16 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                 //((pvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount)); //TODO: Everything is ok in logs but doesn't appear in Activity. Y THO? Publishing causes binder error in logs.
 
                 receiverClock = eventArgs.getClock();
+
+                // Obtain only the first measurement of BiasNanos and FullBiasNanos
+                if (fullBiasNanosSet == false) {
+                    fullBiasNanos = receiverClock.getFullBiasNanos();
+                    fullBiasNanosSet = true;
+                }
+                if (biasNanosSet == false ) {
+                    biasNanos = receiverClock.getBiasNanos();
+                    biasNanosSet = true;
+                }
                 //((pvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
 
                 // Reset list of Galileo and GPS satellites
@@ -87,7 +102,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                 // Filter for clock discontinuity
                 if (receiverClock.getHardwareClockDiscontinuityCount() == 0) {
 
-                    // For debug checking number of satellites:
+                    // For debug checking number of satellites: ////////////////////////////////
                     int gpscount = 0;
                     int galcount = 0;
                     for (GnssMeasurement n : noisySatellites) {
@@ -100,7 +115,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     Log.e("total noisy gps: ", String.valueOf(gpscount));
                     Log.e("total noisy galileo: ", String.valueOf(galcount));
 
-                    ////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////
 
                     for (GnssMeasurement m : noisySatellites) {
                         // Filter satellites for bad carrier to noise ratio and bad state
@@ -119,14 +134,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     Log.e("Total cleaned GPS: ", String.valueOf(gpsSatellites.size()));
                     Log.e("Total cleaned Galileo: ", String.valueOf(galileoSatellites.size()));
 
-                    Log.e("","");
-
-                    Log.e("TROPO_mapping: ", String.valueOf(corrections.computeTropoCorrection_SAAS_withMapping(0.9104, 0.005,1.5708  )));
-                    Log.e("goGPS_tropo: ", String.valueOf(corrections.computeTropoCorrection_SAAS_goGPS(1.5708,5)));
-                    Log.e("simple_tropo: ", String.valueOf(corrections.computeTropoCorrection_SAAS_simple(1.5708)));
-
-                    Log.e("","");
-
                     /************************************************************
                      Calculate pseudorange of every satellite during the callback
                      ***********************************************************/
@@ -134,12 +141,12 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         pseudoGpsSats = new ArrayList<>();
 
                         for (int i = 0; i < gpsSatellites.size(); i++) {
-                            satellite pseudosat = new satellite(gpsSatellites.get(i).getSvid());
+                            Satellite pseudosat = new Satellite(gpsSatellites.get(i).getSvid());
                             pseudosat.computeGnssTime(
                                     receiverClock.getTimeNanos(), gpsSatellites.get(i).getTimeOffsetNanos(),
-                                    receiverClock.getFullBiasNanos(),  receiverClock.getBiasNanos()
+                                    fullBiasNanos,  biasNanos
                             );
-                            pseudosat.computeWeekNumberNanos(receiverClock.getFullBiasNanos());
+                            pseudosat.computeWeekNumberNanos(fullBiasNanos);
                             pseudosat.computeReceivedTime(CONSTELLATION_SWITCH);
                             pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos());
                             pseudosat.computePseudoRange();
@@ -154,30 +161,59 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     }
 
                     /***********************************************************************
-                     Add corrections to pseudorange if not null to get corrected pseudorange
+                     Add corrections to pseudorange to get corrected pseudorange
                      **********************************************************************/
-                    // Enter your code here
+                    // TODO: *recalculate* atmospheric corrections only once per 10s
+
+                    Log.e("","");
+
+                    Log.e("TROPO_mapping: ", String.valueOf(Corrections.computeTropoCorrection_SAAS_withMapping(0.9104, 0.005,1.5708  )));
+                    Log.e("goGPS_tropo: ", String.valueOf(Corrections.computeTropoCorrection_SAAS_goGPS(1.5708,5)));
+                    Log.e("simple_tropo: ", String.valueOf(Corrections.computeTropoCorrection_SAAS_simple(1.5708)));
+
+                    Log.e("","");
+
+                    long gpsTime = receiverClock.getTimeNanos() - (long)(fullBiasNanos + biasNanos); // TODO: same as gpsTOW?
+                    // IonoModel 1
+                    /*public double computeIonosphereCorrection_GoGPS (double alpha, double beta,
+                        double latitude, double longitude, double azimuth, double elevation, gpsTime);*/
+
+                    // IonoModel 2
+                    /*double[] userPosECEFmeters = {userPosECEFmeters_x, userPosECEFmeters_y, userPosECEFmeters_z};
+                    double[] satPosECEFmeters = {satPosECEFmeters_x, satPosECEFmeters_y, satPosECEFmeters_z};
+                    double ionoCorrSeconds = ionoKloboucharCorrectionSeconds(userPosECEFmeters, satPosECEFmeters, gpsTime/1E9,
+                        double[] alpha,
+                        double[] beta,
+                        IonosphericModel.L1_FREQ_HZ
+                    );
+                    double ionoCorrMeters = ionoCorrSeconds*Satellite.LIGHTSPEED;*/
+
+                    // TODO Doppler
+
+
 
                     /*************************
                      Calculate computed range
                      ************************/
-                    // Enter your code here
+                    // TODO Interact with Cedric's code: get network provided receiver coordinates and satellite's coordinates
+                    // input them to satellite class?
 
 
                     /***************************************************************
                      If computed range not null, perform Linearisation and get x y z
                      **************************************************************/
                     // Enter your code here
+                } else {
+                    fullBiasNanosSet = false;
+                    biasNanosSet = false; // TODO is this correct?
                 }
             }
         };
-
         ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION); // To avoid errors with registering callbacks
         mLocationManager.registerGnssMeasurementsCallback(gnssMeasurementsEventCallback);
         mLocationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER, 0, 0, this
         );
-
     }
 
     /***
