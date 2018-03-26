@@ -9,6 +9,8 @@ import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 
+import java.util.Random;
+
 /**
  * Created by Matej Poliacek on 23/03/2018.
  */
@@ -20,12 +22,17 @@ public class GraphicalPolygon {
     private PolygonOptions[][] polyOptions;
     private Polygon[][] gameMapObjects;
     private GroundOverlay[][] gameMapOverlays;
+    private int[][] playfieldArray;
 
-    public  GraphicalPolygon(PolygonOptions[][] polyOptions) {
+    public  GraphicalPolygon(PolygonOptions[][] polyOptions, int[][] playfieldArray) {
         this.polyOptions = polyOptions;
+        this.playfieldArray = playfieldArray;
     }
 
     public void populateMap(GoogleMap mMap) {
+
+        int overlayImage = R.drawable.collectible_1; // Empty
+
         this.rows = this.polyOptions.length;
         this.cols = this.polyOptions[0].length;
         this.gameMapObjects = new Polygon[rows][cols];
@@ -34,10 +41,18 @@ public class GraphicalPolygon {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 if (this.polyOptions[i][j] != null) {
+
+                    switch(playfieldArray[i][j]){
+                        case 1: overlayImage = randomRock(); // Obstacle
+                            break;
+                        case 2: overlayImage = R.drawable.collectible_1; // Collectible
+                            break;
+                        case 3: overlayImage = R.drawable.finish_line; // Finish Line
+                    }
                     gameMapObjects[i][j] = mMap.addPolygon(polyOptions[i][j]);
 
                     GroundOverlayOptions newarkMap = new GroundOverlayOptions()
-                            .image(BitmapDescriptorFactory.fromResource(R.drawable.menu_button))
+                            .image(BitmapDescriptorFactory.fromResource(overlayImage))
                             .positionFromBounds(PointTools.polygonBounds(gameMapObjects[i][j]));
                     newarkMap.zIndex(5);
 
@@ -68,5 +83,27 @@ public class GraphicalPolygon {
 
             }
         }
+    }
+
+    private int randomRock(){
+
+        int rock;
+
+        Random r = new Random();
+        int r_int = r.nextInt(4 - 0);
+
+        switch (r_int){
+            case 0: rock = R.drawable.rock_1;
+                break;
+            case 1: rock = R.drawable.rock_2;
+                break;
+            case 2: rock = R.drawable.rock_3;
+                break;
+            case 3: rock = R.drawable.rock_4;
+                break;
+            default: rock = 0;
+                break;
+        }
+        return rock;
     }
 }

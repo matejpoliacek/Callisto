@@ -42,13 +42,13 @@
                 android:orientation="horizontal">
 
                 <View
-                    android:layout_width="155dp"
+                    android:layout_width="170dp"
                     android:layout_height="44dp" />
 
                 <TextView
                     android:id="@+id/clock"
-                    android:layout_width="0dp"
-                    android:layout_height="40dp"
+                    android:layout_width="109dp"
+                    android:layout_height="31dp"
                     android:layout_weight="1"
                     android:alpha="0.5"
                     android:fontFamily="@font/robotomono_bold"

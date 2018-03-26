@@ -4,18 +4,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.chocolateam.galileogame.MainActivity">
+    tools:context="com.chocolateam.galileogame.MainActivity"
+    android:background="@drawable/menu_background">
 
     <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="420dp"
         android:onClick="goToMap"
-        android:text="Go To Map"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:width="220dp"
+        android:height="50dp"
+        android:text="Game"
+        android:fontFamily="@font/notes_esa_reg"
+        android:textSize="18sp"
+        android:background="@color/buttonGreen"
+        android:textColor="@color/buttonGreenDark"/>
 
     <Button
         android:id="@+id/button3"
@@ -24,10 +31,17 @@
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
         android:onClick="goToSpaceship"
-        android:text="Go To Spaceship"
+        android:text="SPACESHIP"
+        android:width="220dp"
+        android:height="50dp"
+        android:fontFamily="@font/notes_esa_reg"
+        android:textSize="18sp"
+        android:background="@color/buttonGreen"
+        android:textColor="@color/buttonGreenDark"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button2"
-        app:layout_constraintVertical_bias="0.25" />
+        app:layout_constraintVertical_bias="0.096" />
 </android.support.constraint.ConstraintLayout>
