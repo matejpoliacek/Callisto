@@ -4,8 +4,8 @@ import android.location.cts.asn1.supl2.rrlp_components.*;
 import android.util.Log;
 
 /**
- * Created by Peter Vanik on 20/03/2018.
- * Class containing calculated measurement attributes of a satellite
+ * Created by Peter Vaník on 20/03/2018.
+ * Class representing a satellite measurement which contains calculated attributes of the measurement.
  */
 
 public class Satellite {
@@ -19,6 +19,7 @@ public class Satellite {
     private long transmittedTime;
     private long milliSecondsNumberNanos;
     private long weekNumberNanos;
+    private long weekNumber;
     private double pseudoRange;
 
     private double satElevationRadians;
@@ -28,6 +29,7 @@ public class Satellite {
 
     private double troposphericCorrectionMeters;
     private double ionosphericCorrectionSeconds;
+    private double satelliteClockCorrectionMeters;
     private double correctedRange;
 
 
@@ -41,6 +43,10 @@ public class Satellite {
 
     public void computeWeekNumberNanos(long fullBiasNanos){
         this.weekNumberNanos = (long) Math.floor(-fullBiasNanos/NUMBERNANOSECONDSWEEK)*(long)NUMBERNANOSECONDSWEEK;
+    }
+
+    public void computeWeekNumber(long fullBiasNanos){
+        this.weekNumberNanos = (long) Math.floor(-fullBiasNanos/NUMBERNANOSECONDSWEEK);
     }
 
     public void computeMillisecondsNumberNanos(long fullBiasNanos) {
@@ -68,30 +74,43 @@ public class Satellite {
         this.milliSecondsNumberNanos = milliSecondsNumberNanos;
     }
 
-    // TODO test best of the three models, or use Galileo's also for GPS
-    public void computeTroposphericCorrection_GPS(double userLatitudeRiadians, double userHeightAboveSeaLevelMeters){
-        troposphericCorrectionMeters = Corrections.computeTropoCorrection_SAAS_withMapping(userLatitudeRiadians,
+    // TODO test the three models, or use Galileo's also for GPS
+    public void computeTroposphericCorrection_GPS(double userLatitudeRadians, double userHeightAboveSeaLevelMeters){
+        troposphericCorrectionMeters = Corrections.computeTropoCorrection_SAAS_withMapping(userLatitudeRadians,
                 userHeightAboveSeaLevelMeters, satElevationRadians);
     }
 
-    // TODO test the two iono models for GPS, either corrections.IonoGoGPS or google's Ionosphericmodel.Klobuchar
+    // TODO Test the two iono models for GPS, either corrections.IonoGoGPS or google's Ionosphericmodel.Klobuchar
     public void computeIonosphericCorrection_GPS(){
         // TODO Cedric's code provides parameters
-        //ionosphericCorrectionSeconds = IonosphericModel.ionoKloboucharCorrectionSeconds();
+        //ionosphericCorrectionSeconds = IonosphericModel.ionoKloboucharCorrectionSeconds(...);
     }
 
-    public void computeSatClockCorrection(){
-        // TODO Cedric's code
+    // Satellite clock offset, drift, drift change and relativistic corrections TODO sanity check every component
+    public void computeSatClockCorrectionMeters(long gpsTime){
+        double timeDifference = receivedTime - transmittedTime;
+        double receiverGpsTowAtTimeOfTransmission = gpsTime - timeDifference;
+        double receiverGpsWeekAtTimeOfTransmission;
+        if (gpsTime < timeDifference) {
+            receiverGpsWeekAtTimeOfTransmission = weekNumber - 1;
+        } else {
+            receiverGpsWeekAtTimeOfTransmission = weekNumber;
+        }
+        /*satelliteClockCorrectionMeters = SatelliteClockCorrectionCalculator.calculateSatClockCorrAndEccAnomAndTkIteratively
+                (       NavMsg.getGpsEphemerisProto(),
+                        receiverGpsTowAtTimeOfTransmission,
+                        receiverGpsWeekAtTimeOfTransmission
+                );*/ // TODO with Cedric's code, receiver gpsweekattimeoftransmission
     }
 
     public void computeDoppler() {
-        // TODO me
+        // TODO
     }
 
-    // TODO what signs should these have? It's clear for delays but not the others
+    // TODO are the signs correct?
     public void computeCorrectedRange() {
-        /*correctedRange = pseudoRange - troposphericCorrectionMeters
-                + LIGHTSPEED*(ionosphericCorrectionSeconds + dopplerCorrectionSeconds + satClockCorrectionSeconds);*/
+        /*correctedRange = pseudoRange - troposphericCorrectionMeters - satelliteClockCorrectionMeters
+                - LIGHTSPEED*(ionosphericCorrectionSeconds + dopplerCorrectionSeconds);*/
     }
 
     // Getters
@@ -110,4 +129,6 @@ public class Satellite {
     public double getCorrectedRange(){
         return this.correctedRange;
     }
+
+    public long getWeekNumber() {return this.weekNumber;}
 }

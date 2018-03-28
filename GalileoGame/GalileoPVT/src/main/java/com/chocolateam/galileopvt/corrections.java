@@ -9,6 +9,7 @@ public  final class Corrections {
     public static final double STANDARD_PRESSURE = 1013.25; //[hPa]
     public static final double STANDARD_TEMPERATURE = 291.15; //[K]
     public static final double STANDARD_WATER_VAPOUR_PRESSURE = 30.3975;//[hPa]
+    // public static final double RELATIVISTIC_CLOCK_CORRECTION_CONSTANT_COMPONENT = -4.646e-10; according to ESA, not Google
 
     private Corrections(){
     }
@@ -17,6 +18,8 @@ public  final class Corrections {
      *  https://www.programcreek.com/java-api-examples/index.php?source_dir=goGPS_Java-master/src/main/java/org/gogpsproject/ReceiverPosition.java#
      *  @return ionosphere correction value by Klobuchar model
      */
+
+    // how to get gpsTime: long gpsTime = receiverClock.getTimeNanos() - (long)(fullBiasNanos + biasNanos); // for goGPS iono model
     public double computeIonosphereCorrection_GoGPS (double alpha, double beta,
                                                double latitude, double longitude, double azimuth, double elevation, long gpstime) {
         double ionoCorr = 0;

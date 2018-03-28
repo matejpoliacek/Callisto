@@ -164,6 +164,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                                     receiverClock.getTimeNanos(), gpsSatellites.get(i).getTimeOffsetNanos(),
                                     fullBiasNanos,  biasNanos);
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
+                            pseudosat.computeWeekNumber(fullBiasNanos);
                             pseudosat.computeReceivedTime(CONSTELLATION_SWITCH);
                             pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos());
                             pseudosat.computePseudoRange();
@@ -173,11 +174,11 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeTroposphericCorrection_GPS(userLatitudeRadians, userEFECz);
                             Log.e("Tropo correction: ", String.valueOf(Corrections.computeTropoCorrection_SAAS_withMapping(0.9104, 0.005,1.5708  )));
 
-                            long gpsTime = receiverClock.getTimeNanos() - (long)(fullBiasNanos + biasNanos); // for goGPS iono model
                             pseudosat.computeIonosphericCorrection_GPS();
 
                             // Other corrections: Satellite clock offset and Doppler
-                            //pseudosat.computeSatClockCorrection(); // TODO Cedric's code
+                            long gpsTime = receiverClock.getTimeNanos() - (long)(fullBiasNanos + biasNanos);
+                            pseudosat.computeSatClockCorrectionMeters(gpsTime);
                             //pseudosat.computeDopplerCorrection(); // TODO me
 
                             // Corrected pseudorange
@@ -199,6 +200,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     // get initial coordinates from network provider
                     // for (Satellite sat : pseudoSats) { add to linearisation matrix; process; }
                     // userECEF and latlong = ...;
+
 
                 } else {
                     fullBiasNanosSet = false;
