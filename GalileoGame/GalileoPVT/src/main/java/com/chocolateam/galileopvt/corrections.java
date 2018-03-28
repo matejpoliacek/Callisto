@@ -13,8 +13,9 @@ public  final class Corrections {
     private Corrections(){
     }
 
-    /**Taken from GoGPS
-     * @return ionosphere correction value by Klobuchar model
+    /** Source: GoGPS (Copyright (c) 2010, Eugenio Realini, Mirko Reguzzoni, Cryms sagl - Switzerland, Daisuke Yoshida. All Rights Reserved. )
+     *  https://www.programcreek.com/java-api-examples/index.php?source_dir=goGPS_Java-master/src/main/java/org/gogpsproject/ReceiverPosition.java#
+     *  @return ionosphere correction value by Klobuchar model
      */
     public double computeIonosphereCorrection_GoGPS (double alpha, double beta,
                                                double latitude, double longitude, double azimuth, double elevation, long gpstime) {
@@ -73,20 +74,20 @@ public  final class Corrections {
      * GALILEO Positioning Technology edited by Jari Nurmi, Elena Simona Lohan, Stephan Sand, Heikki Hurskainen, p.153
      * and
      * https://d-nb.info/963624393/34
-     * @param latitude receiver's latitude [rad]
-     * @param heightAboveSeaLevel receiver's surface height above the ellipsoid [km]
-     * @param satElevationAngle [rad]
+     * @param latitudeRadians receiver's latitude [rad]
+     * @param heightAboveSeaLevelMeters receiver's surface height above the ellipsoid [m]
+     * @param satElevationAngleRadians [rad]
      */
-    public static double computeTropoCorrection_SAAS_withMapping (double latitude, double heightAboveSeaLevel, double satElevationAngle){
+    public static double computeTropoCorrection_SAAS_withMapping (double latitudeRadians, double heightAboveSeaLevelMeters, double satElevationAngleRadians){
         double tropoCorr = 0;
         double hydrostaticDelay = 0;
         double wetDelay = 0;
 
-        hydrostaticDelay = 0.002277*STANDARD_PRESSURE / (1-0.00266*(Math.cos(2*latitude))-0.00028*heightAboveSeaLevel);
+        hydrostaticDelay = 0.002277*STANDARD_PRESSURE / (1-0.00266*(Math.cos(2*latitudeRadians))-0.00028*heightAboveSeaLevelMeters/1000);
         wetDelay = 0.002277*(1255/STANDARD_TEMPERATURE + 0.05)*STANDARD_WATER_VAPOUR_PRESSURE;
 
-        double hMapping = 1/(Math.sin(satElevationAngle) + 0.00143/(Math.tan(satElevationAngle)+0.0445));
-        double wMapping = 1/(Math.sin(satElevationAngle) + 0.00035/(Math.tan(satElevationAngle)+0.017));
+        double hMapping = 1/(Math.sin(satElevationAngleRadians) + 0.00143/(Math.tan(satElevationAngleRadians)+0.0445));
+        double wMapping = 1/(Math.sin(satElevationAngleRadians) + 0.00035/(Math.tan(satElevationAngleRadians)+0.017));
 
         tropoCorr = hydrostaticDelay*hMapping + wetDelay*wMapping;
         return tropoCorr;
@@ -95,10 +96,10 @@ public  final class Corrections {
     /**
      * @return Troposphere correction value based on Saastamoinen model by
      * GALILEO Positioning Technology edited by Jari Nurmi, Elena Simona Lohan, Stephan Sand, Heikki Hurskainen, p.153
-     * @param satElevationAngle [rad]
+     * @param satElevationAngleRadians [rad]
      */
-    public static double computeTropoCorrection_SAAS_simple(double satElevationAngle) {
-        return 2.47/(Math.sin(satElevationAngle) + 0.0121);
+    public static double computeTropoCorrection_SAAS_simple(double satElevationAngleRadians) {
+        return 2.47/(Math.sin(satElevationAngleRadians) + 0.0121);
     }
 
     /**
@@ -171,7 +172,6 @@ public  final class Corrections {
                     * (P - (B / Math.pow(Math.tan(elevation), 2))) + (0.002277 / Math.sin(elevation))
                     * (1255 / T + 0.05) * e);
         }
-
         return tropoCorr;
     }
 }
