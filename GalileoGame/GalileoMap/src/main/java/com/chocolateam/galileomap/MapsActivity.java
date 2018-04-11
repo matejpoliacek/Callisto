@@ -23,7 +23,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.MutableBoolean;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -43,9 +42,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
@@ -53,7 +50,6 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
@@ -124,6 +120,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private boolean bDebug = false;
     private boolean bGraphicsDebug = false;
+
+    // flag to indicate if the activity is for the game or just of a map
+    private String ACTIVITY_TYPE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -214,6 +213,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (sensor != null) {
             sensorService.registerListener(mySensorEventListener, sensor,
                     SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        ACTIVITY_TYPE = getIntent().getExtras().getString("maptype");
+
+        if (ACTIVITY_TYPE.equals("map")) {
+           playButton.setVisibility(View.GONE);
         }
 
     }

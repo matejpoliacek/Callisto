@@ -7,27 +7,40 @@
     tools:context="com.chocolateam.galileogame.MainActivity">
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/GameButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginTop="100dp"
-        android:onClick="goToMap"
-        android:text="Go To Map"
+        android:onClick="goToGame"
+        android:text="Go To Game"
+        app:layout_constraintBottom_toTopOf="@+id/SpaceshipButton"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/SpaceshipButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="goToSpaceship"
+        android:text="Go To Spaceship"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_editor_absoluteY="224dp" />
+
+    <Button
+        android:id="@+id/MapButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:onClick="goToSpaceship"
-        android:text="Go To Spaceship"
+        android:onClick="goToMap"
+        android:text="Go To Map"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button2"
-        app:layout_constraintVertical_bias="0.25" />
+        app:layout_constraintTop_toBottomOf="@+id/SpaceshipButton"
+        app:layout_constraintVertical_bias="0.238" />
 </android.support.constraint.ConstraintLayout>
