@@ -2,8 +2,6 @@ package com.chocolateam.galileopvt;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.hardware.SensorManager;
 import android.location.GnssClock;
 import android.location.GnssMeasurement;
 import android.location.GnssMeasurementsEvent;
@@ -12,32 +10,25 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.cts.nano.Ephemeris;
-import android.net.Uri;
+import android.location.cts.suplClient.SuplRrlpController;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoLte;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import static android.content.Context.LOCATION_SERVICE;
 
 /**
  * Created by Peter Vanik on 16/03/2018.
- * Class containing calculated measurement attributes of a satellite
+ * Class containing calculated measurement attributes of a Satellite
  */
 
 public class BlankFragment extends Fragment implements Runnable, LocationListener {
@@ -50,8 +41,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private Collection<GnssMeasurement> noisySatellites;
     private ArrayList<GnssMeasurement> galileoSatellites;
     private ArrayList<GnssMeasurement> gpsSatellites;
-    private ArrayList<satellite> pseudoGalSats;
-    private ArrayList<satellite> pseudoGpsSats;
+    private ArrayList<Satellite> pseudoGalSats;
+    private ArrayList<Satellite> pseudoGpsSats;
 
     public BlankFragment() {
         // constructor as empty as my wallet before payday
@@ -68,17 +59,17 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                 (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
 
         /*******************************************************************************
-         GNSS Measurements Event for obtaining receiver clock and satellite measurements
+         GNSS Measurements Event for obtaining receiver clock and Satellite measurements
          ******************************************************************************/
         GnssMeasurementsEvent.Callback gnssMeasurementsEventCallback = new GnssMeasurementsEvent.Callback() {
             @Override
             public void onGnssMeasurementsReceived (GnssMeasurementsEvent eventArgs) {
                 super.onGnssMeasurementsReceived (eventArgs);
                 noisySatellites = eventArgs.getMeasurements();
-                //((pvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount)); //TODO: Everything is ok in logs but doesn't appear in Activity. Y THO? Publishing causes binder error in logs.
+                //((PvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount)); //TODO: Everything is ok in logs but doesn't appear in Activity. Y THO? Publishing causes binder error in logs.
 
                 receiverClock = eventArgs.getClock();
-                //((pvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
+                //((PvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
 
                 // Reset list of Galileo and GPS satellites
                 galileoSatellites = new ArrayList<>();
@@ -99,6 +90,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     }
                     Log.e("total noisy gps: ", String.valueOf(gpscount));
                     Log.e("total noisy galileo: ", String.valueOf(galcount));
+
+                    cellIDLocation();
 
                     ////////////////////////////////////////////
 
@@ -122,13 +115,13 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
 
 
                     /************************************************************
-                     Calculate pseudorange of every satellite during the callback
+                     Calculate pseudorange of every Satellite during the callback
                      ***********************************************************/
                     if (CONSTELLATION_SWITCH.equals("GPS") && (gpsSatellites.size() > 0)) { //TODO change the 0 to 3 for PVT calculation
                         pseudoGpsSats = new ArrayList<>();
 
                         for (int i = 0; i < gpsSatellites.size(); i++) {
-                            satellite pseudosat = new satellite(gpsSatellites.get(i).getSvid());
+                            Satellite pseudosat = new Satellite(gpsSatellites.get(i).getSvid());
                             pseudosat.computeGnssTime(
                                     receiverClock.getTimeNanos(), gpsSatellites.get(i).getTimeOffsetNanos(),
                                     receiverClock.getFullBiasNanos(),  receiverClock.getBiasNanos()
@@ -187,31 +180,27 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     }
 
     public void cellIDLocation(){
+        // Update cellCID, cellMCC, cellMNC, cellID, cellLAC from Telephony API
         ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
         ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
         TelephonyManager telephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         GsmCellLocation cellLocation = (GsmCellLocation) telephonyManager.getCellLocation();
-        int cellId = cellLocation.getCid();
-        int celLac = cellLocation.getLac();
+        int cellID = cellLocation.getCid();
+        int cellLAC = cellLocation.getLac();
         String cellPosition = cellLocation.toString();
 
         Log.e("All cell info", String.valueOf(telephonyManager.getAllCellInfo()));
-        NavReader nav = new NavReader();
-        // This has to be changed to a dynamic value from the Google Geolocation API
-        nav.setReferencePosition(52.161068, 4.499513, 0);
-        try {
-            Ephemeris.GpsEphemerisProto[] ephem = nav.getSuplMessage().ephemerids;
-            for (Ephemeris.GpsEphemerisProto o : ephem){
-                Log.e("EPHEM", String.valueOf(o.omegaDot));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        List<CellInfo> cellInfoList = telephonyManager.getAllCellInfo();
+        CellInfoLte cellInfoLte = (CellInfoLte) cellInfoList.get(0);
 
-        try {
-            Log.e("NAV MESSAGE OKAY", String.valueOf(nav.getSuplMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
+        int cellCID = cellInfoLte.getCellIdentity().getCi();
+        int cellMCC = cellInfoLte.getCellIdentity().getMcc();
+        int cellMNC = cellInfoLte.getCellIdentity().getMnc();
+
+        // Now we should have all the elements to request Google Network Location API
+
+        for (int i = 0; i < cellInfoList.size(); i++){
+            Log.e("CELL ", String.valueOf(cellInfoList.get(i)));
         }
     }
 

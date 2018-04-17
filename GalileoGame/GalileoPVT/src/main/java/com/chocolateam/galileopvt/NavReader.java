@@ -5,15 +5,14 @@ import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.cts.nano.Ephemeris;
 import android.location.cts.nano.Ephemeris.GpsNavMessageProto;
-import android.location.cts.nano.Ephemeris.GpsEphemerisProto;
 import android.location.cts.suplClient.SuplRrlpController;
 import android.os.Bundle;
-import android.telephony.CellLocation;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
-import static android.content.Context.LOCATION_SERVICE;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 
@@ -24,8 +23,8 @@ import static android.content.ContentValues.TAG;
  */
 
 public class NavReader extends Fragment implements LocationListener {
-    private static final String SUPL_SERVER_NAME = "supl.google.com";
-    private static final int SUPL_SERVER_PORT = 7276;
+    private static final String SUPL_SERVER_NAME = "supl-dev.google.com";
+    private static final int SUPL_SERVER_PORT = 7280;
     private GpsNavMessageProto mHardwareGpsNavMessageProto = null;
     private double[] mReferenceLocation = null;
     private LocationManager mLocationManager;
@@ -69,14 +68,24 @@ public class NavReader extends Fragment implements LocationListener {
         int celLac = cellLocation.getLac();
         String cellPosition = cellLocation.toString();
 
+
         Log.e("Cell Position", cellLocation.toString());
         return mReferenceLocation;
     }
 
     private GpsNavMessageProto getSuplNavMessage(long lat, long lng) throws UnknownHostException, IOException{
-        SuplRrlpController suplRrlpController = new SuplRrlpController(SUPL_SERVER_NAME, SUPL_SERVER_PORT);
-        GpsNavMessageProto navMessageProto = suplRrlpController.generateNavMessage(lat, lng);
-        return navMessageProto;
+        NavReader nav = new NavReader();
+        // This has to be changed to a dynamic value from the Google Geolocation API
+        try {
+            Ephemeris.GpsNavMessageProto navMsg;
+            SuplRrlpController mSuplController = new SuplRrlpController("supl-dev.google.com", 7280);
+            navMsg = mSuplController.generateNavMessage(521601100, 44970100);
+            Log.e("NAV MESSAGE OKAY", String.valueOf(navMsg));
+            return navMsg;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
     @Override
     public void onLocationChanged(Location location) {

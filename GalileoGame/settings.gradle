@@ -1,1 +1,1 @@
-include ':app', ':GalileoSpaceship', ':GalileoMap', ':GalileoPVT'
+include ':app', ':GalileoSpaceship', ':GalileoMap', ':GalileoPVT', ':SuplClient'

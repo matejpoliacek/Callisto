@@ -1,13 +1,11 @@
 package com.chocolateam.galileopvt;
 
-import android.util.Log;
-
 /**
  * Created by Peter Vanik on 20/03/2018.
- * Class containing calculated measurement attributes of a satellite
+ * Class containing calculated measurement attributes of a Satellite
  */
 
-public class satellite {
+public class Satellite {
     private static final double NUMBERNANOSECONDSWEEK = 604800e9;
     private static final long LIGHTSPEED = 299792458;
 
@@ -20,7 +18,7 @@ public class satellite {
     private long milliSecondsNumberNanos;
     private long weekNumberNanos;
 
-    public satellite(int id) {
+    public Satellite(int id) {
         this.id = id;
     }
     // TODO: change the parameters inside computeX() functions to starting points of calculations

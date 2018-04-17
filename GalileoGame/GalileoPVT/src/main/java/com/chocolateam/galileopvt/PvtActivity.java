@@ -2,20 +2,18 @@ package com.chocolateam.galileopvt;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.location.LocationManager;
-import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import java.net.MalformedURLException;
 
-public class pvtActivity extends AppCompatActivity {
+public class PvtActivity extends AppCompatActivity {
 
     private TextView msg_satcount;
     private TextView msg_discont;
@@ -25,7 +23,11 @@ public class pvtActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pvt);
-        requestPermission();   // Creates fragment if permission granted
+        try {
+            requestPermission();   // Creates fragment if permission granted
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void createPvtFrag() {
@@ -33,7 +35,15 @@ public class pvtActivity extends AppCompatActivity {
         FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
         BlankFragment pvtFrag = new BlankFragment();
         fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
-        pvtFrag.setContext(pvtActivity.this);
+        pvtFrag.setContext(PvtActivity.this);
+    }
+
+    public void createCellIDFrag() throws MalformedURLException {
+        FragmentManager gamefragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
+        CellID cellIDFrag = new CellID();
+        fragmentTransaction.add(android.R.id.content, cellIDFrag).commit();
+        cellIDFrag.setContext(PvtActivity.this);
     }
 /*
     public void createNavMsgFrag(){
@@ -41,10 +51,10 @@ public class pvtActivity extends AppCompatActivity {
         FragmentTransaction fragmentTransaction = gameFragmentManager.beginTransaction();
         NavReader navmsgFrag = new NavReader();
         fragmentTransaction.add(android.R.id.content,navmsgFrag).commit();
-        navmsgFrag.setContext(pvtActivity.this);
+        navmsgFrag.setContext(PvtActivity.this);
     }
 */
-    public void requestPermission() {
+    public void requestPermission() throws MalformedURLException {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             // permission not granted -> request permission
@@ -56,6 +66,7 @@ public class pvtActivity extends AppCompatActivity {
         else {
             Log.e("PERMISSION RESULT:", String.valueOf("already granted"));
             createPvtFrag();
+            createCellIDFrag();
         }
     }
 
@@ -75,6 +86,11 @@ public class pvtActivity extends AppCompatActivity {
                     // contacts-related task you need to do.
                     Log.e("PERMISSION RESULT:", String.valueOf("granted"));
                     createPvtFrag();
+                    try {
+                        createCellIDFrag();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
 
                 } else {
 
