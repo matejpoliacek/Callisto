@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import com.chocolateam.galileopvt.PvtActivity;
 import com.chocolateam.galileospaceship.SpaceshipViewActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void goToPVT(View view) {
-        Intent intent = new Intent(this, com.chocolateam.galileopvt.pvtActivity.class);
+        Intent intent = new Intent(this, PvtActivity.class);
         startActivity(intent);
     }
 }
