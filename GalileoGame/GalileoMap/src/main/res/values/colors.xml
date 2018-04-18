@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3f51b5</color>
-    <color name="colorPrimaryDark">#303f9f</color>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="year">#999999</color>
+    <color name="title">#222222</color>
+    <color name="console">#C6C5BB</color>
+    <color name="darkSpace">#191919</color>
+    <color name="hologram_blue">#76CFFF</color>
+    <color name="screen_blue">#CFD2DF</color>
+    <color name="label_on">#3A897A</color>
+    <color name="label_off">#A9A798</color>
+
+    <color name="beidou_color">#C7843C</color>
+    <color name="qzss_color">#A65765</color>
+    <color name="gps_color">#48B3AE</color>
+    <color name="galileo_color">#5498D8</color>
+    <color name="sbs_color">#CECB33</color>
+    <color name="glonass_color">#519666</color>
 </resources>

@@ -31,10 +31,10 @@ public class DrawClass {
 
     private final int HOLO_BLUE_FILL = Color.argb(100, 51, 181, 229);
     private final int HOLO_BLUE_STROKE = Color.argb(150, 51, 181, 229);
-    private final int RED_FILL = Color.argb(125, 255, 0, 0);
-    private final int RED_STROKE = Color.argb(175, 255, 0, 0);
-    private final int GREEN_FILL = Color.argb(125, 0, 255, 0);
-    private final int GREEN_STROKE = Color.argb(175, 0, 255, 0);
+    private final int RED_FILL = Color.argb(75, 255, 0, 0);
+    private final int RED_STROKE = Color.argb(75, 255, 0, 0);
+    private final int GREEN_FILL = Color.argb(75, 0, 255, 0);
+    private final int GREEN_STROKE = Color.argb(75, 0, 255, 0);
     private final int WHITE_FILL = Color.argb(125, 255, 255, 255);
     private final int WHITE_STROKE = Color.argb(175, 255, 255, 255);
 
@@ -106,23 +106,34 @@ public class DrawClass {
                 obstaclePoints.add(pt3);
                 obstaclePoints.add(pt4);
 
-                if (playfieldArray[i][j] != 0 && !PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), obstaclePoints, false)) {
+                if (playfieldArray[i][j] != 0) {
 
-                    obstacles[i][j] = new PolygonOptions();
-                    obstacles[i][j].add(pt1, pt2, pt3, pt4);
+                    if (playfieldArray[i][j] == 3) { // Finish - we don't mind it the player starts on the finish square
 
-                    if (playfieldArray[i][j] == 1) { // Obstacle
-                        obstacles[i][j].fillColor(RED_FILL);
-                        obstacles[i][j].strokeColor(RED_STROKE);
-                        obstacles[i][j].strokeWidth(10);
-                    } else if (playfieldArray[i][j] == 2) { // Collectible
-                        obstacles[i][j].fillColor(GREEN_FILL);
-                        obstacles[i][j].strokeColor(GREEN_STROKE);
-                        obstacles[i][j].strokeWidth(10);
-                    } else if (playfieldArray[i][j] == 3) { // Finish
+                        obstacles[i][j] = new PolygonOptions();
+                        obstacles[i][j].add(pt1, pt2, pt3, pt4);
+
                         obstacles[i][j].fillColor(WHITE_FILL);
                         obstacles[i][j].strokeColor(WHITE_STROKE);
                         obstacles[i][j].strokeWidth(10);
+
+                        // if not finish, first check if the square we're working with clashes with the player, if yes, do nothing
+                    } else if (!PolyUtil.containsLocation(new LatLng(playerLocation.getLatitude(), playerLocation.getLongitude()), obstaclePoints, false)) {
+
+                        // if not, save the point
+                        obstacles[i][j] = new PolygonOptions();
+                        obstacles[i][j].add(pt1, pt2, pt3, pt4);
+
+                        // and give it adequate properties
+                        if (playfieldArray[i][j] == 1) { // Obstacle
+                            obstacles[i][j].fillColor(RED_FILL);
+                            obstacles[i][j].strokeColor(RED_STROKE);
+                            obstacles[i][j].strokeWidth(10);
+                        } else if (playfieldArray[i][j] == 2) { // Collectible
+                            obstacles[i][j].fillColor(GREEN_FILL);
+                            obstacles[i][j].strokeColor(GREEN_STROKE);
+                            obstacles[i][j].strokeWidth(10);
+                        }
                     }
 
                 }

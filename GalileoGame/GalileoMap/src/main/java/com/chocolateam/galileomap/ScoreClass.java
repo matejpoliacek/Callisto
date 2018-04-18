@@ -6,17 +6,24 @@ package com.chocolateam.galileomap;
 
 public class ScoreClass {
 
-    private int score;
+    private int timeSecs;
+    private int points;
+    private int initialSecs;
     private long lastTime = System.currentTimeMillis();
 
+
+
     private final int COLLECT_SCORE = 100;
+    private final int COLLECT_TIME_BONUS = 15;
     private final int OBSTALCE_PENALTY_TICK = 10;
     private final int TIME_PENALTY_TICK = 1;
-    private final int INIT_MULTIPLIER = 100;
+    private final int INIT_MULTIPLIER = 20;
 
 
     public ScoreClass(int initial) {
-        this.score = initial*INIT_MULTIPLIER;
+        this.points = 0;
+        this.timeSecs = initial*INIT_MULTIPLIER;
+        this.initialSecs = timeSecs;
         this.lastTime = System.currentTimeMillis();
     }
 
@@ -33,12 +40,13 @@ public class ScoreClass {
         int secDelta = secsPassed();
 
         if (secDelta > 0) {
-            this.score -= PENALTY * secDelta;
+            this.timeSecs -= PENALTY * secDelta;
         }
     }
 
     public void increaseScore() {
-        this.score += COLLECT_SCORE;
+        this.timeSecs += COLLECT_TIME_BONUS;
+        this.points += COLLECT_SCORE;
     }
 
     private int secsPassed() {
@@ -53,11 +61,11 @@ public class ScoreClass {
         return secsPassed;
     }
 
-    public int getScore() {
-        return score;
+    public int getTimeSecs() {
+        return timeSecs;
     }
 
-    public void setScore(int score) {
-        this.score = score;
+    public int getPoints(){
+        return points;
     }
 }

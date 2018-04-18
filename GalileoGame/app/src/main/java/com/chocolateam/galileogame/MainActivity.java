@@ -17,8 +17,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void goToGame(View view) {
+        Intent intent = new Intent(this, com.chocolateam.galileomap.MapsActivity.class);
+        intent.putExtra("maptype", "game");
+        startActivity(intent);
+    }
+
     public void goToMap(View view) {
         Intent intent = new Intent(this, com.chocolateam.galileomap.MapsActivity.class);
+        intent.putExtra("maptype", "map");
         startActivity(intent);
     }
 

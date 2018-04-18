@@ -23,8 +23,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.MutableBoolean;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -40,6 +40,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -49,6 +50,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
     private GoogleMap mMap;
@@ -56,6 +58,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Button playButton;
     private TextView scoreText;
     private Button zoomButton;
+    private GameScore inGameScore;
+    private GamePanel gameBottomPanel;
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private CameraPosition mCameraPosition;
@@ -95,6 +99,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng point1 = null;
     private LatLng point2 = null;
 
+    private GraphicalPolygon gp;
+
     private boolean zoomed = true;
 
     private LocationRequest mLocationRequest;
@@ -113,6 +119,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final int MAP_ROTATION_SPEED = 200;
 
     private boolean bDebug = false;
+    private boolean bGraphicsDebug = false;
+
+    // flag to indicate if the activity is for the game or just of a map
+    private String ACTIVITY_TYPE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,9 +194,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         scoreText = (TextView) findViewById(R.id.scoretext);
         scoreText.setVisibility(View.INVISIBLE);
 
+        playButton = (Button) findViewById(R.id.playButton);
+
         zoomButton = (Button) findViewById(R.id.zoomButton);
         zoomButton.setVisibility(View.INVISIBLE);
         zoomButton.setEnabled(false);
+
+        playButton = (Button) findViewById(R.id.playButton);
+        playButton.setVisibility(View.INVISIBLE);
+
+        inGameScore = findViewById(R.id.in_game_score);
+        gameBottomPanel = findViewById(R.id.game_bottom_panel);
 
         // sensor variables for compass
         sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -195,6 +213,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (sensor != null) {
             sensorService.registerListener(mySensorEventListener, sensor,
                     SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        ACTIVITY_TYPE = getIntent().getExtras().getString("maptype");
+
+        if (ACTIVITY_TYPE.equals("map")) {
+           playButton.setVisibility(View.GONE);
         }
 
     }
@@ -264,6 +288,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
+
+        // TODO: tutorial dialog
+        showTutorialDialog();
     }
 
 
@@ -275,8 +302,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
          */
-        findViewById(R.id.indeterminateBar).setVisibility(View.VISIBLE);
-        findViewById(R.id.locationText).setVisibility(View.VISIBLE);
         try {
             if (mLocationPermissionGranted) {
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
@@ -292,16 +317,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 mLastKnownLocation = task.getResult();
                                 try {
                                     if (mLastKnownLocation == null) {
-                                        mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                                         Thread.sleep(3000);
+                                        mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
                                         if (mLastKnownLocation == null) {
-                                            mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                                             Thread.sleep(3000);
+                                            mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
                                             if (mLastKnownLocation == null) {
                                                 // if we can't get location, advise user
-                                                findViewById(R.id.indeterminateBar).setVisibility(View.GONE);
                                                 findViewById(R.id.locationText).setVisibility(View.GONE);
                                                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
                                                 alertDialog.setTitle("Can't Locate You");
@@ -324,14 +348,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     passed = false;
                                 }
                             }
-                            findViewById(R.id.indeterminateBar).setVisibility(View.GONE);
-                            findViewById(R.id.locationText).setVisibility(View.GONE);
+
+                            if (findViewById(R.id.locationText) != null) {
+                                findViewById(R.id.locationText).setVisibility(View.GONE);
+                            }
+
                             if (passed) {
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(mLastKnownLocation.getLatitude(),
                                                 mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                             }
-                            findViewById(R.id.indeterminateBar).setVisibility(View.GONE);
+                        } else {
                             findViewById(R.id.locationText).setVisibility(View.GONE);
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
@@ -380,10 +407,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
+                    updateLocationUI();
                 }
             }
         }
-        updateLocationUI();
+
     }
 
 
@@ -479,7 +507,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             // TODO: delete this else after debugs
         } else if (playing && bDebug){
-            mMarker.setPosition(point);
+            if (mMarker == null) {
+                mMarker = mMap.addMarker(new MarkerOptions().position(point));
+            } else {
+                mMarker.setPosition(point);
+            }
             Location newLoc = mLastKnownLocation;
             newLoc.setLatitude(point.latitude);
             newLoc.setLongitude(point.longitude);
@@ -489,7 +521,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void startGame(View view) {
-        playButton = (Button)view;
 
         // if we're already playing, make next click stop the game first
         if (playing == true) {
@@ -509,6 +540,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void playing() {
+
+        // keep screen on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         // re-enable button
         gameSetup = false;
         playButton.setEnabled(true);
@@ -518,8 +553,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
 
         //show score
-        scoreText.setVisibility(View.VISIBLE);
-        showScore(0);
+//        scoreText.setVisibility(View.VISIBLE);
+        showScore(0, 0);
 
         // reset the zoom button
         zoomButton.setVisibility(View.VISIBLE);
@@ -539,6 +574,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void stopGame() {
+
+        // disable keeping screen on
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         game.setPlaying(false);
         gameSetup = false;
         firstPoint = true;
@@ -549,7 +588,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // hide score text
         scoreText.setVisibility(View.INVISIBLE);
-        showScore(0);
+        showScore(0,0);
 
         zoomButton.setVisibility(View.INVISIBLE);
         zoomButton.setEnabled(false);
@@ -563,16 +602,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (playingArea != null) {
             playingArea.remove();
             playingArea = null;
-            if (gameMapObjects != null) {
-                for (int i = 0; i < draw.getRows(); i++) {
-                    for (int j = 0; j < draw.getCols(); j++) {
-                        if (gameMapObjects[i][j] != null) {
-                            gameMapObjects[i][j].remove();
-                        }
-                    }
-                }
-                gameMapObjects = null;
-            }
+            gp.removeAllObjects();
         }
         if (playing && !gameThread.isInterrupted()) {
             gameThread.interrupt();
@@ -582,6 +612,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     // TODO: switch arrays to lists for faster access?
     private void gameInit() {
+
+        // TODO: should the drawing here be moved to the game class?
+
         playingArea = mMap.addPolygon(draw.drawRectangle(point1, point2));
 
         // add game as a fragment
@@ -601,20 +634,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (playFieldArray != null) { // playfieldarray will be null if size is too small
             PolygonOptions[][] obstacleOptions = draw.drawObstacles(playFieldArray, mLastKnownLocation);
-            gameMapObjects = new Polygon[obstacleRows][obstacleCols];
+            gp = new GraphicalPolygon(obstacleOptions);
+            //gameMapObjects = new Polygon[obstacleRows][obstacleCols];
+            gp.populateMap(mMap);
 
             for (int i = 0; i < obstacleRows; i++) {
                 for (int j = 0; j < obstacleCols; j++) {
                     if (obstacleOptions[i][j] != null) {
-                        gameMapObjects[i][j] = mMap.addPolygon(obstacleOptions[i][j]);
                         if (playFieldArray[i][j] == 1) {
-                            game.addObstacle(gameMapObjects[i][j]);
+                            game.addObstacle(gp.getGameMapObject(i,j));
 
                         } else if (playFieldArray[i][j] == 2) {
-                            game.addCollectible(i, j, gameMapObjects[i][j]);
+                            game.addCollectible(i, j, gp.getGameMapObject(i,j));
 
                         } else if (playFieldArray[i][j] == 3) {
-                            game.addFinish(gameMapObjects[i][j]);
+                            game.addFinish(gp.getGameMapObject(i,j));
                         }
                     }
                 }
@@ -623,11 +657,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void removeMapObjectByIndex(int row, int col) {
-        gameMapObjects[row][col].remove();
+        gp.removeGameMapObject(row, col);
     }
 
-    public void showScore(int score) {
-        scoreText.setText("Score: " + score);
+    public void showScore(int score, int secs_passed) {
+        inGameScore.setMscore(score);
+        gameBottomPanel.setClock(secs_passed);
     }
 
     /**********************/
@@ -698,6 +733,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    private void showTutorialDialog() {
+        FragmentManager fm = getSupportFragmentManager();
+        TutorialDialogFragment editNameDialogFragment = TutorialDialogFragment.newInstance("Some Title");
+        editNameDialogFragment.show(fm, "fragment_edit_name");
+
+    }
+
     // TODO: this method can be deleted with the debug button when not necessary anymore
     public void toggleDebug(View view) {
         Button debugButton = (Button)view;
@@ -713,6 +755,35 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.getUiSettings().setScrollGesturesEnabled(true);
             mMap.getUiSettings().setZoomGesturesEnabled(true);
             mMap.getUiSettings().setRotateGesturesEnabled(true);
+        }
+    }
+
+    // TODO: this method can be deleted with the debug button when not necessary anymore
+    public void toggleGraphicsDebug(View view) {
+        Button debugGraphicsButton = (Button)view;
+        if (bGraphicsDebug) {
+            debugGraphicsButton .setText("Start Graphics Debugging");
+            bGraphicsDebug = false;
+            stopGame();
+        } else {
+            debugGraphicsButton .setText("Stop Graphics Debugging");
+            bGraphicsDebug = true;
+            point1 = new LatLng(52.216596, 4.420682);
+            point2 = new LatLng(52.215974, 4.422007);
+            gameSetup = false;
+
+            Location fakeLocation = new Location("fake_provider");
+            fakeLocation.setAltitude(0);
+            fakeLocation.setLatitude(52.216523);
+            fakeLocation.setLongitude(4.421139);
+            fakeLocation.setSpeed(0);
+
+            mLastKnownLocation = fakeLocation;
+
+            gameInit();
+            Log.e("Size valid", String.valueOf(game.isSizeValid()));
+            Log.e("Location valid", String.valueOf(game.isLocationValid()));
+            playing();
         }
     }
 

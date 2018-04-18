@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="410dp"
+    android:layout_gravity="bottom"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/background"
+        android:layout_width="408dp"
+        android:layout_height="142dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/game_panel"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_editor_absoluteY="29dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="159dp"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:ignore="MissingConstraints">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="105dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="155dp"
+                    android:layout_height="44dp" />
+
+                <TextView
+                    android:id="@+id/clock"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:alpha="0.5"
+                    android:fontFamily="@font/robotomono_bold"
+                    android:gravity="center"
+                    android:text="00:00"
+                    android:textColor="#FFFFFF"
+                    android:textSize="17sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="15dp"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:id="@+id/compass_glass"
+            android:layout_width="138dp"
+            android:layout_height="158dp"
+            android:layout_gravity="top"
+            android:contentDescription="TODO"
+            android:scaleType="fitCenter"
+            android:src="@drawable/compass_glass" />
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
