@@ -110,6 +110,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /** Location manager **/
     private LocationManager locationManager;
     private LocationListener mLocationListenerGPS;
+    private boolean LocationManagerSuccess = false;
 
     private Marker mMarker;
 
@@ -185,14 +186,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         };
 
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, mLocationListenerGPS);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListenerGPS);
-            isLocationEnabled();
-        } catch (SecurityException e) {
-            Toast.makeText(getApplicationContext(), "Security exception - locmgr", Toast.LENGTH_LONG).show();
-        }
-
+        setLocationSettings();
         // draw class
         draw = new DrawClass();
 
@@ -228,6 +222,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    private void setLocationSettings() {
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, mLocationListenerGPS);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListenerGPS);
+            isLocationEnabled();
+            LocationManagerSuccess = true;
+        } catch (SecurityException e) {
+            // do nothing
+        }
+    }
 
     /**
      * Saves the state of the map when the activity is paused.
@@ -387,14 +391,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
          * device. The result of the permission request is handled by a callback,
          * onRequestPermissionsResult.
          */
+
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
+
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+
+            // If locationManager settings weren't successfully set, try again now, with permission
+            if (!LocationManagerSuccess) {
+                setLocationSettings();
+            }
         }
     }
 
