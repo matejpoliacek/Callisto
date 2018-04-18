@@ -36,4 +36,6 @@ dependencies {
     releaseImplementation project(':GalileoSpaceship')
     debugImplementation project(':GalileoPVT')
     releaseImplementation project(':GalileoPVT')
+    debugImplementation project(':SuplClient')
+    releaseImplementation project(':SuplClient')
 }
