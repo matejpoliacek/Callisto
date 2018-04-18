@@ -22,9 +22,11 @@
         android:id="@+id/central_cabin"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:src="@drawable/central_cabin"
+        android:src="@drawable/scpaceship_central_panel"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -45,41 +47,14 @@
         android:textColor="#ffffff" />
 
     <Button
-        android:id="@+id/zoomButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/playButton"
-        android:layout_below="@+id/playButton"
-        android:background="@drawable/buttonshape"
-        android:onClick="toggleZoom"
-        android:padding="8dp"
-        android:text="Zoom Out"
-        android:textColor="#ffffff" />
-
-    <Button
-        android:id="@+id/debugButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/playButton"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="15dp"
-        android:background="@drawable/buttonshape"
-        android:onClick="toggleDebug"
-        android:padding="8dp"
-        android:text="Start Debugging"
-        android:textColor="#ffffff" />
-
-    <Button
         android:id="@+id/debugGraphicsButton"
+        style="@style/Widget.AppCompat.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/debugButton"
-        android:layout_alignStart="@+id/debugButton"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/buttonshape"
+        android:layout_alignEnd="@+id/in_game_score"
+        android:layout_below="@+id/playButton"
+        android:layout_marginTop="20dp"
         android:onClick="toggleGraphicsDebug"
-        android:layout_margin="16dp"
         android:padding="8dp"
         android:text="Start Graphics Debugging"
         android:textColor="#ffffff" />
@@ -108,11 +83,58 @@
         android:id="@+id/game_bottom_panel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="0dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:visibility="visible"
-        android:translationY="2dp"/>
+        android:layout_margin="0dp"
+        android:translationY="2dp"
+        android:visibility="visible">
+
+        <ImageButton
+            android:id="@+id/imageButton"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="14dp"
+            android:adjustViewBounds="true"
+            android:background="#00000000"
+            android:onClick="toggleZoom"
+            android:scaleType="fitCenter"
+            android:src="@drawable/zoom_button_selector"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent" />
+
+        <Button
+            android:id="@+id/debugButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/debugGraphicsButton"
+            android:layout_below="@+id/locationText"
+            android:layout_marginBottom="80dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:onClick="toggleDebug"
+            android:padding="8dp"
+            android:text="Start Debugging"
+            android:textColor="#ffffff"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </com.chocolateam.galileomap.GamePanel>
+
+    <ImageButton
+        android:id="@+id/menuButton"
+        android:layout_width="42dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="30dp"
+        android:adjustViewBounds="true"
+        android:background="#00000000"
+        android:onClick="toggleZoom"
+        android:scaleType="fitCenter"
+        android:src="@drawable/menu_button_selector"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <com.chocolateam.galileomap.GameScore
         android:id="@+id/in_game_score"
@@ -120,6 +142,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:layout_margin="8dp"/>
+        android:layout_margin="8dp">
+
+    </com.chocolateam.galileomap.GameScore>
 
 </RelativeLayout>

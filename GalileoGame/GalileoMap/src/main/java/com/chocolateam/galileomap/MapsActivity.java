@@ -24,6 +24,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -72,7 +73,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // not granted.
     private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final int DEFAULT_ZOOM = 15;
-    private static final int GAME_ZOOM_IN = 19;
+    private static final int GAME_ZOOM_IN = 20;
     private static final int GAME_ZOOM_OUT = 17;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
@@ -133,6 +134,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         }
+
+        // Remove the top option bar
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
@@ -197,8 +202,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         playButton = (Button) findViewById(R.id.playButton);
 
         zoomButton = (Button) findViewById(R.id.zoomButton);
-        zoomButton.setVisibility(View.INVISIBLE);
-        zoomButton.setEnabled(false);
+//        zoomButton.setVisibility(View.INVISIBLE);
+//        zoomButton.setEnabled(false);
 
         playButton = (Button) findViewById(R.id.playButton);
         playButton.setVisibility(View.INVISIBLE);
@@ -557,9 +562,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         showScore(0, 0);
 
         // reset the zoom button
-        zoomButton.setVisibility(View.VISIBLE);
-        zoomButton.setText("Zoom Out");
-        zoomButton.setEnabled(true);
+//        zoomButton.setVisibility(View.VISIBLE);
+////        zoomButton.setText("Zoom Out");
+//        zoomButton.setEnabled(true);
         zoomed = true;
 
         // disable map scrolling/zooming
@@ -590,8 +595,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         scoreText.setVisibility(View.INVISIBLE);
         showScore(0,0);
 
-        zoomButton.setVisibility(View.INVISIBLE);
-        zoomButton.setEnabled(false);
+//        zoomButton.setVisibility(View.INVISIBLE);
+//        zoomButton.setEnabled(false);
 
         // enable map scrolling/zooming
         mMap.getUiSettings().setScrollGesturesEnabled(true);
@@ -634,7 +639,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (playFieldArray != null) { // playfieldarray will be null if size is too small
             PolygonOptions[][] obstacleOptions = draw.drawObstacles(playFieldArray, mLastKnownLocation);
-            gp = new GraphicalPolygon(obstacleOptions);
+            gp = new GraphicalPolygon(obstacleOptions, playFieldArray);
             //gameMapObjects = new Polygon[obstacleRows][obstacleCols];
             gp.populateMap(mMap);
 
@@ -723,11 +728,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void toggleZoom(View view) {
         if (zoomed) {
-            zoomButton.setText("Zoom In");
+//            zoomButton.setText("Zoom In");
             priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_OUT);
             zoomed = false;
         } else {
-            zoomButton.setText("Zoom Out");
+//            zoomButton.setText("Zoom Out");
             priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
             zoomed = true;
         }

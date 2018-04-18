@@ -29,19 +29,19 @@ public class DrawClass {
     private int cols;
     private int rows;
 
-    private final int HOLO_BLUE_FILL = Color.argb(100, 51, 181, 229);
-    private final int HOLO_BLUE_STROKE = Color.argb(150, 51, 181, 229);
-    private final int RED_FILL = Color.argb(75, 255, 0, 0);
-    private final int RED_STROKE = Color.argb(75, 255, 0, 0);
-    private final int GREEN_FILL = Color.argb(75, 0, 255, 0);
-    private final int GREEN_STROKE = Color.argb(75, 0, 255, 0);
+    private final int HOLO_BLUE_FILL = Color.argb(0, 51, 181, 229);
+    private final int HOLO_BLUE_STROKE = Color.argb(150, 255, 255, 255);
+    private final int RED_FILL = Color.argb(0, 255, 255, 255);
+    private final int RED_STROKE = Color.argb(0, 255, 0, 0);
+    private final int GREEN_FILL = Color.argb(0, 0, 255, 0);
+    private final int GREEN_STROKE = Color.argb(0, 0, 255, 0);
     private final int WHITE_FILL = Color.argb(125, 255, 255, 255);
     private final int WHITE_STROKE = Color.argb(175, 255, 255, 255);
 
     // one "box" of playing field in metres
     private final double FIELD_SIZE = 10;
     // what porportion of the above box should be covered by the obstacle (FIELD_SIZE/OBSTACLE_PROPORTION)?
-    private final double OBSTACLE_PROPORTION = 2.5;
+    private final double OBSTACLE_PROPORTION = 2;
 
     public PolygonOptions drawRectangle(LatLng startLocation, LatLng endLocation) {
 
