@@ -288,6 +288,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
+
+        // TODO: tutorial dialog
+        showTutorialDialog();
     }
 
 
@@ -728,6 +731,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
             zoomed = true;
         }
+    }
+
+    private void showTutorialDialog() {
+        FragmentManager fm = getSupportFragmentManager();
+        TutorialDialogFragment editNameDialogFragment = TutorialDialogFragment.newInstance("Some Title");
+        editNameDialogFragment.show(fm, "fragment_edit_name");
+
     }
 
     // TODO: this method can be deleted with the debug button when not necessary anymore
