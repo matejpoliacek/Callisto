@@ -21,6 +21,15 @@ import android.telephony.CellInfoLte;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.location.cts.nano.Ephemeris.GpsEphemerisProto;
+import android.location.cts.nano.Ephemeris.GpsNavMessageProto;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,6 +66,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private ArrayList<Satellite> pseudoGalSats;
     private ArrayList<Satellite> pseudoGpsSats;
 
+    private Ephemeris.GpsNavMessageProto navMessageProto;
+
     public BlankFragment() {
     }
 
@@ -71,6 +82,18 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         fullBiasNanosSet = false;
         mLocationManager =
                 (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
+
+        /***
+         * Get GPS Navigation Message almanac to compute satellite positions
+         * // TODO based on constellation_switch compute either Gal or Gps nav message
+         */
+        final NavReader navReader = new NavReader();
+        try {
+            navMessageProto = navReader.getSuplMessage();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         /*******************************************************************************
          GNSS Measurements Event for obtaining receiver clock and Satellite measurements
@@ -132,6 +155,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
                                 if ((m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED) {
                                     // TODO add elevation filter from Cedric's class, e.g. if m.getSvid().getSatElevation() > MIN_SAT_ELEVATION
+                                    // TODO check if satellite with this ID is in almanac (boolean function cycling through alamanac)
                                     gpsSatellites.add(m);
                                 }
                             } else if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
@@ -151,8 +175,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     if (CONSTELLATION_SWITCH.equals("GPS") && (gpsSatellites.size() > 0)) { //TODO change the 0 to 3 for PVT calculation
                         pseudoSats = new ArrayList<>();
 
+                        long gpsTime = receiverClock.getTimeNanos() - (long)(fullBiasNanos + biasNanos);
                         for (int i = 0; i < gpsSatellites.size(); i++) {
-                            Satellite pseudosat = new Satellite(gpsSatellites.get(i).getSvid());
+                            Satellite pseudosat = new Satellite(gpsSatellites.get(i).getSvid(), CONSTELLATION_SWITCH, navReader, gpsTime);
 
                             // ECEF satellite coordinates and elevation
                             // TODO Cedric's code
@@ -177,7 +202,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeIonosphericCorrection_GPS();
 
                             // Other corrections: Satellite clock offset and Doppler
-                            long gpsTime = receiverClock.getTimeNanos() - (long)(fullBiasNanos + biasNanos);
                             pseudosat.computeSatClockCorrectionMeters(gpsTime);
                             //pseudosat.computeDopplerCorrection(); // TODO me
 

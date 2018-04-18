@@ -6,6 +6,7 @@ android {
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
@@ -32,8 +33,8 @@ dependencies {
     //implementation files('libs/asn1-supl2.jar')
     //implementation files('libs/asn1-base.jar')
     implementation 'com.google.protobuf.nano:protobuf-javanano:3.0.0-alpha-4'
-    implementation files('libs/okio-1.14.0.jar')
-    implementation files('libs/okhttp-3.10.0.jar')
+    //implementation files('libs/okio-1.14.0.jar')
+    //implementation files('libs/okhttp-3.10.0.jar')
     compile project(path: ':SuplClient')
     implementation project(':SuplClient')
 }

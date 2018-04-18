@@ -73,13 +73,17 @@ public class NavReader extends Fragment implements LocationListener {
         return mReferenceLocation;
     }
 
+    /*
+    @param lat receiver latitude
+    @param lng receiver longitude
+     */
     private GpsNavMessageProto getSuplNavMessage(long lat, long lng) throws UnknownHostException, IOException{
         NavReader nav = new NavReader();
         // This has to be changed to a dynamic value from the Google Geolocation API
         try {
             Ephemeris.GpsNavMessageProto navMsg;
             SuplRrlpController mSuplController = new SuplRrlpController("supl-dev.google.com", 7280);
-            navMsg = mSuplController.generateNavMessage(521601100, 44970100);
+            navMsg = mSuplController.generateNavMessage(521601100, 44970100); // Hardcoded Noordwijk
             Log.e("NAV MESSAGE OKAY", String.valueOf(navMsg));
             return navMsg;
         } catch (Exception e) {

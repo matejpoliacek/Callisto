@@ -1,5 +1,6 @@
 package com.chocolateam.galileopvt;
 import android.location.cts.asn1.supl2.rrlp_components.*;
+import android.location.cts.nano.Ephemeris;
 import android.util.Log;
 
 /**
@@ -13,6 +14,7 @@ public class Satellite {
     public static final long LIGHTSPEED = 299792458;
 
     private int id;
+    private String constellation;
     private double gnssTime;
     private double receivedTime;
     private long transmittedTime;
@@ -21,6 +23,7 @@ public class Satellite {
     private long weekNumber;
     private double pseudoRange;
 
+    private SatellitePositionCalculator.PositionAndVelocity posAndVel;
     private double satElevationRadians;
     private double xECEF;
     private double yECEF;
@@ -29,11 +32,63 @@ public class Satellite {
     private double troposphericCorrectionMeters;
     private double ionosphericCorrectionSeconds;
     private double satelliteClockCorrectionMeters;
+    private SatelliteClockCorrectionCalculator.SatClockCorrection satelliteClockCorrection;
     private double correctedRange;
 
+    private NavReader navReader;
+    private Ephemeris.GpsNavMessageProto navMessageProto;
+    private Ephemeris.GpsEphemerisProto ephemerisProto;
 
-    public Satellite(int id) {
+    public Satellite(int id, String constellation, NavReader navReader, long time) {
+
         this.id = id;
+        this.constellation = constellation;
+        this.navReader = navReader;
+
+        if (constellation.equals("GPS")) {
+            try {
+                navMessageProto = navReader.getSuplMessage();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // TODO this code could go into main BlankFragment to check whether the satellite is in almanac
+            for (int i=0; i < navMessageProto.ephemerids.length; i++) {
+                Ephemeris.GpsEphemerisProto thisSat = navMessageProto.ephemerids[i];
+                if (thisSat.prn == id) {
+                    ephemerisProto = thisSat;
+                }
+                else {
+                    Log.e("EPHEM ERROR", "The satellite with this ID wasn't found in the almanac.");
+                }
+            }
+            // Compute input time parameters
+            long gpsTime = time;
+            double timeDifference = receivedTime - transmittedTime;
+            double receiverGpsTowAtTimeOfTransmission = gpsTime - timeDifference;
+            int receiverGpsWeekAtTimeOfTransmission;
+            if (gpsTime < timeDifference) {
+                receiverGpsWeekAtTimeOfTransmission = (int)weekNumber - 1;
+            } else {
+                receiverGpsWeekAtTimeOfTransmission =(int) weekNumber;
+            }
+
+            // Compute position. Hard-coded Noordwijk. TODO Later use actual user position from BlankFragment.getX
+            try {
+                posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
+                        ephemerisProto,
+                        receiverGpsTowAtTimeOfTransmission,
+                        receiverGpsWeekAtTimeOfTransmission,
+                        3904174,
+                        301788,
+                        5017699);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            xECEF = posAndVel.positionXMeters;
+            yECEF = posAndVel.positionYMeters;
+            zECEF = posAndVel.positionZMeters;
+        }
     }
 
     public void computeGnssTime(long timeNanos, double timeOffsetNanos, long fullBiasNanos, double biasNanos) {
@@ -85,7 +140,7 @@ public class Satellite {
         //ionosphericCorrectionSeconds = IonosphericModel.ionoKloboucharCorrectionSeconds(...);
     }
 
-    // Satellite clock offset, drift, drift change and relativistic corrections TODO sanity check every component
+    // Satellite clock offset, drift, drift change and relativistic corrections // TODO test
     public void computeSatClockCorrectionMeters(long gpsTime){
         double timeDifference = receivedTime - transmittedTime;
         double receiverGpsTowAtTimeOfTransmission = gpsTime - timeDifference;
@@ -95,11 +150,16 @@ public class Satellite {
         } else {
             receiverGpsWeekAtTimeOfTransmission = weekNumber;
         }
-        /*satelliteClockCorrectionMeters = SatelliteClockCorrectionCalculator.calculateSatClockCorrAndEccAnomAndTkIteratively
-                (       NavMsg.getGpsEphemerisProto(),
-                        receiverGpsTowAtTimeOfTransmission,
-                        receiverGpsWeekAtTimeOfTransmission
-                );*/ // TODO with Cedric's code, receiver gpsweekattimeoftransmission
+        try {
+            satelliteClockCorrection = SatelliteClockCorrectionCalculator.calculateSatClockCorrAndEccAnomAndTkIteratively
+                    (       ephemerisProto,
+                            receiverGpsTowAtTimeOfTransmission,
+                            receiverGpsWeekAtTimeOfTransmission
+                    );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        satelliteClockCorrectionMeters = satelliteClockCorrection.satelliteClockCorrectionMeters;
     }
 
     public void computeDoppler() {
