@@ -38,7 +38,7 @@ public class TutorialDialogFragment extends DialogFragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.tutorialdialog_fragment, container);
+        return inflater.inflate(R.layout.tutorial_view, container);
     }
 
 
@@ -48,15 +48,11 @@ public class TutorialDialogFragment extends DialogFragment{
 
         super.onViewCreated(view, savedInstanceState);
 
-        // Get field from view
-        mEditText = (EditText) view.findViewById(R.id.editText);
-
         // Fetch arguments from bundle and set title
         String title = getArguments().getString("title", "Enter Name");
         getDialog().setTitle(title);
 
         // Show soft keyboard automatically and request focus to field
-        mEditText.requestFocus();
         getDialog().getWindow().setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
     }

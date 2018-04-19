@@ -7,6 +7,7 @@
       <module fileurl="file://$PROJECT_DIR$/GalileoPVT/GalileoPVT.iml" filepath="$PROJECT_DIR$/GalileoPVT/GalileoPVT.iml" />
       <module fileurl="file://$PROJECT_DIR$/GalileoSpaceship/GalileoSpaceship.iml" filepath="$PROJECT_DIR$/GalileoSpaceship/GalileoSpaceship.iml" />
       <module fileurl="file://$PROJECT_DIR$/SuplClient/SuplClient.iml" filepath="$PROJECT_DIR$/SuplClient/SuplClient.iml" />
+      <module fileurl="file://C:\Work\3 - Gallapp\GalileoGameApp\GalileoGame\SuplClient\SuplClient.iml" filepath="C:\Work\3 - Gallapp\GalileoGameApp\GalileoGame\SuplClient\SuplClient.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

@@ -6,40 +6,131 @@
     android:layout_height="match_parent"
     tools:context="com.chocolateam.galileomap.SummaryActivity">
 
-    <TextView
-        android:id="@+id/resultView"
-        android:layout_width="265dp"
-        android:layout_height="153dp"
-        android:layout_marginTop="128dp"
-        android:textAlignment="center"
-        android:textSize="45sp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+    <ImageView
+        android:id="@+id/central_cabin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/score_background_4"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/scoreView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Score:"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/resultView" />
 
-    <Button
-        android:id="@+id/backButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
-        android:onClick="goBack"
-        android:text="Return to Map to play again"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scoreView" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/resultView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="45sp"
+            android:text="VICTORY!"
+            android:letterSpacing="0.05"
+            android:fontFamily="@font/nasalization_rg"
+            android:shadowColor="@color/hologram_blue"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="60"
+            android:textColor="#FFFFFF"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/score_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:text="score:"
+            android:letterSpacing="0.05"
+            android:fontFamily="@font/nasalization_rg"
+            android:shadowColor="@color/hologram_blue"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="60"
+            android:textColor="#FFFFFF"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/scoreView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="2000"
+            android:textAlignment="center"
+            app:layout_constraintTop_toBottomOf="@+id/resultView"
+            android:letterSpacing="0.05"
+            android:fontFamily="@font/nasalization_rg"
+            android:shadowColor="@color/hologram_blue"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="60"
+            android:textColor="#FFFFFF"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.05"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:fontFamily="@font/nasalization_rg"
+            android:shadowColor="@color/hologram_blue"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="60"
+            android:textColor="#FFFFFF"
+            android:text="constellation:" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:letterSpacing="0.05"
+            android:textSize="40sp"
+            android:fontFamily="@font/nasalization_rg"
+            android:shadowColor="@color/hologram_blue"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="60"
+            android:textColor="#FFFFFF"
+            android:text="GALILEO"
+            android:paddingBottom="50dp"/>
+
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:width="220dp"
+            android:height="50dp"
+            android:background="@color/buttonGreen"
+            android:fontFamily="@font/notes_esa_reg"
+            android:onClick="goBack"
+            android:text="Play Again"
+            android:textColor="@color/buttonGreenDark"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/scoreView"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Play again" />
+
+    </LinearLayout>
+
+
 
 </android.support.constraint.ConstraintLayout>

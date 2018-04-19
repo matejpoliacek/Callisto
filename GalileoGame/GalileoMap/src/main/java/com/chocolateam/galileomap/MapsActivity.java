@@ -61,6 +61,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Button zoomButton;
     private GameScore inGameScore;
     private GamePanel gameBottomPanel;
+    private TutorialView tutorialView;
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private CameraPosition mCameraPosition;
@@ -205,6 +206,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         inGameScore = findViewById(R.id.in_game_score);
         gameBottomPanel = findViewById(R.id.game_bottom_panel);
 
+        tutorialView = findViewById(R.id.tutorial);
+        tutorialView.setGame(this);
+
         // sensor variables for compass
         sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
         // TODO: is there a better way?
@@ -299,7 +303,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         getDeviceLocation();
 
         // TODO: tutorial dialog
-        showTutorialDialog();
+//        showTutorialDialog();
     }
 
 
@@ -537,6 +541,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void startGame(View view) {
+
+        tutorialView.setVisibility(View.GONE);
 
         // if we're already playing, make next click stop the game first
         if (playing == true) {
