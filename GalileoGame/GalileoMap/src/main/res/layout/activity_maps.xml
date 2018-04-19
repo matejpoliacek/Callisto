@@ -152,4 +152,14 @@
 
     </com.chocolateam.galileomap.TutorialView>
 
+    <TextView
+        android:id="@+id/testTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/playButton"
+        android:layout_below="@+id/debugGraphicsButton"
+        android:layout_marginEnd="64dp"
+        android:layout_marginTop="14dp"
+        android:text="Unset" />
+
 </RelativeLayout>
