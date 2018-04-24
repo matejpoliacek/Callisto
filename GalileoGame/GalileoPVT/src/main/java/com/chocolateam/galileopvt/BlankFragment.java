@@ -10,8 +10,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.cts.nano.Ephemeris;
-import android.net.Uri;
-import android.location.cts.suplClient.SuplRrlpController;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
@@ -74,6 +72,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
         run();
     }
 
@@ -88,12 +88,15 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
          * // TODO based on constellation_switch compute either Gal or Gps nav message
          */
         final NavReader navReader = new NavReader();
+
         try {
-            navMessageProto = navReader.getSuplMessage();
+            long[] mReferenceLocation = new long[] {0,0};
+            Ephemeris.GpsNavMessageProto navMsg = new NavThread().execute(mReferenceLocation).get();
+            Log.e("AAAAAAAAA", "This was succesful \n");
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e("BBBBBBBBBBBBBBBBBBBB", "Fayulzys");
         }
-
 
         /*******************************************************************************
          GNSS Measurements Event for obtaining receiver clock and Satellite measurements
