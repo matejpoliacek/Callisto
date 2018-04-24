@@ -12,36 +12,42 @@ public class LeastSquares {
 
     static final double C = 299792458.0;
 
-    public static double[] lsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] assumedLocation, double receiverClockBias) {
+    public static double[] lsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] assumedLocation, double initClockError, double[] svClockError) {
 
         double x0 = assumedLocation[0];
         double y0 = assumedLocation[1];
         double z0 = assumedLocation[2];
 
-        Matrix A = new Matrix(4, satCoords.size());
-        Matrix b = new Matrix(satCoords.size(),1); // b = vector of delta_P's
+        Matrix A = new Matrix(satCoords.size(), 4);
+        Matrix b = new Matrix(satCoords.size(), 1); // b = vector of delta_P's
 
         for (int i = 0; i < satCoords.size(); i++) {
 
-            double r_hat = Math.sqrt(Math.pow((satCoords.get(i)[0]) - assumedLocation[0] , 2) + Math.pow((satCoords.get(i)[1]) - assumedLocation[1], 2)
-                    + Math.pow((satCoords.get(i)[2]) - assumedLocation[2], 2));
+            //double r_hat = Math.sqrt(Math.pow((satCoords.get(i)[0]) - assumedLocation[0] , 2) + Math.pow((satCoords.get(i)[1]) - assumedLocation[1], 2)
+            //+ Math.pow((satCoords.get(i)[2]) - assumedLocation[2], 2));
+
+            double p_calc = 0;
 
             for (int j = 0; j < 3; j++) {
 
-                double a_ij = (satCoords.get(i)[j] - assumedLocation[j]) / r_hat;
+                double a_ij = (satCoords.get(i)[j] - assumedLocation[j]) / pseudoranges[i];
 
                 A.set(i, j, a_ij);
 
+                p_calc += a_ij*(satCoords.get(i)[j] - assumedLocation[j]);
             }
 
             A.set(i, 3, -1.0);
 
-            double p_obs = r_hat + C*receiverClockBias;
 
-            b.set(i, 0, (pseudoranges[i] - p_obs)); // aka delta-p vector
+            p_calc += (-1.0)*svClockError[i];
+
+            b.set(i, 0, p_calc); // aka delta-p vector
 
 
         }
+
+        A.print(5, 5);;
 
         // once we have b we can then do least squares
 
@@ -64,7 +70,7 @@ public class LeastSquares {
     }
 
 
-    public static double[] recursiveLsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] assumedLocation, double receiverClockBias) {
+    public static double[] recursiveLsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] assumedLocation, double initClockError, double[] svClockError) {
         // start ->
         // 1. linearise(assumed) = result
         // 2. do assumed - result
@@ -80,7 +86,7 @@ public class LeastSquares {
 
         while (largeDiff) {
 
-            result = lsq(satCoords, pseudoranges, assumedLocation, receiverClockBias);
+            result = lsq(satCoords, pseudoranges, assumedLocation, initClockError, svClockError);
 
             for (int i = 0; i < assumedLocation.length; i++) {
                 // TODO: only comparing locations, not clock just yet
@@ -94,11 +100,16 @@ public class LeastSquares {
             assumedLocation[0] += result[0];
             assumedLocation[1] += result[1];
             assumedLocation[2] += result[2];
-            receiverClockBias += result[3];
+            initClockError += result[3];
         }
 
+        double[] result_vector = new double[4];
+        result_vector[0] = assumedLocation[0];
+        result_vector[1] = assumedLocation[1];
+        result_vector[2] = assumedLocation[2];
+        result_vector[3] = initClockError;
 
-        return result;
+        return result_vector;
     }
 
 }
