@@ -64,7 +64,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private ArrayList<Satellite> pseudoGalSats;
     private ArrayList<Satellite> pseudoGpsSats;
 
-    private Ephemeris.GpsNavMessageProto navMessageProto;
+    private Ephemeris.GpsNavMessageProto navMsg;
 
     public BlankFragment() {
     }
@@ -83,19 +83,19 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         mLocationManager =
                 (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
 
-        /***
-         * Get GPS Navigation Message almanac to compute satellite positions
-         * // TODO based on constellation_switch compute either Gal or Gps nav message
-         */
-        final NavReader navReader = new NavReader();
+        /****************************************************
+         Obtain Navigation message
+         ***************************************************/
+
+        NavThread navThread = new NavThread();
 
         try {
             long[] mReferenceLocation = new long[] {0,0};
-            Ephemeris.GpsNavMessageProto navMsg = new NavThread().execute(mReferenceLocation).get();
-            Log.e("AAAAAAAAA", "This was succesful \n");
+            navMsg = new NavThread().execute(mReferenceLocation).get();
+            Log.e("Obtaining navigation message...", "SUCCESSFUL");
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("BBBBBBBBBBBBBBBBBBBB", "Fayulzys");
+            Log.e("Obtaining navigation message...", "FAILED");
         }
 
         /*******************************************************************************
@@ -119,8 +119,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     biasNanos = receiverClock.getBiasNanos();
                     biasNanosSet = true;
                 }
-                //((pvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
-                //((PvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
 
                 // Reset list of Galileo and GPS satellites
                 galileoSatellites = new ArrayList<>();
@@ -158,7 +156,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
                                 if ((m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED) {
                                     // TODO add elevation filter from Cedric's class, e.g. if m.getSvid().getSatElevation() > MIN_SAT_ELEVATION
-                                    // TODO check if satellite with this ID is in almanac (boolean function cycling through alamanac)
                                     gpsSatellites.add(m);
                                 }
                             } else if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
@@ -180,7 +177,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
 
                         long gpsTime = receiverClock.getTimeNanos() - (long)(fullBiasNanos + biasNanos);
                         for (int i = 0; i < gpsSatellites.size(); i++) {
-                            Satellite pseudosat = new Satellite(gpsSatellites.get(i).getSvid(), CONSTELLATION_SWITCH, navReader, gpsTime);
+                            Satellite pseudosat = new Satellite(gpsSatellites.get(i).getSvid(), CONSTELLATION_SWITCH, navMsg, gpsTime);
 
                             // ECEF satellite coordinates and elevation
                             // TODO Cedric's code

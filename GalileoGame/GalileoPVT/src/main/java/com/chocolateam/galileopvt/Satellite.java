@@ -35,26 +35,21 @@ public class Satellite {
     private SatelliteClockCorrectionCalculator.SatClockCorrection satelliteClockCorrection;
     private double correctedRange;
 
-    private NavReader navReader;
-    private Ephemeris.GpsNavMessageProto navMessageProto;
+    private Ephemeris.GpsNavMessageProto navMsg;
     private Ephemeris.GpsEphemerisProto ephemerisProto;
 
-    public Satellite(int id, String constellation, NavReader navReader, long time) {
+    public Satellite(int id, String constellation, Ephemeris.GpsNavMessageProto navMsg, long time) {
 
         this.id = id;
         this.constellation = constellation;
-        this.navReader = navReader;
+        this.navMsg = navMsg;
 
         if (constellation.equals("GPS")) {
-            try {
-                navMessageProto = navReader.getSuplMessage();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
             // TODO this code could go into main BlankFragment to check whether the satellite is in almanac
-            for (int i=0; i < navMessageProto.ephemerids.length; i++) {
-                Ephemeris.GpsEphemerisProto thisSat = navMessageProto.ephemerids[i];
+            // Iterates over list of satellites in the navigation message to check if satellite with provided ID exists in the ephemerids list
+            for (int i=0; i < navMsg.ephemerids.length; i++) {
+                Ephemeris.GpsEphemerisProto thisSat = navMsg.ephemerids[i];
                 if (thisSat.prn == id) {
                     ephemerisProto = thisSat;
                 }
@@ -88,6 +83,10 @@ public class Satellite {
             xECEF = posAndVel.positionXMeters;
             yECEF = posAndVel.positionYMeters;
             zECEF = posAndVel.positionZMeters;
+            Log.e("Satellite " + this.id, "");
+            Log.e("X ", String.valueOf(xECEF));
+            Log.e("Y ", String.valueOf(yECEF));
+            Log.e("Z ", String.valueOf(zECEF));
         }
     }
 
