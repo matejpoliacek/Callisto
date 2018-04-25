@@ -85,6 +85,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Keys for storing activity state.
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
+    private static final String KEY_ACTIVITY_TYPE = "activity_type";
 
     /** GAME VARIABLES **/
     // Drawing class to handle game visuals
@@ -134,6 +135,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (savedInstanceState != null) {
             mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+            ACTIVITY_TYPE = savedInstanceState.getString(KEY_ACTIVITY_TYPE);
+            System.out.println("SAVED STATE");
         }
 
         // Remove the top option bar
@@ -214,10 +217,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     SensorManager.SENSOR_DELAY_NORMAL);
         }
 
-        ACTIVITY_TYPE = getIntent().getExtras().getString("maptype");
+        // Distinguish if the activity represents a game or map
+        // TODO: finish
+        System.out.println("TYPE: " + ACTIVITY_TYPE);
+        if (ACTIVITY_TYPE == null) {
+            ACTIVITY_TYPE = getIntent().getExtras().getString("maptype");
 
+            // Horrible hack
+            // if the getIntent() returns null, it means we're coming back from the ScoreActivity
+            // hence it was a game
+            // This is easier than trying to rely on savedInstanceState (not working), or setting up
+            // elaborate data stream from the child activity
+            if (ACTIVITY_TYPE == null) {
+                ACTIVITY_TYPE = "game";
+            }
+            System.out.println("TYPE: " + ACTIVITY_TYPE);
+        }
+
+        TextView testText = findViewById(R.id.testTextView);
         if (ACTIVITY_TYPE.equals("map")) {
-           playButton.setVisibility(View.GONE);
+            playButton.setVisibility(View.GONE);
+            testText.setText("MAP");
+
+        } else if (ACTIVITY_TYPE.equals("game")){
+            testText.setText("GAME");
         }
 
     }
@@ -241,6 +264,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mMap != null) {
             outState.putParcelable(KEY_CAMERA_POSITION, mMap.getCameraPosition());
             outState.putParcelable(KEY_LOCATION, mLastKnownLocation);
+            outState.putString(KEY_ACTIVITY_TYPE, ACTIVITY_TYPE);
             super.onSaveInstanceState(outState);
         }
     }
