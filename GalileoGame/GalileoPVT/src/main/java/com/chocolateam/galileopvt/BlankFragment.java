@@ -211,6 +211,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeCorrectedRange();
                             Log.e("CORRECTED RANGE: ", String.valueOf(pseudosat.getCorrectedRange()));
                             pseudoSats.add(pseudosat);
+                            Log.e("",""); // empty line
                         }
                     }
                     else if (CONSTELLATION_SWITCH.equals("GALILEO") && (galileoSatellites.size() > 0)) { //TODO change the 0 to 3 for PVT calculation
