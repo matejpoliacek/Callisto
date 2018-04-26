@@ -189,7 +189,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                                     receiverClock.getTimeNanos(), gpsSatellites.get(i).getTimeOffsetNanos(),
                                     fullBiasNanos,  biasNanos);
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
-                            // pseudosat.computeWeekNumber(fullBiasNanos); TODO URGENT this introduces bug
+                            // pseudosat.computeWeekNumber(fullBiasNanos); TODO URGENT this introduces bugg
                             pseudosat.computeReceivedTime(CONSTELLATION_SWITCH);
                             pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos());
                             pseudosat.computePseudoRange();
