@@ -15,8 +15,8 @@ public class Satellite {
 
     private int id;
     private String constellation;
-    private double gnssTime;
-    private double receivedTime;
+    private long gnssTime;
+    private long receivedTime;
     private long transmittedTime;
     private long milliSecondsNumberNanos;
     private long weekNumberNanos;
@@ -47,6 +47,7 @@ public class Satellite {
         this.constellation = constellation;
         this.navMsg = navMsg;
         this.userPositionTempECEFMeters = userPos;
+        Log.e("SAT ID: ", String.valueOf(this.id));
 
         if (constellation.equals("GPS")) {
 
@@ -66,7 +67,7 @@ public class Satellite {
 
             // Compute input time parameters
             long gpsTime = time;
-            double timeDifference = receivedTime - transmittedTime;
+            long timeDifference = receivedTime - transmittedTime;
             double receiverGpsTowAtTimeOfTransmission = gpsTime - timeDifference;
             int receiverGpsWeekAtTimeOfTransmission;
             if (gpsTime < timeDifference) {
@@ -98,7 +99,7 @@ public class Satellite {
     }
 
     public void computeGnssTime(long timeNanos, double timeOffsetNanos, long fullBiasNanos, double biasNanos) {
-        this.gnssTime = timeNanos + timeOffsetNanos - (fullBiasNanos + biasNanos);
+        this.gnssTime = timeNanos + (long)timeOffsetNanos - (fullBiasNanos + (long)biasNanos);
     }
 
     public void computeWeekNumberNanos(long fullBiasNanos){
@@ -226,4 +227,6 @@ public class Satellite {
         double[] satpos = { this.xECEF, this.yECEF, this.yECEF };
         return satpos;
     }
+
+    public int getId() { return this.id; }
 }
