@@ -224,26 +224,32 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     /************************************************************************************
                      If there are enough satellites with pseudorange, perform linearisation and get x y z
                      ***********************************************************************************/
-                    /*if (CONSTELLATION_SWITCH.equals("GPS") && (pseudoSats.size() > 3)) {
+                    if (CONSTELLATION_SWITCH.equals("GPS") && (pseudoSats.size() > 3)) {
                         Log.e("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "It's happening!!!");
-                        ArrayList<double[]> satCoords = new ArrayList<double[]>();
+                        ArrayList<double[]> satCoords = new ArrayList<>();
                         double[] correctedRanges = new double[pseudoSats.size()];
                         double[] satClockErrors = new double[pseudoSats.size()];
-                        for (int i = 1; i < pseudoSats.size(); i++) {
+                        double[] userPosECEFandReceiverClockError = new double[4];
+                        for (int i = 0; i < userPositionECEFmeters.length; i++) {
+                            userPosECEFandReceiverClockError[i] = userPositionECEFmeters[i];
+                        }
+                        userPosECEFandReceiverClockError[3] = 0.0; // initial clock error
+
+                        for (int i = 0; i < pseudoSats.size(); i++) {
                             Satellite thisSat = pseudoSats.get(i);
                             satCoords.add(thisSat.getSatPositionECEFmeters());
                             correctedRanges[i] = thisSat.getCorrectedRange();
-                            satClockErrors[i] = thisSat.getSatelliteClockCorrectionMeters(); // TODO this should be sat clock correction without relativistic?
+                            satClockErrors[i] = thisSat.getSatelliteClockCorrectionMeters();
                         }
-                        double[] userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPositionECEFmeters, 0, satClockErrors);
-                        // TODO this will only work if there are >3 satellites, dumbass...
+
+                        userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satClockErrors);
                         userPositionECEFmeters[0] = userPosECEFandReceiverClockError[0];
                         userPositionECEFmeters[1] = userPosECEFandReceiverClockError[1];
                         userPositionECEFmeters[2] = userPosECEFandReceiverClockError[2];
-                        Log.e("USER X: ", String.valueOf(userPositionECEFmeters[0]) );
-                        Log.e("USER Y: ", String.valueOf(userPositionECEFmeters[1]) );
-                        Log.e("USER Z: ", String.valueOf(userPositionECEFmeters[2]) );
-                    }*/
+                        Log.e("USER X: ", String.valueOf(userPositionECEFmeters[0]/1000.0));
+                        Log.e("USER Y: ", String.valueOf(userPositionECEFmeters[1]/1000.0) );
+                        Log.e("USER Z: ", String.valueOf(userPositionECEFmeters[2]/1000.0) );
+                    }
 
                 } else {
                     fullBiasNanosSet = false;
