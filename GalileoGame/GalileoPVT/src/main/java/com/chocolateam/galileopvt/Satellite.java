@@ -3,9 +3,6 @@ import android.location.cts.asn1.supl2.rrlp_components.*;
 import android.location.cts.nano.Ephemeris;
 import android.util.Log;
 
-import static com.chocolateam.galileopvt.SatellitePositionCalculator.calculateSatellitePositionAndVelocity;
-import static com.chocolateam.galileopvt.SatellitePositionCalculator.computeUserToSatelliteRangeAndRangeRate;
-
 /**
  * Created by Peter Vaník on 20/03/2018.
  * Class representing a satellite measurement which contains calculated attributes of the measurement.
@@ -49,6 +46,8 @@ public class Satellite {
 
     private double[] userPositionTempECEFMeters;
 
+    private long actualTransmittedTimeNanos;
+
     // Currently GPS-specific constructor, TODO Galileo
     public Satellite(int id, String constellation, Ephemeris.GpsNavMessageProto navMsg, long fullBiasNanos, double[]userPos) {
 
@@ -66,6 +65,7 @@ public class Satellite {
             if (thisSat.prn == id) {
                 ephemerisProto = thisSat;
                 satFound = true;
+                Log.e("THIS SHOULD DISPLAY ONLY ONCE", " sat found");
             }
         }
         if (satFound == false) {
@@ -109,6 +109,7 @@ public class Satellite {
 
     public void computeTransmittedTime(long transmittedTime) {
         this.transmittedTime = transmittedTime;
+        this.actualTransmittedTimeNanos = transmittedTime;
     }
 
     public void computePseudoRange(){
@@ -126,14 +127,14 @@ public class Satellite {
    * @par receiverGpsWeekAtTimeOfTransmission Receiver estimate of GPS week when signal was
    *        transmitted (0-1024+)
     *****************************************************************************************/
-    public void computeSatPosGPS() {
-        double receiverGpsTowAtTimeOfTransmissionCorrectedSec = transmittedTime/1E9 + ephemerisProto.af1;
+    public void showSatPosGPS() {
+        double receiverGpsTowAtTimeOfTransmissionCorrectedSec = transmittedTime/1E9 - getMySatClockOffsetSeconds(transmittedTime);
         Log.e("receiverGpsTowAtTimeOfTransmission: ", String.valueOf(receiverGpsTowAtTimeOfTransmissionCorrectedSec));
         try {
             posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
                     ephemerisProto, // xxxxxxxx
                     receiverGpsTowAtTimeOfTransmissionCorrectedSec,
-                    ephemerisProto.week % 1024,// (int)weekNumber,
+                    ephemerisProto.week ,// (int)weekNumber, mod 1024?
                     3904174,// BlankFragment.getUserPositionECEFmeters()[0], // Noordwijk 3904174
                     301788,//BlankFragment.getUserPositionECEFmeters()[1], // Noordwijk 301788
                     5017699//BlankFragment.getUserPositionECEFmeters()[2]  // Noordwijk 5017699
@@ -145,16 +146,16 @@ public class Satellite {
         xECEF = posAndVel.positionXMeters;
         yECEF = posAndVel.positionYMeters;
         zECEF = posAndVel.positionZMeters;
-                Log.e("Satellite " + this.id, "");
-                Log.e("X ", String.valueOf(xECEF));
-                Log.e("Y ", String.valueOf(yECEF));
-                Log.e("Z ", String.valueOf(zECEF));
+                Log.e("X GOOGLE", String.valueOf(posAndVel.positionXMeters));
+                Log.e("Y GOOGLE", String.valueOf(posAndVel.positionYMeters));
+                Log.e("Z GOOGLE", String.valueOf(posAndVel.positionZMeters));
     }
 
     // Custom computation of calculating satellite positions based on navipedia
     public void computeMySatPos() {
         // time from ephemeris epoch
-        double t = transmittedTime/1E9;
+        transmittedTime -= getMySatClockOffsetSeconds(transmittedTime)*1E9;
+        double t = transmittedTime/1E9 - getMySatClockOffsetSeconds(transmittedTime);
         double toe = ephemerisProto.toe;
         double tk = t - toe;
         if (tk > 302400){
@@ -162,6 +163,9 @@ public class Satellite {
         } else if (tk < -302400) {
             tk += 604800;
         }
+        Log.e("t: ", String.valueOf(t));
+        Log.e("toe: ", String.valueOf(toe));
+        Log.e("tk: ", String.valueOf(tk));
 
         // mean anomaly
         double m0 = ephemerisProto.m0;
@@ -204,16 +208,17 @@ public class Satellite {
         double omegadot = ephemerisProto.omegaDot;
         double lambda_k = omega0 + (omegadot - omega_e)*tk - omega_e*toe;
 
-        // TODO finish
-        // http://www.navipedia.net/index.php/Transformation_between_Terrestrial_Frames
-        // http://www.navipedia.net/index.php/GPS_and_Galileo_Satellite_Coordinates_Computation
-        // Rotation matrix R1
-        // Rotation matrix R3
-        // Shift vector
+        double[] mySatXyz = RotationMatrix.rotate(lambda_k, ik, uk, rk);
+        /*xECEF = mySatXyz[0];
+        yECEF = mySatXyz[1];
+        zECEF = mySatXyz[2];*/
+        Log.e("My X: ", String.valueOf(mySatXyz[0]));
+        Log.e("My Y: ", String.valueOf(mySatXyz[1]));
+        Log.e("My Z: ", String.valueOf(mySatXyz[2]));
     }
 
     // Helper function that calculates the eccentric anomaly iteratively with Wegstein's accelerator
-    public double kepler(double mk, double e){
+    private double kepler(double mk, double e){
         double x,y,x1,y1,x2;
         int i;
         x = mk;
@@ -261,7 +266,7 @@ public class Satellite {
             satelliteClockCorrection = SatelliteClockCorrectionCalculator.calculateSatClockCorrAndEccAnomAndTkIteratively
                     (       ephemerisProto,
                             transmittedTime/1E9,
-                            ephemerisProto.week % 1024
+                            (double)ephemerisProto.week
                     );
         } catch (Exception e) {
             e.printStackTrace();
@@ -269,25 +274,15 @@ public class Satellite {
         satelliteClockCorrectionMeters = satelliteClockCorrection.satelliteClockCorrectionMeters;
     }
 
-    // Computes satellite clock offset according to Navipedia
-    public void computeSatClockOffset(){
-        double t = transmittedTime/1E9; // seconds
+    public double getMySatClockOffsetSeconds(long timeOfTransmissionNanos){
+        double t = timeOfTransmissionNanos/1E9; // seconds
         double t0 = ephemerisProto.toe;
         double a0 = ephemerisProto.af0;
         double a1 = ephemerisProto.af1;
         double a2 = ephemerisProto.af2;
         double satClockOffsetSec = a0 + a1*(t - t0) + a2*(t - t0)*(t - t0);
         Log.e("My sat clock offset in meters: ", String.valueOf(satClockOffsetSec*LIGHTSPEED));
-    }
-
-    public double getMySatClockOffset(){
-        double t = transmittedTime/1E9; // seconds
-        double t0 = ephemerisProto.toe;
-        double a0 = ephemerisProto.af0;
-        double a1 = ephemerisProto.af1;
-        double a2 = ephemerisProto.af2;
-        double satClockOffsetSec = a0 + a1*(t - t0) + a2*(t - t0)*(t - t0);
-        return satClockOffsetSec*LIGHTSPEED;
+        return satClockOffsetSec;
     }
 
     /*// Computes relativistic correction according to Navipedia
@@ -320,7 +315,7 @@ public class Satellite {
     }
 
     public void computeCorrectedRange() {
-        correctedRange = pseudoRange - troposphericCorrectionMeters - satelliteClockCorrectionMeters;
+        correctedRange = pseudoRange - troposphericCorrectionMeters - getMySatClockOffsetSeconds(transmittedTime)*LIGHTSPEED;
         //  - LIGHTSPEED*(ionosphericCorrectionSeconds + dopplerCorrectionSeconds)
     }
 

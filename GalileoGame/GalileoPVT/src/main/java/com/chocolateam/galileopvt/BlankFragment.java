@@ -151,17 +151,12 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     /***************************************************
                      * Clean the list of satellites in measurement event
                      **************************************************/
-
-                    // cellIDLocation();
-
-                    ////////////////////////////////////////////
-
                     for (GnssMeasurement m : noisySatellites) {
                         // Filter satellites for bad carrier to noise ratio and suboptimal signal
                         if (m.getCn0DbHz() >= MIN_CARRIER_TO_NOISE) {
                             if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
                                 if ((m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED) {
-                                    // TODO add elevation filter from Cedric's class, e.g. if m.getSvid().getSatElevation() > MIN_SAT_ELEVATION
+                                    // TODO add elevation filter
                                     gpsSatellites.add(m);
                                 }
                             } else if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
@@ -192,8 +187,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos() + (long)gpsSatellites.get(i).getTimeOffsetNanos()); // TODO test the time offset nano
                             pseudosat.computePseudoRange();
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
-                            pseudosat.computeSatPosGPS();
-                            // pseudosat.computeMySatPos(); // not ready yet
+                            pseudosat.showSatPosGPS();
+                            pseudosat.computeMySatPos();
 
                             // Atmospheric corrections TODO only every 10seconds
                             pseudosat.computeTroposphericCorrection_GPS(userLatitudeRadians, userPositionECEFmeters[2]);
@@ -203,7 +198,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             // Other corrections: Satellite clock offset and Doppler
                             pseudosat.computeSatClockCorrectionMeters();
                             Log.e("GOOGLE'S SAT CLOCK CORRECTION METERS: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
-                            pseudosat.computeSatClockOffset();
                             //pseudosat.computeDopplerCorrection(); // TODO me
 
                             // Corrected pseudorange
@@ -241,7 +235,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             Satellite thisSat = pseudoSats.get(i);
                             satCoords.add(thisSat.getSatPositionECEFmeters());
                             correctedRanges[i] = thisSat.getCorrectedRange();
-                            satClockErrors[i] = thisSat.getMySatClockOffset(); // using my offset instead of Google's
+                            satClockErrors[i] = thisSat.getSatelliteClockCorrectionMeters();// getMySatClockOffsetSeconds(thisSat.getTransmittedTime())*Satellite.LIGHTSPEED; // using my offset instead of Google's
                         }
 
                         userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satClockErrors);
