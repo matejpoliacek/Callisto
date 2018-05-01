@@ -152,7 +152,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                      * Clean the list of satellites in measurement event
                      **************************************************/
 
-                    cellIDLocation();
+                    // cellIDLocation();
 
                     ////////////////////////////////////////////
 
@@ -189,10 +189,11 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                                     fullBiasNanos,  biasNanos);
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
                             pseudosat.computeReceivedTime(CONSTELLATION_SWITCH);
-                            pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos());
+                            pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos() + (long)gpsSatellites.get(i).getTimeOffsetNanos()); // TODO test the time offset nano
                             pseudosat.computePseudoRange();
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
                             pseudosat.computeSatPosGPS();
+                            // pseudosat.computeMySatPos(); // not ready yet
 
                             // Atmospheric corrections TODO only every 10seconds
                             pseudosat.computeTroposphericCorrection_GPS(userLatitudeRadians, userPositionECEFmeters[2]);
@@ -202,6 +203,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             // Other corrections: Satellite clock offset and Doppler
                             pseudosat.computeSatClockCorrectionMeters();
                             Log.e("GOOGLE'S SAT CLOCK CORRECTION METERS: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
+                            pseudosat.computeSatClockOffset();
                             //pseudosat.computeDopplerCorrection(); // TODO me
 
                             // Corrected pseudorange
@@ -210,7 +212,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudoSats.add(pseudosat);
                             Log.e("",""); // empty line
 
-                            pseudosat.computeSatElevationRadians();
+                            //pseudosat.computeSatElevationRadians();
                             Log.e("SAT ELEVATION in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
                         }
                     }
@@ -239,7 +241,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             Satellite thisSat = pseudoSats.get(i);
                             satCoords.add(thisSat.getSatPositionECEFmeters());
                             correctedRanges[i] = thisSat.getCorrectedRange();
-                            satClockErrors[i] = thisSat.getSatelliteClockCorrectionMeters();
+                            satClockErrors[i] = thisSat.getMySatClockOffset(); // using my offset instead of Google's
                         }
 
                         userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satClockErrors);

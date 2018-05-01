@@ -3,6 +3,9 @@ import android.location.cts.asn1.supl2.rrlp_components.*;
 import android.location.cts.nano.Ephemeris;
 import android.util.Log;
 
+import static com.chocolateam.galileopvt.SatellitePositionCalculator.calculateSatellitePositionAndVelocity;
+import static com.chocolateam.galileopvt.SatellitePositionCalculator.computeUserToSatelliteRangeAndRangeRate;
+
 /**
  * Created by Peter Vaník on 20/03/2018.
  * Class representing a satellite measurement which contains calculated attributes of the measurement.
@@ -12,6 +15,9 @@ public class Satellite {
     public static final double NUMBERNANOSECONDSWEEK = 604800e9;
     public static final double NUMBERNANOSECONDSMILI = 1e+8;
     public static final long LIGHTSPEED = 299792458;
+    private static final double UNIVERSAL_GRAVITATIONAL_PARAMETER_M3_SM2 = 3.986005e14;
+    private static final int NUMBER_OF_ITERATIONS_FOR_SAT_POS_CALCULATION = 5;
+    private static final double EARTH_ROTATION_RATE_RAD_PER_SEC = 7.2921151467e-5;
 
     private int id;
     private String constellation;
@@ -50,7 +56,6 @@ public class Satellite {
         this.constellation = constellation;
         this.navMsg = navMsg; // works for GPS only
         this.fullBiasNanos = fullBiasNanos;
-        Log.e("FULLBIAS NANOS", String.valueOf(fullBiasNanos));
         this.userPositionTempECEFMeters = userPos;
         Log.e("SAT ID: ", String.valueOf(this.id));
 
@@ -122,15 +127,16 @@ public class Satellite {
    *        transmitted (0-1024+)
     *****************************************************************************************/
     public void computeSatPosGPS() {
-        double receiverGpsTowAtTimeOfTransmissionCorrectedSec = (transmittedTime + ephemerisProto.af1)/1E9;
+        double receiverGpsTowAtTimeOfTransmissionCorrectedSec = transmittedTime/1E9 + ephemerisProto.af1;
+        Log.e("receiverGpsTowAtTimeOfTransmission: ", String.valueOf(receiverGpsTowAtTimeOfTransmissionCorrectedSec));
         try {
             posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
-                    ephemerisProto,
+                    ephemerisProto, // xxxxxxxx
                     receiverGpsTowAtTimeOfTransmissionCorrectedSec,
-                    ephemerisProto.week,// (int)weekNumber,
-                    BlankFragment.getUserPositionECEFmeters()[0], // Noordwijk 3904174
-                    BlankFragment.getUserPositionECEFmeters()[1], // Noordwijk 301788
-                    BlankFragment.getUserPositionECEFmeters()[2]  // Noordwijk 5017699
+                    ephemerisProto.week % 1024,// (int)weekNumber,
+                    3904174,// BlankFragment.getUserPositionECEFmeters()[0], // Noordwijk 3904174
+                    301788,//BlankFragment.getUserPositionECEFmeters()[1], // Noordwijk 301788
+                    5017699//BlankFragment.getUserPositionECEFmeters()[2]  // Noordwijk 5017699
             );
         } catch (Exception e) {
             e.printStackTrace();
@@ -143,6 +149,89 @@ public class Satellite {
                 Log.e("X ", String.valueOf(xECEF));
                 Log.e("Y ", String.valueOf(yECEF));
                 Log.e("Z ", String.valueOf(zECEF));
+    }
+
+    // Custom computation of calculating satellite positions based on navipedia
+    public void computeMySatPos() {
+        // time from ephemeris epoch
+        double t = transmittedTime/1E9;
+        double toe = ephemerisProto.toe;
+        double tk = t - toe;
+        if (tk > 302400){
+            tk -= 604800;
+        } else if (tk < -302400) {
+            tk += 604800;
+        }
+
+        // mean anomaly
+        double m0 = ephemerisProto.m0;
+        double MU = UNIVERSAL_GRAVITATIONAL_PARAMETER_M3_SM2;
+        double n0 = Math.sqrt(MU) / Math.pow(ephemerisProto.rootOfA, 3.0); // computed mean motion
+        double n = n0 + ephemerisProto.deltaN; // corrected mean motion
+        double mk = m0 + n*tk;
+
+        // compute Kepler's equation for eccentric anomaly Ek
+        double e = ephemerisProto.e;
+        double ek = kepler(mk, e);
+
+        // true anomaly vk
+        double my_a = Math.sqrt(1-e*e)*Math.sin(ek);
+        double my_b = Math.cos(ek)-e;
+        double vk = Math.atan(my_a / my_b);
+
+        // argument of latitude uk
+        double omega = ephemerisProto.omega;
+        double cuc = ephemerisProto.cuc;
+        double cus = ephemerisProto.cus;
+        double uk = omega + vk + cuc*Math.cos(2*(omega+vk)) + cus*Math.sin(2*(omega+vk));
+
+        // radial distance rk
+        double crc = ephemerisProto.crc;
+        double crs = ephemerisProto.crs;
+        double a = ephemerisProto.rootOfA*ephemerisProto.rootOfA;
+        double rk = a*(1-e*Math.cos(ek)) + crc*Math.cos(2*(omega+vk)) + crs*Math.sin(2*omega+vk);
+
+        // inclination ik
+        double i0 = ephemerisProto.i0;
+        double idot = ephemerisProto.iDot;
+        double cic = ephemerisProto.cic;
+        double cis = ephemerisProto.cis;
+        double ik = i0 + idot*tk + cic*Math.cos(2*omega + vk) + cis*Math.sin(2*(omega+vk));
+
+        // longitude of ascending node
+        double omega_e = EARTH_ROTATION_RATE_RAD_PER_SEC;
+        double omega0 = ephemerisProto.omega0;
+        double omegadot = ephemerisProto.omegaDot;
+        double lambda_k = omega0 + (omegadot - omega_e)*tk - omega_e*toe;
+
+        // TODO finish
+        // http://www.navipedia.net/index.php/Transformation_between_Terrestrial_Frames
+        // http://www.navipedia.net/index.php/GPS_and_Galileo_Satellite_Coordinates_Computation
+        // Rotation matrix R1
+        // Rotation matrix R3
+        // Shift vector
+    }
+
+    // Helper function that calculates the eccentric anomaly iteratively with Wegstein's accelerator
+    public double kepler(double mk, double e){
+        double x,y,x1,y1,x2;
+        int i;
+        x = mk;
+        y = mk - (x - e*Math.sin(x));
+        x1 = x;
+        x = y;
+        for (i = 0; i <16; i++){
+            x2=x1;
+            x1=x;
+            y1=y;
+            y=mk-(x-e*Math.sin(x));
+            if(Math.abs(y-y1)<1.0E-15) {
+                break;
+            }
+            x=(x2*y-x*y1)/(y-y1);
+        }
+        double ek = x;
+        return ek;
     }
 
     /*****************************************************************************************
@@ -165,14 +254,14 @@ public class Satellite {
      * @para receiverGpsTowAtTimeOfTransmission receiver estimate of GPS time of week when signal was
      *        transmitted (seconds)
      * @para receiverGpsWeekAtTimeOfTransmission Receiver estimate of GPS week when signal was
-     *      transmitted
+     *      transmitted (0-1024+)
      */
     public void computeSatClockCorrectionMeters(){
         try {
             satelliteClockCorrection = SatelliteClockCorrectionCalculator.calculateSatClockCorrAndEccAnomAndTkIteratively
                     (       ephemerisProto,
                             transmittedTime/1E9,
-                            ephemerisProto.week
+                            ephemerisProto.week % 1024
                     );
         } catch (Exception e) {
             e.printStackTrace();
@@ -180,7 +269,7 @@ public class Satellite {
         satelliteClockCorrectionMeters = satelliteClockCorrection.satelliteClockCorrectionMeters;
     }
 
-    /*// Computes satellite clock offset according to Navipedia
+    // Computes satellite clock offset according to Navipedia
     public void computeSatClockOffset(){
         double t = transmittedTime/1E9; // seconds
         double t0 = ephemerisProto.toe;
@@ -191,7 +280,17 @@ public class Satellite {
         Log.e("My sat clock offset in meters: ", String.valueOf(satClockOffsetSec*LIGHTSPEED));
     }
 
-    // Computes relativistic correction according to Navipedia
+    public double getMySatClockOffset(){
+        double t = transmittedTime/1E9; // seconds
+        double t0 = ephemerisProto.toe;
+        double a0 = ephemerisProto.af0;
+        double a1 = ephemerisProto.af1;
+        double a2 = ephemerisProto.af2;
+        double satClockOffsetSec = a0 + a1*(t - t0) + a2*(t - t0)*(t - t0);
+        return satClockOffsetSec*LIGHTSPEED;
+    }
+
+    /*// Computes relativistic correction according to Navipedia
     public void computeRelativisticCorrectionMeters(){
         double constantComponent = -4.464*(10^(-10));
         double[] satPosVector = new double[3];
