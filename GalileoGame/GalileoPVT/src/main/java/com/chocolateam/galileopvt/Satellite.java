@@ -24,7 +24,6 @@ public class Satellite {
     private long transmittedTime;
     private long milliSecondsNumberNanos;
     private long weekNumberNanos;
-    private long weekNumber;
     private double pseudoRange;
 
     private SatellitePositionCalculator.PositionAndVelocity posAndVel;
@@ -65,7 +64,6 @@ public class Satellite {
             if (thisSat.prn == id) {
                 ephemerisProto = thisSat;
                 satFound = true;
-                Log.e("THIS SHOULD DISPLAY ONLY ONCE", " sat found");
             }
         }
         if (satFound == false) {
@@ -134,10 +132,10 @@ public class Satellite {
             posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
                     ephemerisProto, // xxxxxxxx
                     receiverGpsTowAtTimeOfTransmissionCorrectedSec,
-                    ephemerisProto.week ,// (int)weekNumber, mod 1024?
-                    3904174,// BlankFragment.getUserPositionECEFmeters()[0], // Noordwijk 3904174
-                    301788,//BlankFragment.getUserPositionECEFmeters()[1], // Noordwijk 301788
-                    5017699//BlankFragment.getUserPositionECEFmeters()[2]  // Noordwijk 5017699
+                    ephemerisProto.week,// (int)weekNumber, mod 1024?
+                    BlankFragment.getUserPositionECEFmeters()[0], // Noordwijk 3904174
+                    BlankFragment.getUserPositionECEFmeters()[1], // Noordwijk 301788
+                    BlankFragment.getUserPositionECEFmeters()[2]  // Noordwijk 5017699
             );
         } catch (Exception e) {
             e.printStackTrace();
@@ -154,7 +152,7 @@ public class Satellite {
     // Custom computation of calculating satellite positions based on navipedia
     public void computeMySatPos() {
         // time from ephemeris epoch
-        transmittedTime -= getMySatClockOffsetSeconds(transmittedTime)*1E9;
+        //transmittedTime -= getMySatClockOffsetSeconds(transmittedTime)*1E9;
         double t = transmittedTime/1E9 - getMySatClockOffsetSeconds(transmittedTime);
         double toe = ephemerisProto.toe;
         double tk = t - toe;
@@ -163,9 +161,6 @@ public class Satellite {
         } else if (tk < -302400) {
             tk += 604800;
         }
-        Log.e("t: ", String.valueOf(t));
-        Log.e("toe: ", String.valueOf(toe));
-        Log.e("tk: ", String.valueOf(tk));
 
         // mean anomaly
         double m0 = ephemerisProto.m0;
@@ -240,19 +235,26 @@ public class Satellite {
     }
 
     /*****************************************************************************************
-     *                      Compute corrections and corrected range
+     *                      Compute some corrections and corrected range
      ****************************************************************************************/
 
     // TODO test the three models, or use Galileo's also for GPS
     public void computeTroposphericCorrection_GPS(double userLatitudeRadians, double userHeightAboveSeaLevelMeters){
+        troposphericCorrectionMeters = 0.0;
         troposphericCorrectionMeters = Corrections.computeTropoCorrection_SAAS_withMapping(userLatitudeRadians,
                 userHeightAboveSeaLevelMeters, satElevationRadians);
     }
 
-    // TODO Test the two iono models for GPS, either corrections.IonoGoGPS or google's Ionosphericmodel.Klobuchar
-    public void computeIonosphericCorrection_GPS(){
-        // TODO
-        //ionosphericCorrectionSeconds = IonosphericModel.ionoKloboucharCorrectionSeconds(...);
+    public void computeIonosphericCorrection_GPS(double[] alpha, double[] beta){
+        ionosphericCorrectionSeconds = 0.0;
+        ionosphericCorrectionSeconds = IonosphericModel.ionoKloboucharCorrectionSeconds(
+                userPositionTempECEFMeters,
+                getSatPositionECEFmeters(),
+                transmittedTime/1E9,
+                alpha,
+                beta,
+                IonosphericModel.L1_FREQ_HZ
+        );
     }
 
     /**
@@ -315,8 +317,10 @@ public class Satellite {
     }
 
     public void computeCorrectedRange() {
-        correctedRange = pseudoRange - troposphericCorrectionMeters - getMySatClockOffsetSeconds(transmittedTime)*LIGHTSPEED;
-        //  - LIGHTSPEED*(ionosphericCorrectionSeconds + dopplerCorrectionSeconds)
+        correctedRange = pseudoRange - troposphericCorrectionMeters - satelliteClockCorrectionMeters
+                - LIGHTSPEED*(ionosphericCorrectionSeconds);
+
+        //  - LIGHTSPEED*dopplerCorrectionSeconds
     }
 
     /*********************************************************************************************
@@ -349,8 +353,6 @@ public class Satellite {
     // Meters
     public double getCorrectedRange(){ return this.correctedRange; }
 
-    public long getWeekNumber() { return this.weekNumber; }
-
     // Meters
     public double getxECEF() { return this.xECEF; }
 
@@ -365,9 +367,13 @@ public class Satellite {
     public double getSatElevationRadians() { return this.satElevationRadians; }
 
     public double[] getSatPositionECEFmeters() {
-        double[] satpos = { this.xECEF, this.yECEF, this.yECEF };
+        double[] satpos = { this.xECEF, this.yECEF, this.zECEF };
         return satpos;
     }
+
+    public double getTroposphericCorrectionMeters() { return this.troposphericCorrectionMeters;}
+
+    public  double getIonosphericCorrectionSeconds() { return this.ionosphericCorrectionSeconds;}
 
     public int getId() { return this.id; }
 }

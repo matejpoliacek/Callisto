@@ -40,7 +40,7 @@ import static android.content.Context.LOCATION_SERVICE;
  */
 
 public class BlankFragment extends Fragment implements Runnable, LocationListener {
-    public static final int MIN_CARRIER_TO_NOISE = 28;
+    public static final int MIN_CARRIER_TO_NOISE = 18;
     public static final double MIN_SAT_ELEVATION = Math.toRadians(10.0);
     private static String CONSTELLATION_SWITCH = "GPS"; // possible values: GPS, GALILEO
 
@@ -112,7 +112,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
             public void onGnssMeasurementsReceived (GnssMeasurementsEvent eventArgs) {
                 super.onGnssMeasurementsReceived (eventArgs);
                 noisySatellites = eventArgs.getMeasurements();
-                //((PvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount)); //TODO: Everything is ok in logs but doesn't appear in Activity. Y THO? Publishing causes binder error in logs.
+                //((PvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount));
 
                 receiverClock = eventArgs.getClock();
 
@@ -187,13 +187,23 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos() + (long)gpsSatellites.get(i).getTimeOffsetNanos()); // TODO test the time offset nano
                             pseudosat.computePseudoRange();
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
+                            // TODO if a pseudorange is > 3, there's a clock error so stop the thread and execute run() again
                             pseudosat.showSatPosGPS();
                             pseudosat.computeMySatPos();
 
+                            // Satellite elevation
+                            pseudosat.computeSatElevationRadians();
+                            Log.e("SAT ELEVATION in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
+
                             // Atmospheric corrections TODO only every 10seconds
-                            pseudosat.computeTroposphericCorrection_GPS(userLatitudeRadians, userPositionECEFmeters[2]);
-                            Log.e("TROPO correction: ", String.valueOf(Corrections.computeTropoCorrection_SAAS_withMapping(0.9104, 0.005,1.5708  )));
-                            // Pseudosat.computeIonosphericCorrection_GPS(); // TODO me
+                            Ecef2LlaConverter.GeodeticLlaValues geoValues = Ecef2LlaConverter.convertECEFToLLACloseForm(
+                                    getUserPositionECEFmeters()[0], getUserPositionECEFmeters()[1], getUserPositionECEFmeters()[2]);
+                            pseudosat.computeTroposphericCorrection_GPS(geoValues.latitudeRadians, geoValues.altitudeMeters);
+                            Log.e("TROPO correction: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
+                            double alpha[] = navMsg.iono.alpha;
+                            double beta[] = navMsg.iono.beta;
+                            pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
+                            Log.e("IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
 
                             // Other corrections: Satellite clock offset and Doppler
                             pseudosat.computeSatClockCorrectionMeters();
@@ -205,9 +215,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             Log.e("CORRECTED RANGE: ", String.valueOf(pseudosat.getCorrectedRange()));
                             pseudoSats.add(pseudosat);
                             Log.e("",""); // empty line
-
-                            //pseudosat.computeSatElevationRadians();
-                            Log.e("SAT ELEVATION in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
                         }
                     }
                     else if (CONSTELLATION_SWITCH.equals("GALILEO") && (galileoSatellites.size() > 0)) { //TODO change the 0 to 3 for PVT calculation
@@ -245,6 +252,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         Log.e("USER X: ", String.valueOf(userPositionECEFmeters[0]/1000.0));
                         Log.e("USER Y: ", String.valueOf(userPositionECEFmeters[1]/1000.0) );
                         Log.e("USER Z: ", String.valueOf(userPositionECEFmeters[2]/1000.0) );
+                        Log.e("RX ERROR", String.valueOf(userPosECEFandReceiverClockError[4]));
                     }
 
                 } else {
