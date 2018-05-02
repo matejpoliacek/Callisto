@@ -123,16 +123,16 @@ public class Satellite {
    * @par receiverGpsTowAtTimeOfTransmissionCorrectedSec Receiver estimate of GPS time of week
    *        when signal was transmitted corrected with the satellite clock drift (seconds)
    * @par receiverGpsWeekAtTimeOfTransmission Receiver estimate of GPS week when signal was
-   *        transmitted (0-1024+)
+   *        transmitted
     *****************************************************************************************/
     public void showSatPosGPS() {
-        double receiverGpsTowAtTimeOfTransmissionCorrectedSec = transmittedTime/1E9 - getMySatClockOffsetSeconds(transmittedTime);
+        double receiverGpsTowAtTimeOfTransmissionCorrectedSec = transmittedTime/1E9 - getSatelliteClockCorrectionMeters()/LIGHTSPEED;
         Log.e("receiverGpsTowAtTimeOfTransmission: ", String.valueOf(receiverGpsTowAtTimeOfTransmissionCorrectedSec));
         try {
             posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
-                    ephemerisProto, // xxxxxxxx
+                    ephemerisProto,
                     receiverGpsTowAtTimeOfTransmissionCorrectedSec,
-                    ephemerisProto.week,// (int)weekNumber, mod 1024?
+                    ephemerisProto.week,
                     BlankFragment.getUserPositionECEFmeters()[0], // Noordwijk 3904174
                     BlankFragment.getUserPositionECEFmeters()[1], // Noordwijk 301788
                     BlankFragment.getUserPositionECEFmeters()[2]  // Noordwijk 5017699
@@ -151,8 +151,6 @@ public class Satellite {
 
     // Custom computation of calculating satellite positions based on navipedia
     public void computeMySatPos() {
-        // time from ephemeris epoch
-        //transmittedTime -= getMySatClockOffsetSeconds(transmittedTime)*1E9;
         double t = transmittedTime/1E9 - getMySatClockOffsetSeconds(transmittedTime);
         double toe = ephemerisProto.toe;
         double tk = t - toe;
