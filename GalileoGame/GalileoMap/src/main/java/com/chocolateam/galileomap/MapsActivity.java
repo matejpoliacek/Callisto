@@ -815,12 +815,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             debugGraphicsButton .setText("Stop Graphics Debugging");
             bGraphicsDebug = true;
             point1 = new LatLng(52.216596, 4.420682);
-            point2 = new LatLng(52.215974, 4.422007);
+            point2 = new LatLng(52.216974, 4.420007);
             gameSetup = false;
 
             Location fakeLocation = new Location("fake_provider");
             fakeLocation.setAltitude(0);
-            fakeLocation.setLatitude(52.216523);
+            fakeLocation.setLatitude(52.216598);
             fakeLocation.setLongitude(4.421139);
             fakeLocation.setSpeed(0);
 

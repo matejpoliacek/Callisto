@@ -19,11 +19,11 @@ public class SummaryActivity extends MapsActivity {
 
         Boolean won = getIntent().getExtras().getBoolean("won");
         if (won) {
-            message.setText("You've won!");
+            message.setText("Victory!");
             scoreView.setVisibility(View.VISIBLE);
-            scoreView.setText("Score: " + getIntent().getExtras().getInt("score"));
+            scoreView.setText(getIntent().getExtras().getInt("score"));
         } else {
-            message.setText("You've lost!");
+            message.setText("Game Over!");
             scoreView.setVisibility(View.INVISIBLE);
         }
 

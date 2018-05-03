@@ -32,8 +32,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:textSize="45sp"
-            android:text="VICTORY!"
+            android:textSize="75sp"
+            android:text="Victory!"
             android:letterSpacing="0.05"
             android:fontFamily="@font/nasalization_rg"
             android:shadowColor="@color/hologram_blue"
@@ -67,17 +67,17 @@
             android:id="@+id/scoreView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="2000"
-            android:textAlignment="center"
-            app:layout_constraintTop_toBottomOf="@+id/resultView"
-            android:letterSpacing="0.05"
             android:fontFamily="@font/nasalization_rg"
+            android:letterSpacing="0.05"
             android:shadowColor="@color/hologram_blue"
             android:shadowDx="0"
             android:shadowDy="0"
-            android:shadowRadius="60"
+            android:shadowRadius="70"
+            android:text="2000"
+            android:textAlignment="center"
             android:textColor="#FFFFFF"
-            android:textSize="40sp" />
+            android:textSize="40sp"
+            app:layout_constraintTop_toBottomOf="@+id/resultView" />
 
         <TextView
             android:id="@+id/textView"
@@ -105,7 +105,7 @@
             android:shadowColor="@color/hologram_blue"
             android:shadowDx="0"
             android:shadowDy="0"
-            android:shadowRadius="60"
+            android:shadowRadius="70"
             android:textColor="#FFFFFF"
             android:text="GALILEO"
             android:paddingBottom="50dp"/>
