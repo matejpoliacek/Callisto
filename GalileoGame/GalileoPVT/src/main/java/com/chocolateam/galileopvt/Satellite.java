@@ -45,8 +45,6 @@ public class Satellite {
 
     private double[] userPositionTempECEFMeters;
 
-    private long actualTransmittedTimeNanos;
-
     // Currently GPS-specific constructor, TODO Galileo
     public Satellite(int id, String constellation, Ephemeris.GpsNavMessageProto navMsg, long fullBiasNanos, double[]userPos) {
 
@@ -80,17 +78,14 @@ public class Satellite {
      */
     public void computeGnssTime(long timeNanos, double timeOffsetNanos, long fullBiasNanos, double biasNanos) {
         this.gnssTime = timeNanos + (long)timeOffsetNanos - (fullBiasNanos + (long)biasNanos);
+        Log.e("Full Bias Nanos: ", String.valueOf(fullBiasNanos));
+        Log.e("Bias Nanos: ", String.valueOf(biasNanos));
     }
 
     // Number of nanoseconds that have passed from the beginning of GPS time to the current week number
     public void computeWeekNumberNanos(long fullBiasNanos){
         this.weekNumberNanos = (long) Math.floor(-fullBiasNanos/NUMBERNANOSECONDSWEEK)*(long)NUMBERNANOSECONDSWEEK;
     }
-
-   /* // Current GPS week number
-    public void computeWeekNumber(long fullBiasNanos){
-        this.weekNumber = (long) Math.floor(-fullBiasNanos/NUMBERNANOSECONDSWEEK);
-    }*/
 
     public void computeMillisecondsNumberNanos(long fullBiasNanos) {
         this.milliSecondsNumberNanos = (long) Math.floor(-fullBiasNanos/NUMBERNANOSECONDSMILI)*(long)NUMBERNANOSECONDSMILI;
@@ -107,7 +102,6 @@ public class Satellite {
 
     public void computeTransmittedTime(long transmittedTime) {
         this.transmittedTime = transmittedTime;
-        this.actualTransmittedTimeNanos = transmittedTime;
     }
 
     public void computePseudoRange(){
@@ -118,6 +112,77 @@ public class Satellite {
         this.milliSecondsNumberNanos = milliSecondsNumberNanos;
     }
 
+    /*****************************************************************************************
+     *                      Compute satellite clock correction and recompute Tx
+     ****************************************************************************************/
+    /**
+     * @para receiverGpsTowAtTimeOfTransmission receiver estimate of GPS time of week when signal was
+     *        transmitted (seconds)
+     * @para receiverGpsWeekAtTimeOfTransmission Receiver estimate of GPS week when signal was
+     *      transmitted (0-1024+)
+     */
+    // re-compute transmission time
+    // compute clock bias
+    // recompute transmission time
+    // recompute clock bias
+    public void computeSatClockCorrectionAndRecomputeTransmissionTime(){
+        transmittedTime = receivedTime - (long)pseudoRange/LIGHTSPEED;
+        computeSatClockCorrectionMeters();
+        transmittedTime -= satelliteClockCorrectionMeters/LIGHTSPEED;
+        computeSatClockCorrectionMeters();
+    }
+
+    public void computeSatClockCorrectionMeters(){
+        try {
+            satelliteClockCorrection = SatelliteClockCorrectionCalculator.calculateSatClockCorrAndEccAnomAndTkIteratively
+                    (       ephemerisProto,
+                            transmittedTime/1E9,
+                            (double)ephemerisProto.week
+                    );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        satelliteClockCorrectionMeters = satelliteClockCorrection.satelliteClockCorrectionMeters;
+    }
+
+    public double getMySatClockOffsetMeters(long timeOfTransmissionNanos){
+        double t = timeOfTransmissionNanos/1E9; // seconds
+        double t0 = ephemerisProto.toe;
+        double a0 = ephemerisProto.af0;
+        double a1 = ephemerisProto.af1;
+        double a2 = ephemerisProto.af2;
+        double satClockOffsetSec = a0 + a1*(t - t0) + a2*(t - t0)*(t - t0);
+        double satClockOffsetMeters = satClockOffsetSec*LIGHTSPEED;
+        double mySatClockOffset = satClockOffsetMeters + getRelativisticCorrectionMeters();
+        Log.e("My sat clock offset in meters: ", String.valueOf(mySatClockOffset));
+        return mySatClockOffset;
+    }
+
+    // Custom function to compute relativistic correction according to Navipedia
+    public double getRelativisticCorrectionMeters(){
+        double constantComponent = -4.464*(10^(-10));
+        double[] satPosVector = new double[3];
+        double[] satVelVector = new double[3];
+        satPosVector[0] = xECEF;
+        satPosVector[1] = yECEF;
+        satPosVector[2] = zECEF;
+        satVelVector[0] = posAndVel.velocityXMetersPerSec;
+        satVelVector[1] = posAndVel.velocityYMetersPerSec;
+        satVelVector[2] = posAndVel.velocityZMetersPerSec;
+        double periodicComponent = -2*dotProduct(satPosVector, satVelVector)/(LIGHTSPEED*LIGHTSPEED);
+        relativisticCorrectionMeters = constantComponent + periodicComponent;
+        Log.e("My relativistic clock correction in meters: ", String.valueOf(relativisticCorrectionMeters));
+        return relativisticCorrectionMeters;
+    }
+
+    // Helper function for relativistic correction
+    public static double dotProduct(double[] a, double[] b) {
+        double sum = 0;
+        for (int i = 0; i < a.length; i++) {
+            sum += a[i] * b[i];
+        }
+        return sum;
+    }
 
     /***************************** Compute satellite position ********************************
    * @par receiverGpsTowAtTimeOfTransmissionCorrectedSec Receiver estimate of GPS time of week
@@ -125,9 +190,8 @@ public class Satellite {
    * @par receiverGpsWeekAtTimeOfTransmission Receiver estimate of GPS week when signal was
    *        transmitted
     *****************************************************************************************/
-    public void showSatPosGPS() {
-        double receiverGpsTowAtTimeOfTransmissionCorrectedSec = transmittedTime/1E9 - getSatelliteClockCorrectionMeters()/LIGHTSPEED;
-        Log.e("receiverGpsTowAtTimeOfTransmission: ", String.valueOf(receiverGpsTowAtTimeOfTransmissionCorrectedSec));
+    public void computeSatellitePosition() {
+        double receiverGpsTowAtTimeOfTransmissionCorrectedSec = transmittedTime/1E9;
         try {
             posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
                     ephemerisProto,
@@ -144,14 +208,14 @@ public class Satellite {
         xECEF = posAndVel.positionXMeters;
         yECEF = posAndVel.positionYMeters;
         zECEF = posAndVel.positionZMeters;
-                Log.e("X GOOGLE", String.valueOf(posAndVel.positionXMeters));
-                Log.e("Y GOOGLE", String.valueOf(posAndVel.positionYMeters));
-                Log.e("Z GOOGLE", String.valueOf(posAndVel.positionZMeters));
+                Log.e("X Satellite: ", String.valueOf(posAndVel.positionXMeters));
+                Log.e("Y Satellite: ", String.valueOf(posAndVel.positionYMeters));
+                Log.e("Z Satellite: ", String.valueOf(posAndVel.positionZMeters));
     }
 
     // Custom computation of calculating satellite positions based on navipedia
     public void computeMySatPos() {
-        double t = transmittedTime/1E9 - getMySatClockOffsetSeconds(transmittedTime);
+        double t = transmittedTime/1E9 - satelliteClockCorrectionMeters/LIGHTSPEED;
         double toe = ephemerisProto.toe;
         double tk = t - toe;
         if (tk > 302400){
@@ -233,10 +297,22 @@ public class Satellite {
     }
 
     /*****************************************************************************************
-     *                      Compute some corrections and corrected range
+     *                      Compute atmospheric corrections and corrected range
      ****************************************************************************************/
+    // Computes the elevation angle in radians of the satellite
+    public void computeSatElevationRadians() {
+        double[] satposecefm = {xECEF, yECEF, zECEF};
+        double[] user = userPositionTempECEFMeters;
+        elevationAzimuthDist =
+                EcefToTopocentricConverter.convertCartesianToTopocentericRadMeters(
+                        user,
+                        GpsMathOperations.subtractTwoVectors(
+                                satposecefm, user
+                        )
+                );
+        satElevationRadians = elevationAzimuthDist.elevationRadians;
+    }
 
-    // TODO test the three models, or use Galileo's also for GPS
     public void computeTroposphericCorrection_GPS(double userLatitudeRadians, double userHeightAboveSeaLevelMeters){
         troposphericCorrectionMeters = 0.0;
         troposphericCorrectionMeters = Corrections.computeTropoCorrection_SAAS_withMapping(userLatitudeRadians,
@@ -255,89 +331,13 @@ public class Satellite {
         );
     }
 
-    /**
-     * @para receiverGpsTowAtTimeOfTransmission receiver estimate of GPS time of week when signal was
-     *        transmitted (seconds)
-     * @para receiverGpsWeekAtTimeOfTransmission Receiver estimate of GPS week when signal was
-     *      transmitted (0-1024+)
-     */
-    public void computeSatClockCorrectionMeters(){
-        try {
-            satelliteClockCorrection = SatelliteClockCorrectionCalculator.calculateSatClockCorrAndEccAnomAndTkIteratively
-                    (       ephemerisProto,
-                            transmittedTime/1E9,
-                            (double)ephemerisProto.week
-                    );
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        satelliteClockCorrectionMeters = satelliteClockCorrection.satelliteClockCorrectionMeters;
-    }
-
-    public double getMySatClockOffsetSeconds(long timeOfTransmissionNanos){
-        double t = timeOfTransmissionNanos/1E9; // seconds
-        double t0 = ephemerisProto.toe;
-        double a0 = ephemerisProto.af0;
-        double a1 = ephemerisProto.af1;
-        double a2 = ephemerisProto.af2;
-        double satClockOffsetSec = a0 + a1*(t - t0) + a2*(t - t0)*(t - t0);
-        Log.e("My sat clock offset in meters: ", String.valueOf(satClockOffsetSec*LIGHTSPEED));
-        return satClockOffsetSec;
-    }
-
-    /*// Computes relativistic correction according to Navipedia
-    public void computeRelativisticCorrectionMeters(){
-        double constantComponent = -4.464*(10^(-10));
-        double[] satPosVector = new double[3];
-        double[] satVelVector = new double[3];
-        satPosVector[0] = xECEF;
-        satPosVector[1] = yECEF;
-        satPosVector[2] = zECEF;
-        satVelVector[0] = posAndVel.velocityXMetersPerSec;
-        satVelVector[1] = posAndVel.velocityYMetersPerSec;
-        satVelVector[2] = posAndVel.velocityZMetersPerSec;
-        double periodicComponent = -2*dotProduct(satPosVector, satVelVector)/(LIGHTSPEED*LIGHTSPEED);
-        relativisticCorrectionMeters = constantComponent + periodicComponent;
-        Log.e("My relativistic clock correction in meters: ", String.valueOf(relativisticCorrectionMeters));
-    }
-
-    // Helper function for relativistic correction
-    public static double dotProduct(double[] a, double[] b) {
-        double sum = 0;
-        for (int i = 0; i < a.length; i++) {
-            sum += a[i] * b[i];
-        }
-        return sum;
-    }*/
-
-    public void computeDoppler() {
-        // TODO
-    }
-
+    /*******************************************************************************
+     *                                  Corrected range
+     ******************************************************************************/
     public void computeCorrectedRange() {
         correctedRange = pseudoRange - troposphericCorrectionMeters - satelliteClockCorrectionMeters
                 - LIGHTSPEED*(ionosphericCorrectionSeconds);
-
-        //  - LIGHTSPEED*dopplerCorrectionSeconds
     }
-
-    /*********************************************************************************************
-     *                              Compute satellite elevation
-     ********************************************************************************************/
-    // Computes the elevation angle in radians of the satellite
-    public void computeSatElevationRadians() {
-        double[] satposecefm = {xECEF, yECEF, zECEF};
-        double[] user = userPositionTempECEFMeters;
-        elevationAzimuthDist =
-                EcefToTopocentricConverter.convertCartesianToTopocentericRadMeters(
-                        user,
-                        GpsMathOperations.subtractTwoVectors(
-                                satposecefm, user
-                        )
-                );
-        satElevationRadians = elevationAzimuthDist.elevationRadians;
-    }
-
 
     /*******************************************************************************
      *                                  Getters

@@ -112,7 +112,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
             public void onGnssMeasurementsReceived (GnssMeasurementsEvent eventArgs) {
                 super.onGnssMeasurementsReceived (eventArgs);
                 noisySatellites = eventArgs.getMeasurements();
-                //((PvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount));
 
                 receiverClock = eventArgs.getClock();
 
@@ -155,10 +154,17 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         // Filter satellites for bad carrier to noise ratio and suboptimal signal
                         if (m.getCn0DbHz() >= MIN_CARRIER_TO_NOISE) {
                             if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
-                                if ((m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED) {
-                                    // TODO add elevation filter
+                                if (
+                                        (
+                                            (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
+                                                    ||
+                                            (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
+                                        ) &&
+                                                (m.getState() & GnssMeasurement.STATE_CODE_LOCK) == GnssMeasurement.STATE_CODE_LOCK
+                                    ) {
                                     gpsSatellites.add(m);
                                 }
+
                             } else if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
                                 if ((m.getState() & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) {
                                     galileoSatellites.add(m);
@@ -184,31 +190,30 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                                     fullBiasNanos,  biasNanos);
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
                             pseudosat.computeReceivedTime(CONSTELLATION_SWITCH);
+                            Log.e("State: ", String.valueOf(gpsSatellites.get(i).getState()));
+                            Log.e("Time offset nanos: ", String.valueOf(gpsSatellites.get(i).getTimeOffsetNanos()));
                             pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos() + (long)gpsSatellites.get(i).getTimeOffsetNanos()); // TODO test the time offset nano
                             pseudosat.computePseudoRange();
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
                             // TODO if a pseudorange is > 3, there's a clock error so stop the thread and execute run() again
-                            pseudosat.showSatPosGPS();
-                            pseudosat.computeMySatPos();
 
-                            // Satellite elevation
+                            // Satellite clock correction
+                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime();
+                            Log.e("Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
+                            pseudosat.computeSatellitePosition();
+                            //pseudosat.computeMySatPos();
+
+                            // Satellite elevation and atmospheric corrections TODO only every 10seconds
                             pseudosat.computeSatElevationRadians();
-                            Log.e("SAT ELEVATION in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
-
-                            // Atmospheric corrections TODO only every 10seconds
+                            Log.e("Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
                             Ecef2LlaConverter.GeodeticLlaValues geoValues = Ecef2LlaConverter.convertECEFToLLACloseForm(
                                     getUserPositionECEFmeters()[0], getUserPositionECEFmeters()[1], getUserPositionECEFmeters()[2]);
                             pseudosat.computeTroposphericCorrection_GPS(geoValues.latitudeRadians, geoValues.altitudeMeters);
-                            Log.e("TROPO correction: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
+                            Log.e("Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
                             double alpha[] = navMsg.iono.alpha;
                             double beta[] = navMsg.iono.beta;
                             pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
                             Log.e("IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
-
-                            // Other corrections: Satellite clock offset and Doppler
-                            pseudosat.computeSatClockCorrectionMeters();
-                            Log.e("GOOGLE'S SAT CLOCK CORRECTION METERS: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
-                            //pseudosat.computeDopplerCorrection(); // TODO me
 
                             // Corrected pseudorange
                             pseudosat.computeCorrectedRange();
