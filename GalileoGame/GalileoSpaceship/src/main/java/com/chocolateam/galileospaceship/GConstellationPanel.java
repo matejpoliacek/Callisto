@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 
 import com.example.lionelgarcia.galileospaceship.R;
@@ -22,15 +23,9 @@ public class GConstellationPanel extends RelativeLayout {
     private Context mContext;
     private View mView;
 
-    private GButtonSwitch mBeidouSwitch;
-    private GButtonSwitch mGlonassSwitch;
-    private GButtonSwitch mGalileoSwitch;
-    private GButtonSwitch mGpsSwitch;
-    private GButtonSwitch mQzssSwitch;
-    private GButtonSwitch mSbasSwitch;
-
-    private GStickSwitch mGalileoOnlySwitch;
-    private GStickSwitch mAllSwitch;
+    private RadioButton mGalileoSwitch;
+    private RadioButton  mGpsSwitch;
+    private RadioButton  mQzssSwitch;
 
     private ImageButton mOKButton;
     private ImageButton mCANCELButton;
@@ -42,21 +37,15 @@ public class GConstellationPanel extends RelativeLayout {
 
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        inflater.inflate(R.layout.constellation_pannel, this, true);
+        inflater.inflate(R.layout.constellation_pannel2, this, true);
 
         mView = this.findViewById(R.id.main_layout);
         mOKButton = this.findViewById(R.id.ok_button);
         mCANCELButton = this.findViewById(R.id.cancel_button);
 
-        mBeidouSwitch = this.findViewById(R.id.beidou_switch);
-        mGlonassSwitch = this.findViewById(R.id.glonass_switch);
         mGalileoSwitch = this.findViewById(R.id.galileo_switch);
         mGpsSwitch = this.findViewById(R.id.gps_switch);
-        mQzssSwitch = this.findViewById(R.id.qzss_switch);
-        mSbasSwitch = this.findViewById(R.id.sbas_switch);
-
-        mGalileoOnlySwitch = this.findViewById(R.id.galileo_only_switch);
-        mAllSwitch = this.findViewById(R.id.all_switch);
+        mQzssSwitch = this.findViewById(R.id.all_switch);
 
         mViewAnimation = AnimationUtils.loadAnimation(mContext, R.anim.constellation_panel_initial_position);
         mView.startAnimation(mViewAnimation);
@@ -73,50 +62,8 @@ public class GConstellationPanel extends RelativeLayout {
             }
         });
 
-        mAllSwitch.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mAllSwitch.changeState();
-                Boolean state = mAllSwitch.getState();
-                mBeidouSwitch.SetState(state);
-                mGlonassSwitch.SetState(state);
-                mGalileoSwitch.SetState(state);
-                mGpsSwitch.SetState(state);
-                mQzssSwitch.SetState(state);
-                mSbasSwitch.SetState(state);
-
-                if(state & mGalileoOnlySwitch.getState()){
-                    mGalileoOnlySwitch.SetState(!state);
-                }
-
-            }
-        });
-
-        mGalileoOnlySwitch.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mGalileoOnlySwitch.changeState();
-                Boolean state = mGalileoOnlySwitch.getState();
-
-                if(state) {
-                    mBeidouSwitch.SetState(!state);
-                    mGlonassSwitch.SetState(!state);
-                    mGalileoSwitch.SetState(state);
-                    mGpsSwitch.SetState(!state);
-                    mQzssSwitch.SetState(!state);
-                    mSbasSwitch.SetState(!state);
-                    mAllSwitch.SetState(!state);
-
-                    if (state & mAllSwitch.getState()) {
-                        mAllSwitch.SetState(!state);
-                    }
-                }
-                else{
-                    mGalileoSwitch.SetState(state);
-                }
-
-            }
-        });
-
         setActive(false);
+
     }
 
     public GConstellationPanel(Context context) {
@@ -174,14 +121,9 @@ public class GConstellationPanel extends RelativeLayout {
 
     public void setActive(Boolean active){
 
-        mBeidouSwitch.setEnabled(active);
-        mGlonassSwitch.setEnabled(active);
         mGalileoSwitch.setEnabled(active);
         mQzssSwitch.setEnabled(active);
-        mSbasSwitch.setEnabled(active);
         mGalileoSwitch.setEnabled(active);
-        mAllSwitch.setEnabled(active);
-        mGalileoOnlySwitch.setEnabled(active);
 
         if(active) {
             mCANCELButton.setVisibility(VISIBLE);

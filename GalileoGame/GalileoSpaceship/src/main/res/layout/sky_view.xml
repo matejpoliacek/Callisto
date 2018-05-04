@@ -30,44 +30,46 @@
         <!--app:layout_constraintTop_toTopOf="parent" />-->
 
     <ImageView
-        android:id="@+id/central_cabin"
+        android:id="@+id/spaceship_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_weight="1"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:src="@drawable/central_cabin"
+        android:src="@drawable/spaceship_background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
     <FrameLayout
         android:id="@+id/earth_all"
         android:layout_width="match_parent"
-        android:layout_height="500dp"
+        android:layout_height="900dp"
         android:layout_marginTop="450dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/earth"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter"
+            android:layout_width="550dp"
+            android:layout_height="550dp"
+            android:scaleType="fitXY"
             android:src="@drawable/earth" />
 
         <ImageView
-            android:id="@+id/clouds"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter"
-            android:src="@drawable/clouds" />
+            android:id="@+id/shadow"
+            android:layout_width="550dp"
+            android:layout_height="550dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/shadow" />
 
         <ImageView
-            android:id="@+id/shadow"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter"
-            android:src="@drawable/shadow" />
+            android:id="@+id/clouds"
+            android:layout_width="550dp"
+            android:layout_height="550dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/clouds" />
 
     </FrameLayout>
 
@@ -76,7 +78,37 @@
         android:layout_width="411dp"
         android:layout_height="400dp"
         android:layout_marginTop="450dp"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:translationX="50dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </com.chocolateam.galileospaceship.SatView>
+
+    <ImageView
+        android:id="@+id/central_cabin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/center_panel"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/menuButton"
+        android:layout_width="42dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="30dp"
+        android:adjustViewBounds="true"
+        android:background="#00000000"
+        android:onClick="toggleZoom"
+        android:scaleType="fitCenter"
+        android:src="@drawable/menu_button_selector"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <ImageView
         android:id="@+id/central_cabin_light"
@@ -84,7 +116,7 @@
         android:layout_height="match_parent"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:src="@drawable/central_cabin_light"
+        android:src="@drawable/center_cabin_light"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
