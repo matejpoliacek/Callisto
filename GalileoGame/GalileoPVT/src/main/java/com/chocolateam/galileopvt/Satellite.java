@@ -1,4 +1,5 @@
 package com.chocolateam.galileopvt;
+import android.location.GnssMeasurement;
 import android.location.cts.asn1.supl2.rrlp_components.*;
 import android.location.cts.nano.Ephemeris;
 import android.util.Log;
@@ -10,14 +11,15 @@ import android.util.Log;
 
 public class Satellite {
     public static final double NUMBERNANOSECONDSWEEK = 604800e9;
-    public static final double NUMBERNANOSECONDSMILI = 1e+8;
+    public static final double NUMBERNANOSECONDS100MILI = 1e+8;
+    public static final double WEEKSEC = 604800;
     public static final long LIGHTSPEED = 299792458;
     private static final double UNIVERSAL_GRAVITATIONAL_PARAMETER_M3_SM2 = 3.986005e14;
-    private static final int NUMBER_OF_ITERATIONS_FOR_SAT_POS_CALCULATION = 5;
     private static final double EARTH_ROTATION_RATE_RAD_PER_SEC = 7.2921151467e-5;
 
     private int id;
     private String constellation;
+    private int state;
     private long fullBiasNanos;
     private long gnssTime;
     private long receivedTime;
@@ -45,11 +47,11 @@ public class Satellite {
 
     private double[] userPositionTempECEFMeters;
 
-    // Currently GPS-specific constructor, TODO Galileo
-    public Satellite(int id, String constellation, Ephemeris.GpsNavMessageProto navMsg, long fullBiasNanos, double[]userPos) {
+    public Satellite(int id, String constellation, Ephemeris.GpsNavMessageProto navMsg, long fullBiasNanos, double[]userPos, int state) {
 
         this.id = id;
         this.constellation = constellation;
+        this.state = state;
         this.navMsg = navMsg; // works for GPS only
         this.fullBiasNanos = fullBiasNanos;
         this.userPositionTempECEFMeters = userPos;
@@ -78,8 +80,6 @@ public class Satellite {
      */
     public void computeGnssTime(long timeNanos, double timeOffsetNanos, long fullBiasNanos, double biasNanos) {
         this.gnssTime = timeNanos + (long)timeOffsetNanos - (fullBiasNanos + (long)biasNanos);
-        Log.e("Full Bias Nanos: ", String.valueOf(fullBiasNanos));
-        Log.e("Bias Nanos: ", String.valueOf(biasNanos));
     }
 
     // Number of nanoseconds that have passed from the beginning of GPS time to the current week number
@@ -88,16 +88,17 @@ public class Satellite {
     }
 
     public void computeMillisecondsNumberNanos(long fullBiasNanos) {
-        this.milliSecondsNumberNanos = (long) Math.floor(-fullBiasNanos/NUMBERNANOSECONDSMILI)*(long)NUMBERNANOSECONDSMILI;
+        this.milliSecondsNumberNanos = (long) Math.floor(-fullBiasNanos/NUMBERNANOSECONDS100MILI)*(long)NUMBERNANOSECONDS100MILI;
     }
 
     // aka. measurement time
-    public void computeReceivedTime(String constellation) {
-        if (constellation.equals("GPS")){
-            this.receivedTime = gnssTime - weekNumberNanos;
-        } else if (constellation.equals("GALILEO")) {
+    public void computeReceivedTime() {
+        if ((state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) {
             this.receivedTime = gnssTime - milliSecondsNumberNanos;
-        };
+        }
+        else {
+            this.receivedTime = gnssTime - weekNumberNanos;
+        }
     }
 
     public void computeTransmittedTime(long transmittedTime) {
@@ -105,11 +106,12 @@ public class Satellite {
     }
 
     public void computePseudoRange(){
-        pseudoRange = (receivedTime - transmittedTime)/1E9*LIGHTSPEED;
-    }
-
-    public void computeSecondsNumberNanos(long milliSecondsNumberNanos) {
-        this.milliSecondsNumberNanos = milliSecondsNumberNanos;
+        if ((state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) {
+            pseudoRange = (gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI; // TODO test
+        }
+        else {
+            pseudoRange = (receivedTime - transmittedTime)/1E9*LIGHTSPEED;
+        }
     }
 
     /*****************************************************************************************
@@ -143,8 +145,10 @@ public class Satellite {
             e.printStackTrace();
         }
         satelliteClockCorrectionMeters = satelliteClockCorrection.satelliteClockCorrectionMeters;
+        // TODO Single frequency users must remove the group delay term(TGD) from the nav message to their SV clock correction term (from p. 90 of ICD-GPS-200C)
     }
 
+    // Custom function to compute satellite clock correction (Navipedia) - alternative to computeSatClockCorrectionMeters()
     public double getMySatClockOffsetMeters(long timeOfTransmissionNanos){
         double t = timeOfTransmissionNanos/1E9; // seconds
         double t0 = ephemerisProto.toe;
