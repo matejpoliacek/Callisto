@@ -378,4 +378,6 @@ public class Satellite {
     public  double getIonosphericCorrectionSeconds() { return this.ionosphericCorrectionSeconds;}
 
     public int getId() { return this.id; }
+
+    public long getGnssTime() {return this.gnssTime; }
 }
