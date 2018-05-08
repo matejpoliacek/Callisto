@@ -93,7 +93,9 @@ public class Satellite {
 
     // aka. measurement time
     public void computeReceivedTime() {
-        if ((state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) {
+        if (
+                (state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
+                        && constellation.equals("GALILEO")) {
             this.receivedTime = gnssTime - milliSecondsNumberNanos;
         }
         else {
@@ -106,7 +108,9 @@ public class Satellite {
     }
 
     public void computePseudoRange(){
-        if ((state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) {
+        if (
+                (state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
+                && constellation.equals("GALILEO")) {
             pseudoRange = (gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI; // TODO test
         }
         else {
@@ -131,6 +135,8 @@ public class Satellite {
         transmittedTime = receivedTime - (long)pseudoRange/LIGHTSPEED;
         computeSatClockCorrectionMeters();
         transmittedTime -= satelliteClockCorrectionMeters/LIGHTSPEED;
+        Log.e("New transmitted time:", String.valueOf(transmittedTime));
+        Log.e("Ephemeris toe: ", String.valueOf(ephemerisProto.toe));
         computeSatClockCorrectionMeters();
     }
 
@@ -201,9 +207,9 @@ public class Satellite {
                     ephemerisProto,
                     receiverGpsTowAtTimeOfTransmissionCorrectedSec,
                     ephemerisProto.week,
-                    BlankFragment.getUserPositionECEFmeters()[0], // Noordwijk 3904174
-                    BlankFragment.getUserPositionECEFmeters()[1], // Noordwijk 301788
-                    BlankFragment.getUserPositionECEFmeters()[2]  // Noordwijk 5017699
+                    BlankFragment.getUserPositionECEFmeters()[0],
+                    BlankFragment.getUserPositionECEFmeters()[1],
+                    BlankFragment.getUserPositionECEFmeters()[2]
             );
         } catch (Exception e) {
             e.printStackTrace();

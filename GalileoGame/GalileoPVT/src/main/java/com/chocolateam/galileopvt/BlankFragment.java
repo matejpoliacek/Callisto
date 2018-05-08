@@ -59,6 +59,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private Ephemeris.GpsNavMessageProto navMsg;
 
     private static double[] userPositionECEFmeters;
+    private double latitudeRadians;
+    private double longitudeRadians;
+    private double altitudeMeters;
 
     public BlankFragment() {
     }
@@ -83,6 +86,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         userPositionECEFmeters [0] = 3904174;
         userPositionECEFmeters [1] = 301788;
         userPositionECEFmeters [2] = 5017699;
+        latitudeRadians = 52.21831;
+        longitudeRadians = 4.42004;
+        altitudeMeters = 0.0;
 
         /****************************************************
                        Obtain Navigation message
@@ -118,6 +124,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     biasNanos = receiverClock.getBiasNanos();
                     biasNanosSet = true;
                 }*/
+                fullBiasNanos = receiverClock.getFullBiasNanos();
+                biasNanos = receiverClock.getBiasNanos();
+
                 Log.e("Full Bias Nanos: ", String.valueOf(fullBiasNanos));
                 Log.e("Bias Nanos: ", String.valueOf(biasNanos));
 
@@ -141,9 +150,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     Log.e("total noisy gps: ", String.valueOf(gpscount));
                     Log.e("total noisy galileo: ", String.valueOf(galcount));
 
-                    fullBiasNanos = receiverClock.getFullBiasNanos();
-                    biasNanos = receiverClock.getBiasNanos();
-
                     /***************************************************
                      * Clean the list of satellites in measurement event
                      **************************************************/
@@ -157,9 +163,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                                                     (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
                                                             ||
                                                             (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
-                                            ) /*&&
+                                            ) &&
                                                     (m.getState() & GnssMeasurement.STATE_CODE_LOCK) == GnssMeasurement.STATE_CODE_LOCK
-                                            */) {
+                                            ) {
                                         gpsSatellites.add(m);
                                     }
                                 }
@@ -212,17 +218,17 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeSatellitePosition();
                             //pseudosat.computeMySatPos();
 
-                            // Satellite elevation and atmospheric corrections TODO only every 10seconds
-                            pseudosat.computeSatElevationRadians();
-                            Log.e("Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
-                            Ecef2LlaConverter.GeodeticLlaValues geoValues = Ecef2LlaConverter.convertECEFToLLACloseForm(
-                                    getUserPositionECEFmeters()[0], getUserPositionECEFmeters()[1], getUserPositionECEFmeters()[2]);
-                            pseudosat.computeTroposphericCorrection_GPS(geoValues.latitudeRadians, geoValues.altitudeMeters);
-                            Log.e("Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
-                            double alpha[] = navMsg.iono.alpha;
-                            double beta[] = navMsg.iono.beta;
-                            pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
-                            Log.e("IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
+                            // Satellite elevation and atmospheric corrections less frequently
+                            if ( pseudosat.getGnssTime() % 10 < 2){
+                                pseudosat.computeSatElevationRadians();
+                                Log.e("Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
+                                pseudosat.computeTroposphericCorrection_GPS(latitudeRadians, altitudeMeters);
+                                Log.e("Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
+                                double alpha[] = navMsg.iono.alpha;
+                                double beta[] = navMsg.iono.beta;
+                                pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
+                                Log.e("IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
+                            }
 
                             // Corrected pseudorange
                             pseudosat.computeCorrectedRange();
@@ -262,17 +268,19 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeSatellitePosition();
                             //pseudosat.computeMySatPos();
 
-                            // Satellite elevation and atmospheric corrections TODO only every 10seconds
-                            pseudosat.computeSatElevationRadians();
+                            // Satellite elevation and atmospheric corrections less frequently
+                            // Cannot use ESA Tropo or NeQuick algorithms because they require altitude which for now is wrong (8.5.2018)
+                            if ( pseudosat.getGnssTime() % 10 < 2){
+                                pseudosat.computeSatElevationRadians();
+                                pseudosat.computeTroposphericCorrection_GPS(latitudeRadians, altitudeMeters);
+                                double alpha[] = navMsg.iono.alpha;
+                                double beta[] = navMsg.iono.beta;
+                                pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
+                            }
                             Log.e("Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
-                            Ecef2LlaConverter.GeodeticLlaValues geoValues = Ecef2LlaConverter.convertECEFToLLACloseForm(
-                                    getUserPositionECEFmeters()[0], getUserPositionECEFmeters()[1], getUserPositionECEFmeters()[2]);
-                            pseudosat.computeTroposphericCorrection_GPS(geoValues.latitudeRadians, geoValues.altitudeMeters);
                             Log.e("Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
-                            double alpha[] = navMsg.iono.alpha;
-                            double beta[] = navMsg.iono.beta;
-                            pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
                             Log.e("IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
+
                             // Corrected pseudorange
                             pseudosat.computeCorrectedRange();
                             Log.e("CORRECTED RANGE: ", String.valueOf(pseudosat.getCorrectedRange()));
@@ -303,6 +311,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         }
 
                         userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satClockErrors);
+
                         userPositionECEFmeters[0] = userPosECEFandReceiverClockError[0];
                         userPositionECEFmeters[1] = userPosECEFandReceiverClockError[1];
                         userPositionECEFmeters[2] = userPosECEFandReceiverClockError[2];
@@ -310,13 +319,22 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         Log.e("USER Y: ", String.valueOf(userPositionECEFmeters[1]/1000.0) );
                         Log.e("USER Z: ", String.valueOf(userPositionECEFmeters[2]/1000.0) );
                         Log.e("RX ERROR meters", String.valueOf(userPosECEFandReceiverClockError[3]));
+                        Ecef2LlaConverter.GeodeticLlaValues lla =
+                                Ecef2LlaConverter.convertECEFToLLACloseForm(userPositionECEFmeters[0],
+                                        userPositionECEFmeters[1], userPositionECEFmeters[2]);
+                        latitudeRadians = lla.latitudeRadians;
+                        longitudeRadians = lla.longitudeRadians;
+                        altitudeMeters = lla.altitudeMeters;
+                        Log.e("Latitude: ", String.valueOf(latitudeRadians));
+                        Log.e("Longitude: ", String.valueOf(longitudeRadians));
+                        Log.e("altitude: ", String.valueOf(altitudeMeters));
                     }
 
-                } /*else {
-                    fullBiasNanosSet = false;
-                    biasNanosSet = false;
+                } else {
+                    /*fullBiasNanosSet = false;
+                    biasNanosSet = false;*/
                     Log.e("CLOCK DISCONTINUITY", "Hardware clock discontinuity is not zero.");
-                }*/
+                }
             }
         };
         ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION); // To avoid errors with registering callbacks
