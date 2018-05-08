@@ -109,7 +109,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                 noisySatellites = eventArgs.getMeasurements();
                 receiverClock = eventArgs.getClock();
 
-                // Obtain only the first measurement of BiasNanos and FullBiasNanos
+                /*// Obtain only the first measurement of BiasNanos and FullBiasNanos
                 if (fullBiasNanosSet == false) {
                     fullBiasNanos = receiverClock.getFullBiasNanos();
                     fullBiasNanosSet = true;
@@ -117,7 +117,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                 if (biasNanosSet == false ) {
                     biasNanos = receiverClock.getBiasNanos();
                     biasNanosSet = true;
-                }
+                }*/
                 Log.e("Full Bias Nanos: ", String.valueOf(fullBiasNanos));
                 Log.e("Bias Nanos: ", String.valueOf(biasNanos));
 
@@ -141,6 +141,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     Log.e("total noisy gps: ", String.valueOf(gpscount));
                     Log.e("total noisy galileo: ", String.valueOf(galcount));
 
+                    fullBiasNanos = receiverClock.getFullBiasNanos();
+                    biasNanos = receiverClock.getBiasNanos();
 
                     /***************************************************
                      * Clean the list of satellites in measurement event
@@ -155,9 +157,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                                                     (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
                                                             ||
                                                             (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
-                                            ) &&
+                                            ) /*&&
                                                     (m.getState() & GnssMeasurement.STATE_CODE_LOCK) == GnssMeasurement.STATE_CODE_LOCK
-                                            ) {
+                                            */) {
                                         gpsSatellites.add(m);
                                     }
                                 }
@@ -310,11 +312,11 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         Log.e("RX ERROR meters", String.valueOf(userPosECEFandReceiverClockError[3]));
                     }
 
-                } else {
+                } /*else {
                     fullBiasNanosSet = false;
                     biasNanosSet = false;
                     Log.e("CLOCK DISCONTINUITY", "Hardware clock discontinuity is not zero.");
-                }
+                }*/
             }
         };
         ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION); // To avoid errors with registering callbacks

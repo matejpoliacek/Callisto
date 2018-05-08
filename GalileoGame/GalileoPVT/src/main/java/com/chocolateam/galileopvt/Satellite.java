@@ -339,7 +339,7 @@ public class Satellite {
      *                                  Corrected range
      ******************************************************************************/
     public void computeCorrectedRange() {
-        correctedRange = pseudoRange - troposphericCorrectionMeters - satelliteClockCorrectionMeters
+        correctedRange = pseudoRange - troposphericCorrectionMeters + satelliteClockCorrectionMeters
                 - LIGHTSPEED*(ionosphericCorrectionSeconds);
     }
 
