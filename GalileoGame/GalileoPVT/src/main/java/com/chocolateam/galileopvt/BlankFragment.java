@@ -302,15 +302,17 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             userPosECEFandReceiverClockError[i] = userPositionECEFmeters[i];
                         }
                         userPosECEFandReceiverClockError[3] = 0.0; // initial clock error
+                        double[] satElevations = new double[pseudoSats.size()];
 
                         for (int i = 0; i < pseudoSats.size(); i++) {
                             Satellite thisSat = pseudoSats.get(i);
                             satCoords.add(thisSat.getSatPositionECEFmeters());
                             correctedRanges[i] = thisSat.getCorrectedRange();
                             satClockErrors[i] = thisSat.getSatelliteClockCorrectionMeters();// getMySatClockOffsetSeconds(thisSat.getTransmittedTime())*Satellite.LIGHTSPEED; // using my offset instead of Google's
+                            satElevations[i] = Math.toDegrees(thisSat.getSatElevationRadians());
                         }
 
-                        userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satClockErrors);
+                        userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satClockErrors, satElevations);
 
                         userPositionECEFmeters[0] = userPosECEFandReceiverClockError[0];
                         userPositionECEFmeters[1] = userPosECEFandReceiverClockError[1];

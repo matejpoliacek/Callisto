@@ -132,9 +132,9 @@ public class Satellite {
     // recompute transmission time
     // recompute clock bias
     public void computeSatClockCorrectionAndRecomputeTransmissionTime(){
-        transmittedTime = receivedTime - (long)pseudoRange/LIGHTSPEED;
+        //transmittedTime = receivedTime - (long)pseudoRange/LIGHTSPEED;
         computeSatClockCorrectionMeters();
-        transmittedTime -= satelliteClockCorrectionMeters/LIGHTSPEED;
+        //transmittedTime -= satelliteClockCorrectionMeters/LIGHTSPEED;
         Log.e("New transmitted time:", String.valueOf(transmittedTime));
         Log.e("Ephemeris toe: ", String.valueOf(ephemerisProto.toe));
         computeSatClockCorrectionMeters();
