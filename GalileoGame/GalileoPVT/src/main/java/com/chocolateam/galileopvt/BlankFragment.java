@@ -195,9 +195,11 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                                     fullBiasNanos,  biasNanos);
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
                             pseudosat.computeReceivedTime();
+                            Log.e("Received time: ", String.valueOf(pseudosat.getReceivedTime()));
                             Log.e("State: ", String.valueOf(gpsSatellites.get(i).getState()));
                             Log.e("Time offset nanos: ", String.valueOf(gpsSatellites.get(i).getTimeOffsetNanos()));
                             pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos() + (long)gpsSatellites.get(i).getTimeOffsetNanos());
+                            Log.e("Transmitted time: ", String.valueOf(pseudosat.getTransmittedTime()));
                             pseudosat.computePseudoRange();
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
                             // TODO if a pseudorange is > 3, there's a clock error so stop the thread and execute run() again
@@ -275,14 +277,13 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudoSats.add(pseudosat);
                             Log.e("",""); // empty line
                         }
-
                     }
 
                     /************************************************************************************
                      If there are enough satellites with pseudorange, perform linearisation and get x y z
                      ***********************************************************************************/
                     if (pseudoSats.size() > 3) {
-                        Log.e("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "It's happening!!!");
+                        Log.e("---------------------------", "PVT computation in progress-----------------------");
                         ArrayList<double[]> satCoords = new ArrayList<>();
                         double[] correctedRanges = new double[pseudoSats.size()];
                         double[] satClockErrors = new double[pseudoSats.size()];
@@ -306,7 +307,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         Log.e("USER X: ", String.valueOf(userPositionECEFmeters[0]/1000.0));
                         Log.e("USER Y: ", String.valueOf(userPositionECEFmeters[1]/1000.0) );
                         Log.e("USER Z: ", String.valueOf(userPositionECEFmeters[2]/1000.0) );
-                        Log.e("RX ERROR meters", String.valueOf(userPosECEFandReceiverClockError[3]*Satellite.LIGHTSPEED));
+                        Log.e("RX ERROR meters", String.valueOf(userPosECEFandReceiverClockError[3]));
                     }
 
                 } else {
