@@ -4,14 +4,16 @@ import android.location.cts.asn1.supl2.rrlp_components.*;
 import android.location.cts.nano.Ephemeris;
 import android.util.Log;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Created by Peter Vaník on 20/03/2018.
  * Class representing a satellite measurement which contains calculated attributes of the measurement.
  */
 
 public class Satellite {
-    public static final double NUMBERNANOSECONDSWEEK = 604800e9;
-    public static final double NUMBERNANOSECONDS100MILI = 1e+8;
+    public static final long NUMBERNANOSECONDSWEEK = TimeUnit.DAYS.toNanos(7); // compute this by multiplication of nanos in second and secs in week
+    public static final double NUMBERNANOSECONDS100MILI = 100000000;
     public static final double WEEKSEC = 604800;
     public static final long LIGHTSPEED = 299792458;
     private static final double UNIVERSAL_GRAVITATIONAL_PARAMETER_M3_SM2 = 3.986005e14;
@@ -46,6 +48,7 @@ public class Satellite {
     private EcefToTopocentricConverter.TopocentricAEDValues elevationAzimuthDist;
 
     private double[] userPositionTempECEFMeters;
+    private double transmittedTimeCorrectedSeconds;
 
     public Satellite(int id, String constellation, Ephemeris.GpsNavMessageProto navMsg, long fullBiasNanos, double[]userPos, int state) {
 
@@ -79,14 +82,14 @@ public class Satellite {
      * @param biasNanos Clock’s sub-nanosecond bias (for sub-ns precision)
      */
     public void computeGnssTime(long timeNanos, double timeOffsetNanos, long fullBiasNanos, double biasNanos) {
-        this.gnssTime = timeNanos + (long)timeOffsetNanos - (fullBiasNanos + (long)biasNanos);
+        this.gnssTime = timeNanos - (fullBiasNanos); //+ (long)timeOffsetNanos + + (long)biasNanos
     }
 
     // Number of nanoseconds that have passed from the beginning of GPS time to the current week number
     public void computeWeekNumberNanos(long fullBiasNanos){
-        this.weekNumberNanos = (long) Math.floor(-fullBiasNanos/NUMBERNANOSECONDSWEEK)*(long)NUMBERNANOSECONDSWEEK;
+        this.weekNumberNanos = (-fullBiasNanos/NUMBERNANOSECONDSWEEK)*NUMBERNANOSECONDSWEEK;
     }
-
+    // TODO change
     public void computeMillisecondsNumberNanos(long fullBiasNanos) {
         this.milliSecondsNumberNanos = (long) Math.floor(-fullBiasNanos/NUMBERNANOSECONDS100MILI)*(long)NUMBERNANOSECONDS100MILI;
     }
@@ -131,13 +134,30 @@ public class Satellite {
     // compute clock bias
     // recompute transmission time
     // recompute clock bias
+
+    // calculateSatPosAndResiduals
+    // within lsq you must recompute satellite positions based on transmitted time-receiver clock error
+
     public void computeSatClockCorrectionAndRecomputeTransmissionTime(){
         //transmittedTime = receivedTime - (long)pseudoRange/LIGHTSPEED;
+        // convert received time to doubles
+        // compute rx error
+        double rxError = 0.0;
+        try {
+            GpsTimeOfWeekAndWeekNumber correctedTowAndWeek =
+                    calculateCorrectedTransmitTowAndWeek(ephemerisProto, (receivedTime-rxError)/1E9,
+                            ephemerisProto.week, pseudoRange);
+            transmittedTimeCorrectedSeconds = correctedTowAndWeek.gpsTimeOfWeekSeconds;
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("EXCEPTION","HERE!");
+        }
+
         computeSatClockCorrectionMeters();
-        //transmittedTime -= satelliteClockCorrectionMeters/LIGHTSPEED;
-        Log.e("New transmitted time:", String.valueOf(transmittedTime));
-        Log.e("Ephemeris toe: ", String.valueOf(ephemerisProto.toe));
-        computeSatClockCorrectionMeters();
+        //transmittedTime += satelliteClockCorrectionMeters/LIGHTSPEED;*/
+        Log.e("New transmitted time:", String.valueOf(transmittedTimeCorrectedSeconds));
+        /*Log.e("Ephemeris toe: ", String.valueOf(ephemerisProto.toe));*/
+        //computeSatClockCorrectionMeters();
     }
 
     public void computeSatClockCorrectionMeters(){
@@ -201,15 +221,15 @@ public class Satellite {
    *        transmitted
     *****************************************************************************************/
     public void computeSatellitePosition() {
-        double receiverGpsTowAtTimeOfTransmissionCorrectedSec = transmittedTime/1E9;
+        //double receiverGpsTowAtTimeOfTransmissionCorrectedSec = transmittedTime/1E9;
         try {
             posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
                     ephemerisProto,
-                    receiverGpsTowAtTimeOfTransmissionCorrectedSec,
+                    transmittedTimeCorrectedSeconds,
                     ephemerisProto.week,
-                    BlankFragment.getUserPositionECEFmeters()[0],
-                    BlankFragment.getUserPositionECEFmeters()[1],
-                    BlankFragment.getUserPositionECEFmeters()[2]
+                    3904174,//3904174BlankFragment.getUserPositionECEFmeters()[0]
+                    301788,//301788BlankFragment.getUserPositionECEFmeters()[1]
+                    5017699//5017699BlankFragment.getUserPositionECEFmeters()[2]
             );
         } catch (Exception e) {
             e.printStackTrace();
@@ -361,15 +381,6 @@ public class Satellite {
     // Meters
     public double getCorrectedRange(){ return this.correctedRange; }
 
-    // Meters
-    public double getxECEF() { return this.xECEF; }
-
-    // Meters
-    public double getyECEF() { return this.yECEF; }
-
-    // Meters
-    public double getzECEF() { return this.zECEF; }
-
     public double getSatelliteClockCorrectionMeters() { return this.satelliteClockCorrectionMeters; }
 
     public double getSatElevationRadians() { return this.satElevationRadians; }
@@ -386,4 +397,60 @@ public class Satellite {
     public int getId() { return this.id; }
 
     public long getGnssTime() {return this.gnssTime; }
+
+
+
+    private static class GpsTimeOfWeekAndWeekNumber {
+        /** GPS time of week in seconds */
+        private final double gpsTimeOfWeekSeconds;
+
+        /** GPS week number */
+        private final int weekNumber;
+
+        /** Constructor */
+        private GpsTimeOfWeekAndWeekNumber(double gpsTimeOfWeekSeconds, int weekNumber) {
+            this.gpsTimeOfWeekSeconds = gpsTimeOfWeekSeconds;
+            this.weekNumber = weekNumber;
+        }
+    }
+
+    private static GpsTimeOfWeekAndWeekNumber calculateCorrectedTransmitTowAndWeek(
+            Ephemeris.GpsEphemerisProto ephemerisProto, double receiverGpsTowAtReceptionSeconds,
+            int receiverGpsWeek, double pseudorangeMeters) throws Exception {
+        // GPS time of week at time of transmission: Gps time corrected for transit time (page 98 ICD
+        // GPS 200)
+        double receiverGpsTowAtTimeOfTransmission =
+                receiverGpsTowAtReceptionSeconds - pseudorangeMeters / LIGHTSPEED;
+
+        // Adjust for week rollover
+        if (receiverGpsTowAtTimeOfTransmission < 0) {
+            receiverGpsTowAtTimeOfTransmission += WEEKSEC;
+            receiverGpsWeek -= 1;
+        } else if (receiverGpsTowAtTimeOfTransmission > WEEKSEC) {
+            receiverGpsTowAtTimeOfTransmission -= WEEKSEC;
+            receiverGpsWeek += 1;
+        }
+
+        // Compute the satellite clock correction term (Seconds)
+        double clockCorrectionSeconds =
+                SatelliteClockCorrectionCalculator.calculateSatClockCorrAndEccAnomAndTkIteratively(
+                        ephemerisProto, receiverGpsTowAtTimeOfTransmission,
+                        receiverGpsWeek).satelliteClockCorrectionMeters / LIGHTSPEED;
+
+        // Correct with the satellite clock correction term
+        double receiverGpsTowAtTimeOfTransmissionCorrectedSec =
+                receiverGpsTowAtTimeOfTransmission + clockCorrectionSeconds;
+
+        // Adjust for week rollover due to satellite clock correction
+        if (receiverGpsTowAtTimeOfTransmissionCorrectedSec < 0.0) {
+            receiverGpsTowAtTimeOfTransmissionCorrectedSec += WEEKSEC;
+            receiverGpsWeek -= 1;
+        }
+        if (receiverGpsTowAtTimeOfTransmissionCorrectedSec > WEEKSEC) {
+            receiverGpsTowAtTimeOfTransmissionCorrectedSec -= WEEKSEC;
+            receiverGpsWeek += 1;
+        }
+        return new GpsTimeOfWeekAndWeekNumber(receiverGpsTowAtTimeOfTransmissionCorrectedSec,
+                receiverGpsWeek);
+    }
 }

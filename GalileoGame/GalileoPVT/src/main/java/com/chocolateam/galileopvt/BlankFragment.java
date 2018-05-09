@@ -201,6 +201,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeGnssTime(
                                     receiverClock.getTimeNanos(), gpsSatellites.get(i).getTimeOffsetNanos(),
                                     fullBiasNanos,  biasNanos);
+                            Log.e("GNSS time: ", String.valueOf(pseudosat.getGnssTime()));
+                            Log.e("Time Nanos: ", String.valueOf(receiverClock.getTimeNanos()));
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
                             pseudosat.computeReceivedTime();
                             Log.e("Received time: ", String.valueOf(pseudosat.getReceivedTime()));
