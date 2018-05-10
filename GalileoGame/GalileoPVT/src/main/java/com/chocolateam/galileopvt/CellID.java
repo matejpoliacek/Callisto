@@ -27,11 +27,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 /**
  * Created by Cedric on 27/03/2018.
@@ -42,7 +37,7 @@ public class CellID extends Fragment{
     private int cellID, cellLAC, cellCID, cellMCC, cellMNC;
     private static final String URL_ADDRESS = "https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyBoM9XAux_KtdzRNB1-prxOsA7yuRcA_io";
     private Context context;
-    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    //public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -95,6 +90,8 @@ public class CellID extends Fragment{
     }
 
     private void locateCell() throws JSONException, IOException {
+
+        //DO NOT USE, the Google API to get cell location doesn't walk!
         // First we need to create the json to be sent
         JSONArray cellTowers = new JSONArray();
         JSONObject cellTower_1 = new JSONObject();
@@ -108,30 +105,8 @@ public class CellID extends Fragment{
         cellTowers.put(cellTower_1);
         jsonQuery.put("cellTowers", cellTowers);
 
-
         // Maybe decompose the sending in multiple functions
-
-        final Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String response = post(URL_ADDRESS, jsonQuery.toString());
-                    JSONObject responseJson = new JSONObject(response);
-
-                    String message = responseJson.getString("message");
-                    String token = responseJson.getString("token");
-                    Log.i("MESSAGEJSON", message);
-                    Log.i("TOKENJSON", token);
-                    Log.i("RESPONSEJSON", response);
-
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread.start();
-
-        //sendPost(jsonQuery);
+        sendPost(jsonQuery);
     }
 
     public void sendPost(final JSONObject jsonObject){
@@ -184,34 +159,12 @@ public class CellID extends Fragment{
                     Log.i("HEY", "HEY");
 
                     urlConnection.disconnect();
-
-
-                    OkHttpClient okHttpClient = new OkHttpClient();
-
-
                 } catch (Exception e){
                     e.printStackTrace();
                 }
             }
         });
         thread.start();
-    }
-
-
-
-    public String post(String url, String json) throws IOException {
-        OkHttpClient client = new OkHttpClient();
-        RequestBody body = RequestBody.create(JSON, json);
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-        Response response = client.newCall(request).execute();
-        if (response.body().string() == null) {
-            Log.i("JSONRESP", "null");
-            return "ok";
-        }
-        return response.body().string();
     }
 }
 
