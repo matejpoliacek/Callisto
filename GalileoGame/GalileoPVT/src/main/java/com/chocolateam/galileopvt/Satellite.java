@@ -4,17 +4,18 @@ import android.location.cts.asn1.supl2.rrlp_components.*;
 import android.location.cts.nano.Ephemeris;
 import android.util.Log;
 
+import java.sql.Time;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Peter Vaník on 20/03/2018.
- * Class representing a satellite measurement which contains calculated attributes of the measurement.
+ * Class representing a satellite which contains calculated attributes of the measurement.
  */
 
 public class Satellite {
-    public static final long NUMBERNANOSECONDSWEEK = TimeUnit.DAYS.toNanos(7); // compute this by multiplication of nanos in second and secs in week
-    public static final double NUMBERNANOSECONDS100MILI = 100000000;
-    public static final double WEEKSEC = 604800;
+    public static final long NUMBERNANOSECONDSWEEK = TimeUnit.DAYS.toNanos(7);
+    public static final long NUMBERNANOSECONDS100MILI = TimeUnit.MILLISECONDS.toNanos(100);
+    public static final long WEEKSEC = 604800;
     public static final long LIGHTSPEED = 299792458;
     private static final double UNIVERSAL_GRAVITATIONAL_PARAMETER_M3_SM2 = 3.986005e14;
     private static final double EARTH_ROTATION_RATE_RAD_PER_SEC = 7.2921151467e-5;
@@ -82,16 +83,16 @@ public class Satellite {
      * @param biasNanos Clock’s sub-nanosecond bias (for sub-ns precision)
      */
     public void computeGnssTime(long timeNanos, double timeOffsetNanos, long fullBiasNanos, double biasNanos) {
-        this.gnssTime = timeNanos - (fullBiasNanos); //+ (long)timeOffsetNanos + + (long)biasNanos
+        this.gnssTime = timeNanos + (long)timeOffsetNanos - (fullBiasNanos + (long)biasNanos);
     }
 
     // Number of nanoseconds that have passed from the beginning of GPS time to the current week number
     public void computeWeekNumberNanos(long fullBiasNanos){
         this.weekNumberNanos = (-fullBiasNanos/NUMBERNANOSECONDSWEEK)*NUMBERNANOSECONDSWEEK;
     }
-    // TODO change
+
     public void computeMillisecondsNumberNanos(long fullBiasNanos) {
-        this.milliSecondsNumberNanos = (long) Math.floor(-fullBiasNanos/NUMBERNANOSECONDS100MILI)*(long)NUMBERNANOSECONDS100MILI;
+        this.milliSecondsNumberNanos = (-fullBiasNanos/NUMBERNANOSECONDS100MILI)*NUMBERNANOSECONDS100MILI;
     }
 
     // aka. measurement time
@@ -125,27 +126,22 @@ public class Satellite {
      *                      Compute satellite clock correction and recompute Tx
      ****************************************************************************************/
     /**
+     * Computes the GPS time of week at the time of transmission and as well the corrected GPS week
+     * taking into consideration week rollover. The returned GPS time of week is corrected by the
+     * computed satellite clock drift.
      * @para receiverGpsTowAtTimeOfTransmission receiver estimate of GPS time of week when signal was
      *        transmitted (seconds)
      * @para receiverGpsWeekAtTimeOfTransmission Receiver estimate of GPS week when signal was
      *      transmitted (0-1024+)
+     * @para rxError Receiver clock error in meters
      */
-    // re-compute transmission time
-    // compute clock bias
-    // recompute transmission time
-    // recompute clock bias
-
     // calculateSatPosAndResiduals
     // within lsq you must recompute satellite positions based on transmitted time-receiver clock error
 
-    public void computeSatClockCorrectionAndRecomputeTransmissionTime(){
-        //transmittedTime = receivedTime - (long)pseudoRange/LIGHTSPEED;
-        // convert received time to doubles
-        // compute rx error
-        double rxError = 0.0;
+    public void computeSatClockCorrectionAndRecomputeTransmissionTime(double rxError){
         try {
             GpsTimeOfWeekAndWeekNumber correctedTowAndWeek =
-                    calculateCorrectedTransmitTowAndWeek(ephemerisProto, (receivedTime-rxError)/1E9,
+                    calculateCorrectedTransmitTowAndWeek(ephemerisProto, receivedTime/1E9 - rxError/LIGHTSPEED,
                             ephemerisProto.week, pseudoRange);
             transmittedTimeCorrectedSeconds = correctedTowAndWeek.gpsTimeOfWeekSeconds;
         } catch (Exception e) {
@@ -154,10 +150,7 @@ public class Satellite {
         }
 
         computeSatClockCorrectionMeters();
-        //transmittedTime += satelliteClockCorrectionMeters/LIGHTSPEED;*/
         Log.e("New transmitted time:", String.valueOf(transmittedTimeCorrectedSeconds));
-        /*Log.e("Ephemeris toe: ", String.valueOf(ephemerisProto.toe));*/
-        //computeSatClockCorrectionMeters();
     }
 
     public void computeSatClockCorrectionMeters(){
@@ -221,15 +214,14 @@ public class Satellite {
    *        transmitted
     *****************************************************************************************/
     public void computeSatellitePosition() {
-        //double receiverGpsTowAtTimeOfTransmissionCorrectedSec = transmittedTime/1E9;
         try {
             posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
                     ephemerisProto,
                     transmittedTimeCorrectedSeconds,
                     ephemerisProto.week,
-                    3904174,//3904174BlankFragment.getUserPositionECEFmeters()[0]
-                    301788,//301788BlankFragment.getUserPositionECEFmeters()[1]
-                    5017699//5017699BlankFragment.getUserPositionECEFmeters()[2]
+                    BlankFragment.getUserPositionECEFmeters()[0],//3904174BlankFragment.getUserPositionECEFmeters()[0]
+                    BlankFragment.getUserPositionECEFmeters()[1],//301788BlankFragment.getUserPositionECEFmeters()[1]
+                    BlankFragment.getUserPositionECEFmeters()[2]//5017699BlankFragment.getUserPositionECEFmeters()[2]
             );
         } catch (Exception e) {
             e.printStackTrace();
@@ -369,6 +361,7 @@ public class Satellite {
                 - LIGHTSPEED*(ionosphericCorrectionSeconds);
     }
 
+
     /*******************************************************************************
      *                                  Getters
      ******************************************************************************/
@@ -378,7 +371,6 @@ public class Satellite {
 
     public double getPseudoRange(){ return this.pseudoRange; }
 
-    // Meters
     public double getCorrectedRange(){ return this.correctedRange; }
 
     public double getSatelliteClockCorrectionMeters() { return this.satelliteClockCorrectionMeters; }
@@ -389,7 +381,6 @@ public class Satellite {
         double[] satpos = { this.xECEF, this.yECEF, this.zECEF };
         return satpos;
     }
-
     public double getTroposphericCorrectionMeters() { return this.troposphericCorrectionMeters;}
 
     public  double getIonosphericCorrectionSeconds() { return this.ionosphericCorrectionSeconds;}
@@ -397,6 +388,8 @@ public class Satellite {
     public int getId() { return this.id; }
 
     public long getGnssTime() {return this.gnssTime; }
+
+    public double getTransmittedTimeCorrectedSeconds() {return  this.transmittedTimeCorrectedSeconds; }
 
 
 

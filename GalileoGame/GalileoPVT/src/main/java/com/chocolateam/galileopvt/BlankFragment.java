@@ -12,6 +12,7 @@ import android.location.LocationManager;
 import android.location.cts.nano.Ephemeris;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.telephony.CellInfo;
@@ -62,6 +63,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private double latitudeRadians;
     private double longitudeRadians;
     private double altitudeMeters;
+    private static double receiverClockErrorMeters;
+
+    private double myTimeStamp;
 
     public BlankFragment() {
     }
@@ -89,6 +93,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         latitudeRadians = 52.21831;
         longitudeRadians = 4.42004;
         altitudeMeters = 0.0;
+        receiverClockErrorMeters = 0.0;
 
         /****************************************************
                        Obtain Navigation message
@@ -114,21 +119,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                 super.onGnssMeasurementsReceived (eventArgs);
                 noisySatellites = eventArgs.getMeasurements();
                 receiverClock = eventArgs.getClock();
-
-                /*// Obtain only the first measurement of BiasNanos and FullBiasNanos
-                if (fullBiasNanosSet == false) {
-                    fullBiasNanos = receiverClock.getFullBiasNanos();
-                    fullBiasNanosSet = true;
-                }
-                if (biasNanosSet == false ) {
-                    biasNanos = receiverClock.getBiasNanos();
-                    biasNanosSet = true;
-                }*/
                 fullBiasNanos = receiverClock.getFullBiasNanos();
                 biasNanos = receiverClock.getBiasNanos();
-
-                Log.e("Full Bias Nanos: ", String.valueOf(fullBiasNanos));
-                Log.e("Bias Nanos: ", String.valueOf(biasNanos));
 
                 // Reset list of Galileo and GPS satellites
                 galileoSatellites = new ArrayList<>();
@@ -154,7 +146,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                      * Clean the list of satellites in measurement event
                      **************************************************/
                     for (GnssMeasurement m : noisySatellites) {
-                        // Filter satellites for bad carrier to noise ratio (suboptimal signal quality)
+                        // Filter satellites for bad carrier to noise ratio
                         if (m.getCn0DbHz() >= MIN_CARRIER_TO_NOISE) {
                             if (CONSTELLATION_SWITCH.equals("GPS")) {
                                 if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
@@ -201,21 +193,15 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeGnssTime(
                                     receiverClock.getTimeNanos(), gpsSatellites.get(i).getTimeOffsetNanos(),
                                     fullBiasNanos,  biasNanos);
-                            Log.e("GNSS time: ", String.valueOf(pseudosat.getGnssTime()));
-                            Log.e("Time Nanos: ", String.valueOf(receiverClock.getTimeNanos()));
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
                             pseudosat.computeReceivedTime();
-                            Log.e("Received time: ", String.valueOf(pseudosat.getReceivedTime()));
-                            Log.e("State: ", String.valueOf(gpsSatellites.get(i).getState()));
-                            Log.e("Time offset nanos: ", String.valueOf(gpsSatellites.get(i).getTimeOffsetNanos()));
                             pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos() + (long)gpsSatellites.get(i).getTimeOffsetNanos());
-                            Log.e("Transmitted time: ", String.valueOf(pseudosat.getTransmittedTime()));
                             pseudosat.computePseudoRange();
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
                             // TODO if a pseudorange is > 3, there's a clock error so stop the thread and execute run() again
 
                             // Satellite clock correction
-                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime();
+                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMeters);
                             Log.e("Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
                             pseudosat.computeSatellitePosition();
                             //pseudosat.computeMySatPos();
@@ -255,23 +241,17 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
                             pseudosat.computeMillisecondsNumberNanos(fullBiasNanos);
                             pseudosat.computeReceivedTime();
-                            Log.e("Gnss time: ", String.valueOf(pseudosat.getGnssTime()));
-                            Log.e("Received time: ", String.valueOf(pseudosat.getReceivedTime()));
-                            Log.e("Transmitted time: ", String.valueOf(pseudosat.getTransmittedTime()));
-                            Log.e("State: ", String.valueOf(galileoSatellites.get(i).getState()));
-                            Log.e("Time offset nanos: ", String.valueOf(galileoSatellites.get(i).getTimeOffsetNanos()));
                             pseudosat.computeTransmittedTime(galileoSatellites.get(i).getReceivedSvTimeNanos() + (long)galileoSatellites.get(i).getTimeOffsetNanos()); // TODO test the time offset nano
                             pseudosat.computePseudoRange();
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
                             // TODO if a pseudorange is > 3, there's a clock error so stop the thread and execute run() again
                             // Satellite clock correction
-                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime();
+                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMeters);
                             Log.e("Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
                             pseudosat.computeSatellitePosition();
                             //pseudosat.computeMySatPos();
 
                             // Satellite elevation and atmospheric corrections less frequently
-                            // Cannot use ESA Tropo or NeQuick algorithms because they require altitude which for now is wrong (8.5.2018)
                             if ( pseudosat.getGnssTime() % 10 < 2){
                                 pseudosat.computeSatElevationRadians();
                                 pseudosat.computeTroposphericCorrection_GPS(latitudeRadians, altitudeMeters);
@@ -319,24 +299,29 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         userPositionECEFmeters[0] = userPosECEFandReceiverClockError[0];
                         userPositionECEFmeters[1] = userPosECEFandReceiverClockError[1];
                         userPositionECEFmeters[2] = userPosECEFandReceiverClockError[2];
-                        Log.e("USER X: ", String.valueOf(userPositionECEFmeters[0]/1000.0));
-                        Log.e("USER Y: ", String.valueOf(userPositionECEFmeters[1]/1000.0) );
-                        Log.e("USER Z: ", String.valueOf(userPositionECEFmeters[2]/1000.0) );
-                        Log.e("RX ERROR meters", String.valueOf(userPosECEFandReceiverClockError[3]));
+                        receiverClockErrorMeters = userPosECEFandReceiverClockError[3];
+                        Log.e("RX ERROR meters", String.valueOf(receiverClockErrorMeters));
                         Ecef2LlaConverter.GeodeticLlaValues lla =
                                 Ecef2LlaConverter.convertECEFToLLACloseForm(userPositionECEFmeters[0],
                                         userPositionECEFmeters[1], userPositionECEFmeters[2]);
                         latitudeRadians = lla.latitudeRadians;
                         longitudeRadians = lla.longitudeRadians;
                         altitudeMeters = lla.altitudeMeters;
-                        Log.e("Latitude: ", String.valueOf(latitudeRadians));
-                        Log.e("Longitude: ", String.valueOf(longitudeRadians));
-                        Log.e("altitude: ", String.valueOf(altitudeMeters));
-                    }
+                        Log.e("USER Latitude deg: ", String.valueOf(Math.toDegrees(latitudeRadians)));
+                        Log.e("USER Longitude deg: ", String.valueOf(Math.toDegrees(longitudeRadians)));
+                        Log.e("USER altitude: ", String.valueOf(altitudeMeters));
 
+                        double homeLat = 52.161002;
+                        double homeLon = 4.496913;
+                        double diffHomeLatE6 = Math.abs(Math.toDegrees(latitudeRadians)-homeLat)*1e6;
+                        double diffHomeLonE6 = Math.abs( Math.toDegrees(longitudeRadians)-homeLon)*1e6;
+                        Log.e("difference to home lat E6: ", String.valueOf(diffHomeLatE6));
+                        Log.e("difference to home lon E6: ", String.valueOf(diffHomeLonE6));
+                        Log.e("difference aggregated:: ", String.valueOf(diffHomeLonE6 + diffHomeLonE6));
+
+                        
+                    }
                 } else {
-                    /*fullBiasNanosSet = false;
-                    biasNanosSet = false;*/
                     Log.e("CLOCK DISCONTINUITY", "Hardware clock discontinuity is not zero.");
                 }
             }
@@ -364,7 +349,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         CONSTELLATION_SWITCH = constellation;
     }
 
-    public String getConstellationSwitch() {return CONSTELLATION_SWITCH;};
+    public static double getReceiverClockErrorMeteres() { return receiverClockErrorMeters;}
 
     public void cellIDLocation(){
         // Update cellCID, cellMCC, cellMNC, cellID, cellLAC from Telephony API
