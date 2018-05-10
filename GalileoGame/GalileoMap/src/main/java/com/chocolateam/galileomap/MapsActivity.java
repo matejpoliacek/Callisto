@@ -17,6 +17,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -51,6 +52,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import com.chocolateam.galileopvt.BlankFragment;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
@@ -114,6 +116,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean LocationManagerSuccess = false;
 
     private Marker mMarker;
+    private Marker mGPSMarker;
 
     private SensorManager sensorService;
     private Sensor sensor;
@@ -156,12 +159,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         /** Location Manager **/
-
+        mGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         mLocationListenerGPS = new LocationListener() {
             @Override
             public void onLocationChanged(android.location.Location location) {
-                mLastKnownLocation = location;
-                System.out.println("Location Changed");
+                if (ACTIVITY_TYPE.equals("map")) {
+
+                    LatLng point = new LatLng(com.chocolateam.galileopvt.BlankFragment.getUserLatitudeDegrees(),
+                                            com.chocolateam.galileopvt.BlankFragment.getUserLongitudeDegrees());
+
+                    //mLastKnownLocation.setLatitude(point.latitude);
+                    //mLastKnownLocation.setLongitude(point.longitude);
+
+                    if (mGPSMarker == null) {
+                        mGPSMarker = mMap.addMarker(new MarkerOptions().position(point));
+                    } else {
+                        mGPSMarker.setPosition(point);
+                    }
+
+                    System.out.println("Location Changed, source - PVT");
+                }
+                    mLastKnownLocation = location;
+                    System.out.println("Location Changed, source - Fused");
+                
+
 
                 if (playing && game != null) {
 
@@ -779,6 +800,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         editNameDialogFragment.show(fm, "fragment_edit_name");
 
     }
+
+    public void run() {}
 
     // TODO: this method can be deleted with the debug button when not necessary anymore
     public void toggleDebug(View view) {

@@ -18,13 +18,12 @@ public class LeastSquares {
      * @param satCoords     calculated coordinates of the available satellites
      * @param pseudoranges  pseudoranges for each available satellite
      * @param initialState  array of length 4 containing the initial position - ECEF coordinates x, y, z and the receiver clock error (in this order)
-     * @param svClockError  clock error of each available satellite
      * @param satElevation  elevation of each satellite
      * @return              the calculated difference in position and clock error
      */
 
 
-    public static double[] lsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] initialState, double[] svClockError, double[] satElevation) {
+    public static double[] lsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] initialState, double[] satElevation) {
 
         double initialClockError = initialState[3];
 
@@ -49,6 +48,8 @@ public class LeastSquares {
                 p_calc += a_ij*(satCoords.get(i)[j] - initialState[j]);
 
             }
+
+            p_calc += initialClockError;
 
             A.set(i, 3, -1.0);
 
@@ -103,20 +104,19 @@ public class LeastSquares {
      * @param satCoords     calculated coordinates of the available satellites
      * @param pseudoranges  pseudoranges for each available satellite
      * @param initialState  array of length 4 containing the initial position - ECEF coordinates x, y, z and the receiver clock error (in this order)
-     * @param svClockError  clock error of each available satellite
      * @param satElevation  elevation of each satellite
      * @return              the calculated final position and clock error
      */
 
 
-    public static double[] recursiveLsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] initialState, double[] svClockError, double[] satElevation) {
+    public static double[] recursiveLsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] initialState, double[] satElevation) {
 
         boolean largeDiff = true;
         double[] result = new double[initialState.length];
 
         while (largeDiff) {
 
-            result = lsq(satCoords, pseudoranges, initialState, svClockError, satElevation);
+            result = lsq(satCoords, pseudoranges, initialState, satElevation);
 
             double[] old_state = new double[initialState.length];
 
