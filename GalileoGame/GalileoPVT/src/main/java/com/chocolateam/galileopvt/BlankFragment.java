@@ -12,6 +12,7 @@ import android.location.LocationManager;
 import android.location.cts.nano.Ephemeris;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.telephony.CellInfo;
@@ -40,7 +41,7 @@ import static android.content.Context.LOCATION_SERVICE;
  */
 
 public class BlankFragment extends Fragment implements Runnable, LocationListener {
-    public static final int MIN_CARRIER_TO_NOISE = 28;
+    public static final int MIN_CARRIER_TO_NOISE = 18;
     public static final double MIN_SAT_ELEVATION = Math.toRadians(10.0);
     private static String CONSTELLATION_SWITCH = "GPS"; // possible values: GPS, GALILEO
 
@@ -56,15 +57,15 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private ArrayList<GnssMeasurement> gpsSatellites;
     private ArrayList<Satellite> pseudoSats;
 
-    private double userLatitudeRadians;
-    private double userLongitudeRadians;
-    private double userECEFx;
-    private double userECEFy;
-    private double userEFECz; // height above mean sea level
-    private ArrayList<Satellite> pseudoGalSats;
-    private ArrayList<Satellite> pseudoGpsSats;
+    private Ephemeris.GpsNavMessageProto navMsg;
 
-    private Ephemeris.GpsNavMessageProto navMessageProto;
+    private static double[] userPositionECEFmeters;
+    private double latitudeRadians;
+    private double longitudeRadians;
+    private double altitudeMeters;
+    private static double receiverClockErrorMeters;
+
+    private double myTimeStamp;
 
     public BlankFragment() {
     }
@@ -83,19 +84,30 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         mLocationManager =
                 (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
 
-        /***
-         * Get GPS Navigation Message almanac to compute satellite positions
-         * // TODO based on constellation_switch compute either Gal or Gps nav message
-         */
-        final NavReader navReader = new NavReader();
+        // Set initial location TODO cellID()
+        // Hardcoded Noordwijk
+        userPositionECEFmeters = new double[3];
+        userPositionECEFmeters [0] = 3904174;
+        userPositionECEFmeters [1] = 301788;
+        userPositionECEFmeters [2] = 5017699;
+        latitudeRadians = 52.21831;
+        longitudeRadians = 4.42004;
+        altitudeMeters = 0.0;
+        receiverClockErrorMeters = 0.0;
+
+        /****************************************************
+                       Obtain Navigation message
+        ****************************************************/
+
+        NavThread navThread = new NavThread();
 
         try {
             long[] mReferenceLocation = new long[] {0,0};
-            Ephemeris.GpsNavMessageProto navMsg = new NavThread().execute(mReferenceLocation).get();
-            Log.e("AAAAAAAAA", "This was succesful \n");
+            navMsg = new NavThread().execute(mReferenceLocation).get();
+            Log.e("Obtaining navigation message...", "SUCCESSFUL");
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("BBBBBBBBBBBBBBBBBBBB", "Fayulzys");
+            Log.e("Obtaining navigation message...", "FAILED");
         }
 
         /*******************************************************************************
@@ -106,21 +118,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
             public void onGnssMeasurementsReceived (GnssMeasurementsEvent eventArgs) {
                 super.onGnssMeasurementsReceived (eventArgs);
                 noisySatellites = eventArgs.getMeasurements();
-                //((PvtActivity)context).publishSatcount(String.format("Satellite count: %d", satcount)); //TODO: Everything is ok in logs but doesn't appear in Activity. Y THO? Publishing causes binder error in logs.
-
                 receiverClock = eventArgs.getClock();
-
-                // Obtain only the first measurement of BiasNanos and FullBiasNanos
-                if (fullBiasNanosSet == false) {
-                    fullBiasNanos = receiverClock.getFullBiasNanos();
-                    fullBiasNanosSet = true;
-                }
-                if (biasNanosSet == false ) {
-                    biasNanos = receiverClock.getBiasNanos();
-                    biasNanosSet = true;
-                }
-                //((pvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
-                //((PvtActivity)context).publishDiscontinuity(String.format("HW Clock discontinuity: %d", receiverClock.getHardwareClockDiscontinuityCount()));
+                fullBiasNanos = receiverClock.getFullBiasNanos();
+                biasNanos = receiverClock.getBiasNanos();
 
                 // Reset list of Galileo and GPS satellites
                 galileoSatellites = new ArrayList<>();
@@ -129,7 +129,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                 // Filter for clock discontinuity
                 if (receiverClock.getHardwareClockDiscontinuityCount() == 0) {
 
-                    // For debug checking number of satellites: ////////////////////////////////
+                    // Display number of all visible satellites
                     int gpscount = 0;
                     int galcount = 0;
                     for (GnssMeasurement n : noisySatellites) {
@@ -142,28 +142,36 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     Log.e("total noisy gps: ", String.valueOf(gpscount));
                     Log.e("total noisy galileo: ", String.valueOf(galcount));
 
-                    ////////////////////////////////////////////////////////////////////////////
-
                     /***************************************************
                      * Clean the list of satellites in measurement event
                      **************************************************/
-
-                    cellIDLocation();
-
-                    ////////////////////////////////////////////
-
                     for (GnssMeasurement m : noisySatellites) {
-                        // Filter satellites for bad carrier to noise ratio and suboptimal signal
+                        // Filter satellites for bad carrier to noise ratio
                         if (m.getCn0DbHz() >= MIN_CARRIER_TO_NOISE) {
-                            if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
-                                if ((m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED) {
-                                    // TODO add elevation filter from Cedric's class, e.g. if m.getSvid().getSatElevation() > MIN_SAT_ELEVATION
-                                    // TODO check if satellite with this ID is in almanac (boolean function cycling through alamanac)
-                                    gpsSatellites.add(m);
+                            if (CONSTELLATION_SWITCH.equals("GPS")) {
+                                if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
+                                    if (
+                                            (
+                                                    (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
+                                                            ||
+                                                            (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
+                                            ) &&
+                                                    (m.getState() & GnssMeasurement.STATE_CODE_LOCK) == GnssMeasurement.STATE_CODE_LOCK
+                                            ) {
+                                        gpsSatellites.add(m);
+                                    }
                                 }
-                            } else if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
-                                if ((m.getState() & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) {
-                                    galileoSatellites.add(m);
+                            } else if (CONSTELLATION_SWITCH.equals("GALILEO")) {
+                                if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
+                                    if (
+                                            (m.getState() & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
+                                                    ||
+                                                    (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
+                                                    ||
+                                                    (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
+                                            ) {
+                                        galileoSatellites.add(m);
+                                    }
                                 }
                             }
                         }
@@ -171,67 +179,149 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                     Log.e("Total cleaned GPS: ", String.valueOf(gpsSatellites.size()));
                     Log.e("Total cleaned Galileo: ", String.valueOf(galileoSatellites.size()));
 
-                    /************************************************************
-                     For every cleaned satellite in constellation, compute:
-                     Calculate pseudorange of every Satellite during the callback
-                     ***********************************************************/
-                    if (CONSTELLATION_SWITCH.equals("GPS") && (gpsSatellites.size() > 0)) { //TODO change the 0 to 3 for PVT calculation
+                    /*********************************************************************************
+                     For every cleaned satellite in constellation, compute pseudorange and corrections
+                     ********************************************************************************/
+                    // TODO only start computing satellite data if there are enough for a PVT (>3)
+                    if (CONSTELLATION_SWITCH.equals("GPS") && (gpsSatellites.size() > 0)) {
                         pseudoSats = new ArrayList<>();
 
-                        long gpsTime = receiverClock.getTimeNanos() - (long)(fullBiasNanos + biasNanos);
                         for (int i = 0; i < gpsSatellites.size(); i++) {
-                            Satellite pseudosat = new Satellite(gpsSatellites.get(i).getSvid(), CONSTELLATION_SWITCH, navReader, gpsTime);
-
-                            // ECEF satellite coordinates and elevation
-                            // TODO Cedric's code
-                            // pseudosat.computeElevationAngle();
-                            // pseudosat.computePositionECEF();
+                            Satellite pseudosat = new Satellite(gpsSatellites.get(i).getSvid(), CONSTELLATION_SWITCH, navMsg, fullBiasNanos, userPositionECEFmeters, gpsSatellites.get(i).getState());
 
                             // Pseudorange
                             pseudosat.computeGnssTime(
                                     receiverClock.getTimeNanos(), gpsSatellites.get(i).getTimeOffsetNanos(),
                                     fullBiasNanos,  biasNanos);
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
-                            pseudosat.computeWeekNumber(fullBiasNanos);
-                            pseudosat.computeReceivedTime(CONSTELLATION_SWITCH);
-                            pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos());
+                            pseudosat.computeReceivedTime();
+                            pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos() + (long)gpsSatellites.get(i).getTimeOffsetNanos());
                             pseudosat.computePseudoRange();
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
+                            // TODO if a pseudorange is > 3, there's a clock error so stop the thread and execute run() again
 
-                            // Atmospheric corrections TODO only every 10seconds
-                            pseudosat.computeTroposphericCorrection_GPS(userLatitudeRadians, userEFECz);
-                            Log.e("Tropo correction: ", String.valueOf(Corrections.computeTropoCorrection_SAAS_withMapping(0.9104, 0.005,1.5708  )));
+                            // Satellite clock correction
+                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMeters);
+                            Log.e("Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
+                            pseudosat.computeSatellitePosition();
+                            //pseudosat.computeMySatPos();
 
-                            pseudosat.computeIonosphericCorrection_GPS();
-
-                            // Other corrections: Satellite clock offset and Doppler
-                            pseudosat.computeSatClockCorrectionMeters(gpsTime);
-                            //pseudosat.computeDopplerCorrection(); // TODO me
+                            // Satellite elevation and atmospheric corrections less frequently
+                            if ( pseudosat.getGnssTime() % 10 < 2){
+                                pseudosat.computeSatElevationRadians();
+                                Log.e("Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
+                                pseudosat.computeTroposphericCorrection_GPS(latitudeRadians, altitudeMeters);
+                                Log.e("Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
+                                double alpha[] = navMsg.iono.alpha;
+                                double beta[] = navMsg.iono.beta;
+                                pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
+                                Log.e("IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
+                            }
 
                             // Corrected pseudorange
                             pseudosat.computeCorrectedRange();
+                            Log.e("CORRECTED RANGE: ", String.valueOf(pseudosat.getCorrectedRange()));
                             pseudoSats.add(pseudosat);
+                            Log.e("",""); // empty line
                         }
                     }
-                    else if (CONSTELLATION_SWITCH.equals("GALILEO") && (galileoSatellites.size() > 0)) { //TODO change the 0 to 3 for PVT calculation
-                        // Galileo pseudorange code (millisecondsnanos etc.)
-                        Log.e("RED ALERT", String.valueOf("Somehow we ended up in this branch"));
+                    /*********************************** GALILEO **********************************/
+                    // TODO only start computing satellite data if there are enough for a PVT (>3)
+                    else if (CONSTELLATION_SWITCH.equals("GALILEO") && (galileoSatellites.size() > 0)) {
+
                         pseudoSats = new ArrayList<>(galileoSatellites.size());
-                        // TODO Galileo processing
+
+                        for (int i = 0; i < galileoSatellites.size(); i++) {
+                            Satellite pseudosat = new Satellite(galileoSatellites.get(i).getSvid(), CONSTELLATION_SWITCH, navMsg, fullBiasNanos, userPositionECEFmeters, galileoSatellites.get(i).getState());
+
+                            // Pseudorange
+                            pseudosat.computeGnssTime(
+                                    receiverClock.getTimeNanos(), galileoSatellites.get(i).getTimeOffsetNanos(),
+                                    fullBiasNanos,  biasNanos);
+                            pseudosat.computeWeekNumberNanos(fullBiasNanos);
+                            pseudosat.computeMillisecondsNumberNanos(fullBiasNanos);
+                            pseudosat.computeReceivedTime();
+                            pseudosat.computeTransmittedTime(galileoSatellites.get(i).getReceivedSvTimeNanos() + (long)galileoSatellites.get(i).getTimeOffsetNanos()); // TODO test the time offset nano
+                            pseudosat.computePseudoRange();
+                            Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
+                            // TODO if a pseudorange is > 3, there's a clock error so stop the thread and execute run() again
+                            // Satellite clock correction
+                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMeters);
+                            Log.e("Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
+                            pseudosat.computeSatellitePosition();
+                            //pseudosat.computeMySatPos();
+
+                            // Satellite elevation and atmospheric corrections less frequently
+                            if ( pseudosat.getGnssTime() % 10 < 2){
+                                pseudosat.computeSatElevationRadians();
+                                pseudosat.computeTroposphericCorrection_GPS(latitudeRadians, altitudeMeters);
+                                double alpha[] = navMsg.iono.alpha;
+                                double beta[] = navMsg.iono.beta;
+                                pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
+                            }
+                            Log.e("Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
+                            Log.e("Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
+                            Log.e("IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
+
+                            // Corrected pseudorange
+                            pseudosat.computeCorrectedRange();
+                            Log.e("CORRECTED RANGE: ", String.valueOf(pseudosat.getCorrectedRange()));
+                            pseudoSats.add(pseudosat);
+                            Log.e("",""); // empty line
+                        }
                     }
 
                     /************************************************************************************
                      If there are enough satellites with pseudorange, perform linearisation and get x y z
                      ***********************************************************************************/
-                    // TODO Cedric's code: get network provided receiver coordinates and satellite's coordinates
-                    // get initial coordinates from network provider
-                    // for (Satellite sat : pseudoSats) { add to linearisation matrix; process; }
-                    // userECEF and latlong = ...;
+                    if (pseudoSats.size() > 3) {
+                        Log.e("---------------------------", "PVT computation in progress-----------------------");
+                        ArrayList<double[]> satCoords = new ArrayList<>();
+                        double[] correctedRanges = new double[pseudoSats.size()];
+                        double[] satClockErrors = new double[pseudoSats.size()];
+                        double[] userPosECEFandReceiverClockError = new double[4];
+                        for (int i = 0; i < userPositionECEFmeters.length; i++) {
+                            userPosECEFandReceiverClockError[i] = userPositionECEFmeters[i];
+                        }
+                        userPosECEFandReceiverClockError[3] = 0.0; // initial clock error
+                        double[] satElevations = new double[pseudoSats.size()];
 
+                        for (int i = 0; i < pseudoSats.size(); i++) {
+                            Satellite thisSat = pseudoSats.get(i);
+                            satCoords.add(thisSat.getSatPositionECEFmeters());
+                            correctedRanges[i] = thisSat.getCorrectedRange();
+                            satClockErrors[i] = thisSat.getSatelliteClockCorrectionMeters();// getMySatClockOffsetSeconds(thisSat.getTransmittedTime())*Satellite.LIGHTSPEED; // using my offset instead of Google's
+                            satElevations[i] = Math.toDegrees(thisSat.getSatElevationRadians());
+                        }
 
+                        userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satClockErrors, satElevations);
+
+                        userPositionECEFmeters[0] = userPosECEFandReceiverClockError[0];
+                        userPositionECEFmeters[1] = userPosECEFandReceiverClockError[1];
+                        userPositionECEFmeters[2] = userPosECEFandReceiverClockError[2];
+                        receiverClockErrorMeters = userPosECEFandReceiverClockError[3];
+                        Log.e("RX ERROR meters", String.valueOf(receiverClockErrorMeters));
+                        Ecef2LlaConverter.GeodeticLlaValues lla =
+                                Ecef2LlaConverter.convertECEFToLLACloseForm(userPositionECEFmeters[0],
+                                        userPositionECEFmeters[1], userPositionECEFmeters[2]);
+                        latitudeRadians = lla.latitudeRadians;
+                        longitudeRadians = lla.longitudeRadians;
+                        altitudeMeters = lla.altitudeMeters;
+                        Log.e("USER Latitude deg: ", String.valueOf(Math.toDegrees(latitudeRadians)));
+                        Log.e("USER Longitude deg: ", String.valueOf(Math.toDegrees(longitudeRadians)));
+                        Log.e("USER altitude: ", String.valueOf(altitudeMeters));
+
+                        double homeLat = 52.161002;
+                        double homeLon = 4.496913;
+                        double diffHomeLatE6 = Math.abs(Math.toDegrees(latitudeRadians)-homeLat)*1e6;
+                        double diffHomeLonE6 = Math.abs( Math.toDegrees(longitudeRadians)-homeLon)*1e6;
+                        Log.e("difference to home lat E6: ", String.valueOf(diffHomeLatE6));
+                        Log.e("difference to home lon E6: ", String.valueOf(diffHomeLonE6));
+                        Log.e("difference aggregated:: ", String.valueOf(diffHomeLonE6 + diffHomeLonE6));
+
+                        
+                    }
                 } else {
-                    fullBiasNanosSet = false;
-                    biasNanosSet = false;
                     Log.e("CLOCK DISCONTINUITY", "Hardware clock discontinuity is not zero.");
                 }
             }
@@ -251,12 +341,15 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         this.context = context;
     }
 
+    public static double[] getUserPositionECEFmeters() {
+        return userPositionECEFmeters;
+    }
+
     public void switchConstellation(String constellation) {
         CONSTELLATION_SWITCH = constellation;
     }
 
-
-    public String getConstellationSwitch() {return CONSTELLATION_SWITCH;};
+    public static double getReceiverClockErrorMeteres() { return receiverClockErrorMeters;}
 
     public void cellIDLocation(){
         // Update cellCID, cellMCC, cellMNC, cellID, cellLAC from Telephony API
@@ -268,7 +361,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         int cellLAC = cellLocation.getLac();
         String cellPosition = cellLocation.toString();
 
-        Log.e("All cell info", String.valueOf(telephonyManager.getAllCellInfo()));
+        //Log.e("All cell info", String.valueOf(telephonyManager.getAllCellInfo()));
         List<CellInfo> cellInfoList = telephonyManager.getAllCellInfo();
         CellInfoLte cellInfoLte = (CellInfoLte) cellInfoList.get(0);
 
@@ -279,7 +372,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         // Now we should have all the elements to request Google Network Location API
 
         for (int i = 0; i < cellInfoList.size(); i++){
-            Log.e("CELL ", String.valueOf(cellInfoList.get(i)));
+            //Log.e("CELL ", String.valueOf(cellInfoList.get(i)));
         }
     }
 

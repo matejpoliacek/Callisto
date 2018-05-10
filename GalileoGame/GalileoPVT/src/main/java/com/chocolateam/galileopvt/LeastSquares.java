@@ -50,9 +50,6 @@ public class LeastSquares {
 
             }
 
-            // Add clock error to the calculated pseudorange
-            p_calc += (-1.0)*svClockError[i] + initialClockError;
-
             A.set(i, 3, -1.0);
 
             // delta-rho = calculated pseudorange - observed pseudorange

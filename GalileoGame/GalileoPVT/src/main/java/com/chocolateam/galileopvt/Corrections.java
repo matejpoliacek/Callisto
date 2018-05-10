@@ -9,7 +9,6 @@ public  final class Corrections {
     public static final double STANDARD_PRESSURE = 1013.25; //[hPa]
     public static final double STANDARD_TEMPERATURE = 291.15; //[K]
     public static final double STANDARD_WATER_VAPOUR_PRESSURE = 30.3975;//[hPa]
-    // public static final double RELATIVISTIC_CLOCK_CORRECTION_CONSTANT_COMPONENT = -4.646e-10; according to ESA, not Google
 
     private Corrections(){
     }
