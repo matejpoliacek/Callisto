@@ -60,13 +60,15 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private Ephemeris.GpsNavMessageProto navMsg;
 
     private static double[] userPositionECEFmeters;
-    private static double latitudeRadians;
-    private static double longitudeRadians;
+    private static double latitudeDegrees;
+    private static double longitudeDegrees;
     private double altitudeMeters;
     private static double receiverClockErrorMeters;
 
     private double myTimeStamp;
     private double aggrDiffMinute;
+    private long numberOfPVTcalculations;
+    private double aggrDiffMinutePerPVTcalc;
 
     public BlankFragment() {
     }
@@ -91,12 +93,14 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         userPositionECEFmeters [0] = 3904174;
         userPositionECEFmeters [1] = 301788;
         userPositionECEFmeters [2] = 5017699;
-        latitudeRadians = 52.21831;
-        longitudeRadians = 4.42004;
+        latitudeDegrees = 52.21831;
+        longitudeDegrees = 4.42004;
         altitudeMeters = 0.0;
         receiverClockErrorMeters = 0.0;
         myTimeStamp = 0.0;
         aggrDiffMinute = 0.0;
+        numberOfPVTcalculations = 0;
+        aggrDiffMinutePerPVTcalc = 0.0;
 
         /****************************************************
                        Obtain Navigation message
@@ -213,7 +217,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             if ( pseudosat.getGnssTime() % 10 < 2){
                                 pseudosat.computeSatElevationRadians();
                                 Log.e("Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
-                                pseudosat.computeTroposphericCorrection_GPS(latitudeRadians, altitudeMeters);
+                                pseudosat.computeTroposphericCorrection_GPS(Math.toRadians(latitudeDegrees), altitudeMeters);
                                 Log.e("Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
                                 double alpha[] = navMsg.iono.alpha;
                                 double beta[] = navMsg.iono.beta;
@@ -257,7 +261,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             // Satellite elevation and atmospheric corrections less frequently
                             if ( pseudosat.getGnssTime() % 10 < 2){
                                 pseudosat.computeSatElevationRadians();
-                                pseudosat.computeTroposphericCorrection_GPS(latitudeRadians, altitudeMeters);
+                                pseudosat.computeTroposphericCorrection_GPS(Math.toRadians(latitudeDegrees), altitudeMeters);
                                 double alpha[] = navMsg.iono.alpha;
                                 double beta[] = navMsg.iono.beta;
                                 pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
@@ -296,7 +300,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             satClockErrors[i] = thisSat.getSatelliteClockCorrectionMeters();// getMySatClockOffsetSeconds(thisSat.getTransmittedTime())*Satellite.LIGHTSPEED; // using my offset instead of Google's
                             satElevations[i] = Math.toDegrees(thisSat.getSatElevationRadians());
                         }
-
                         userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satClockErrors, satElevations);
 
                         userPositionECEFmeters[0] = userPosECEFandReceiverClockError[0];
@@ -307,17 +310,17 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         Ecef2LlaConverter.GeodeticLlaValues lla =
                                 Ecef2LlaConverter.convertECEFToLLACloseForm(userPositionECEFmeters[0],
                                         userPositionECEFmeters[1], userPositionECEFmeters[2]);
-                        latitudeRadians = lla.latitudeRadians;
-                        longitudeRadians = lla.longitudeRadians;
+                        latitudeDegrees = Math.toDegrees(lla.latitudeRadians);
+                        longitudeDegrees = Math.toDegrees(lla.longitudeRadians);
                         altitudeMeters = lla.altitudeMeters;
-                        Log.e("USER Latitude deg: ", String.valueOf(Math.toDegrees(latitudeRadians)));
-                        Log.e("USER Longitude deg: ", String.valueOf(Math.toDegrees(longitudeRadians)));
+                        Log.e("USER Latitude deg: ", String.valueOf(latitudeDegrees));
+                        Log.e("USER Longitude deg: ", String.valueOf(longitudeDegrees));
                         Log.e("USER altitude: ", String.valueOf(altitudeMeters));
 
                         double homeLat = 52.161026;
                         double homeLon = 4.496946;
-                        double diffHomeLatE6 = Math.abs(Math.toDegrees(latitudeRadians)-homeLat)*1e6;
-                        double diffHomeLonE6 = Math.abs( Math.toDegrees(longitudeRadians)-homeLon)*1e6;
+                        double diffHomeLatE6 = Math.abs(latitudeDegrees-homeLat)*1e6;
+                        double diffHomeLonE6 = Math.abs( longitudeDegrees-homeLon)*1e6;
                         Log.e("difference to home lat E6: ", String.valueOf(diffHomeLatE6));
                         Log.e("difference to home lon E6: ", String.valueOf(diffHomeLonE6));
                         Log.e("difference aggregated:: ", String.valueOf(diffHomeLonE6 + diffHomeLonE6));
@@ -330,6 +333,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         } else {
                             Log.e("Total difference in 1 min: ", String.valueOf(aggrDiffMinute));
                         }
+                        numberOfPVTcalculations += 1;
+                        Log.e("Total pvt calculations: ", String.valueOf(1));
+                        //Log.e("Average LatLong error per PVT calculation: ", String.valueOf())
                     }
                 } else {
                     Log.e("CLOCK DISCONTINUITY", "Hardware clock discontinuity is not zero.");
@@ -361,9 +367,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
 
     public static double getReceiverClockErrorMeteres() { return receiverClockErrorMeters;}
 
-    public static double getUserLatitudeRadians() { return latitudeRadians; }
+    public static double getUserLatitudeDegrees() { return latitudeDegrees; }
 
-    public static double getUserLongitudeRadians() { return longitudeRadians; }
+    public static double getUserLongitudeDegrees() { return longitudeDegrees; }
 
     public void cellIDLocation(){
         // Update cellCID, cellMCC, cellMNC, cellID, cellLAC from Telephony API
