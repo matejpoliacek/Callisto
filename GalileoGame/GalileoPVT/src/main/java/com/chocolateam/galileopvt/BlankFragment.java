@@ -68,7 +68,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private double myTimeStamp;
     private double aggrDiffMinute;
     private long numberOfPVTcalculations;
-    private double aggrDiffMinutePerPVTcalc;
 
     public BlankFragment() {
     }
@@ -100,7 +99,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         myTimeStamp = 0.0;
         aggrDiffMinute = 0.0;
         numberOfPVTcalculations = 0;
-        aggrDiffMinutePerPVTcalc = 0.0;
 
         /****************************************************
                        Obtain Navigation message
@@ -321,21 +319,23 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         double homeLon = 4.496946;
                         double diffHomeLatE6 = Math.abs(latitudeDegrees-homeLat)*1e6;
                         double diffHomeLonE6 = Math.abs( longitudeDegrees-homeLon)*1e6;
+                        Log.e("","");
                         Log.e("difference to home lat E6: ", String.valueOf(diffHomeLatE6));
                         Log.e("difference to home lon E6: ", String.valueOf(diffHomeLonE6));
-                        Log.e("difference aggregated:: ", String.valueOf(diffHomeLonE6 + diffHomeLonE6));
+                        Log.e("difference combined:: ", String.valueOf(diffHomeLonE6 + diffHomeLonE6));
+                        Log.e("","");
 
                         if (myTimeStamp == 0.0) {
                             myTimeStamp = System.currentTimeMillis();
                         }
-                        if ((System.currentTimeMillis() - myTimeStamp) <= 1000 ) {
+                        if ((System.currentTimeMillis() - myTimeStamp) <= 60000 ) {
                             aggrDiffMinute += diffHomeLonE6 + diffHomeLonE6;
+                            numberOfPVTcalculations += 1;
                         } else {
-                            Log.e("Total difference in 1 min: ", String.valueOf(aggrDiffMinute));
+                            Log.e("Aggregated latlong difference in 1 min: ", String.valueOf(aggrDiffMinute));
+                            Log.e("Total pvt calculations in 1 min: ", String.valueOf(numberOfPVTcalculations));
+                            Log.e("Average difference per PVT calc in 1 min: ", String.valueOf(aggrDiffMinute/numberOfPVTcalculations));
                         }
-                        numberOfPVTcalculations += 1;
-                        Log.e("Total pvt calculations: ", String.valueOf(1));
-                        //Log.e("Average LatLong error per PVT calculation: ", String.valueOf())
                     }
                 } else {
                     Log.e("CLOCK DISCONTINUITY", "Hardware clock discontinuity is not zero.");
