@@ -116,6 +116,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean LocationManagerSuccess = false;
 
     private Marker mMarker;
+    private Marker mGPSMarker;
 
     private SensorManager sensorService;
     private Sensor sensor;
@@ -158,16 +159,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         /** Location Manager **/
-
+        mGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         mLocationListenerGPS = new LocationListener() {
             @Override
             public void onLocationChanged(android.location.Location location) {
                 if (ACTIVITY_TYPE.equals("map")) {
-                    com.chocolateam.galileopvt.BlankFragment.getUserPositionECEFmeters();
-                }
 
-                mLastKnownLocation = location;
-                System.out.println("Location Changed");
+                    LatLng point = new LatLng(com.chocolateam.galileopvt.BlankFragment.getUserLatitudeDegrees(),
+                                            com.chocolateam.galileopvt.BlankFragment.getUserLongitudeDegrees());
+
+                    //mLastKnownLocation.setLatitude(point.latitude);
+                    //mLastKnownLocation.setLongitude(point.longitude);
+
+                    if (mGPSMarker == null) {
+                        mGPSMarker = mMap.addMarker(new MarkerOptions().position(point));
+                    } else {
+                        mGPSMarker.setPosition(point);
+                    }
+
+                    System.out.println("Location Changed, source - PVT");
+                }
+                    mLastKnownLocation = location;
+                    System.out.println("Location Changed, source - Fused");
+                
+
 
                 if (playing && game != null) {
 
