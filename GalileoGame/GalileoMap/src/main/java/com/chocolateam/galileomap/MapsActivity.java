@@ -17,6 +17,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -51,6 +52,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import com.chocolateam.galileopvt.BlankFragment;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
@@ -160,6 +162,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mLocationListenerGPS = new LocationListener() {
             @Override
             public void onLocationChanged(android.location.Location location) {
+                if (ACTIVITY_TYPE.equals("map")) {
+                    com.chocolateam.galileopvt.BlankFragment.getUserPositionECEFmeters();
+                }
+
                 mLastKnownLocation = location;
                 System.out.println("Location Changed");
 
@@ -779,6 +785,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         editNameDialogFragment.show(fm, "fragment_edit_name");
 
     }
+
+    public void run() {}
 
     // TODO: this method can be deleted with the debug button when not necessary anymore
     public void toggleDebug(View view) {

@@ -294,7 +294,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             satElevations[i] = Math.toDegrees(thisSat.getSatElevationRadians());
                         }
 
-                        userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satClockErrors, satElevations);
+                        userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satElevations);
 
                         userPositionECEFmeters[0] = userPosECEFandReceiverClockError[0];
                         userPositionECEFmeters[1] = userPosECEFandReceiverClockError[1];
