@@ -60,12 +60,13 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private Ephemeris.GpsNavMessageProto navMsg;
 
     private static double[] userPositionECEFmeters;
-    private double latitudeRadians;
-    private double longitudeRadians;
+    private static double latitudeRadians;
+    private static double longitudeRadians;
     private double altitudeMeters;
     private static double receiverClockErrorMeters;
 
     private double myTimeStamp;
+    private double aggrDiffMinute;
 
     public BlankFragment() {
     }
@@ -94,6 +95,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         longitudeRadians = 4.42004;
         altitudeMeters = 0.0;
         receiverClockErrorMeters = 0.0;
+        myTimeStamp = 0.0;
+        aggrDiffMinute = 0.0;
 
         /****************************************************
                        Obtain Navigation message
@@ -311,15 +314,22 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         Log.e("USER Longitude deg: ", String.valueOf(Math.toDegrees(longitudeRadians)));
                         Log.e("USER altitude: ", String.valueOf(altitudeMeters));
 
-                        double homeLat = 52.161002;
-                        double homeLon = 4.496913;
+                        double homeLat = 52.161026;
+                        double homeLon = 4.496946;
                         double diffHomeLatE6 = Math.abs(Math.toDegrees(latitudeRadians)-homeLat)*1e6;
                         double diffHomeLonE6 = Math.abs( Math.toDegrees(longitudeRadians)-homeLon)*1e6;
                         Log.e("difference to home lat E6: ", String.valueOf(diffHomeLatE6));
                         Log.e("difference to home lon E6: ", String.valueOf(diffHomeLonE6));
                         Log.e("difference aggregated:: ", String.valueOf(diffHomeLonE6 + diffHomeLonE6));
 
-                        
+                        if (myTimeStamp == 0.0) {
+                            myTimeStamp = System.currentTimeMillis();
+                        }
+                        if ((System.currentTimeMillis() - myTimeStamp) <= 1000 ) {
+                            aggrDiffMinute += diffHomeLonE6 + diffHomeLonE6;
+                        } else {
+                            Log.e("Total difference in 1 min: ", String.valueOf(aggrDiffMinute));
+                        }
                     }
                 } else {
                     Log.e("CLOCK DISCONTINUITY", "Hardware clock discontinuity is not zero.");
@@ -350,6 +360,10 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     }
 
     public static double getReceiverClockErrorMeteres() { return receiverClockErrorMeters;}
+
+    public static double getUserLatitudeRadians() { return latitudeRadians; }
+
+    public static double getUserLongitudeRadians() { return longitudeRadians; }
 
     public void cellIDLocation(){
         // Update cellCID, cellMCC, cellMNC, cellID, cellLAC from Telephony API
