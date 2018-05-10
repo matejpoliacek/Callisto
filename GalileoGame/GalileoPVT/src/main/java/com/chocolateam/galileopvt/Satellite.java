@@ -135,7 +135,6 @@ public class Satellite {
      *      transmitted (0-1024+)
      * @para rxError Receiver clock error in meters
      */
-    // calculateSatPosAndResiduals
     // within lsq you must recompute satellite positions based on transmitted time-receiver clock error
 
     public void computeSatClockCorrectionAndRecomputeTransmissionTime(double rxError){
@@ -146,11 +145,10 @@ public class Satellite {
             transmittedTimeCorrectedSeconds = correctedTowAndWeek.gpsTimeOfWeekSeconds;
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("EXCEPTION","HERE!");
+            Log.e("EXCEPTION: ","Could not compute satellite correction");
         }
 
         computeSatClockCorrectionMeters();
-        Log.e("New transmitted time:", String.valueOf(transmittedTimeCorrectedSeconds));
     }
 
     public void computeSatClockCorrectionMeters(){
@@ -164,7 +162,6 @@ public class Satellite {
             e.printStackTrace();
         }
         satelliteClockCorrectionMeters = satelliteClockCorrection.satelliteClockCorrectionMeters;
-        // TODO Single frequency users must remove the group delay term(TGD) from the nav message to their SV clock correction term (from p. 90 of ICD-GPS-200C)
     }
 
     // Custom function to compute satellite clock correction (Navipedia) - alternative to computeSatClockCorrectionMeters()
@@ -337,8 +334,9 @@ public class Satellite {
 
     public void computeTroposphericCorrection_GPS(double userLatitudeRadians, double userHeightAboveSeaLevelMeters){
         troposphericCorrectionMeters = 0.0;
-        troposphericCorrectionMeters = Corrections.computeTropoCorrection_SAAS_withMapping(userLatitudeRadians,
-                userHeightAboveSeaLevelMeters, satElevationRadians);
+        /*troposphericCorrectionMeters = Corrections.computeTropoCorrection_SAAS_withMapping(userLatitudeRadians,
+                userHeightAboveSeaLevelMeters, satElevationRadians);*/
+
     }
 
     public void computeIonosphericCorrection_GPS(double[] alpha, double[] beta){

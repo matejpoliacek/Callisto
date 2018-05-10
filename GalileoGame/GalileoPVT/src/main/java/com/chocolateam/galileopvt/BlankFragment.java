@@ -203,25 +203,21 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos() + (long)gpsSatellites.get(i).getTimeOffsetNanos());
                             pseudosat.computePseudoRange();
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
-                            // TODO if a pseudorange is > 3, there's a clock error so stop the thread and execute run() again
 
                             // Satellite clock correction
                             pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMeters);
                             Log.e("Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
                             pseudosat.computeSatellitePosition();
-                            //pseudosat.computeMySatPos();
 
-                            // Satellite elevation and atmospheric corrections less frequently
-                            if ( pseudosat.getGnssTime() % 10 < 2){
-                                pseudosat.computeSatElevationRadians();
-                                Log.e("Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
-                                pseudosat.computeTroposphericCorrection_GPS(Math.toRadians(latitudeDegrees), altitudeMeters);
-                                Log.e("Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
-                                double alpha[] = navMsg.iono.alpha;
-                                double beta[] = navMsg.iono.beta;
-                                pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
-                                Log.e("IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
-                            }
+                            // Satellite elevation and atmospheric corrections
+                            pseudosat.computeSatElevationRadians();
+                            Log.e("Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
+                            pseudosat.computeTroposphericCorrection_GPS(Math.toRadians(latitudeDegrees), altitudeMeters);
+                            Log.e("Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
+                            double alpha[] = navMsg.iono.alpha;
+                            double beta[] = navMsg.iono.beta;
+                            pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
+                            Log.e("IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
 
                             // Corrected pseudorange
                             pseudosat.computeCorrectedRange();
@@ -316,10 +312,10 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         Log.e("USER Longitude deg: ", String.valueOf(longitudeDegrees));
                         Log.e("USER altitude: ", String.valueOf(altitudeMeters));
 
-                        double homeLat = 52.161026;
-                        double homeLon = 4.496946;
+                        double homeLat = 52.160982;
+                        double homeLon = 4.496887;
                         double diffHomeLatE6 = Math.abs(latitudeDegrees-homeLat)*1e6;
-                        double diffHomeLonE6 = Math.abs( longitudeDegrees-homeLon)*1e6;
+                        double diffHomeLonE6 = Math.abs(longitudeDegrees-homeLon)*1e6;
                         Log.e("","");
                         Log.e("difference to home lat E6: ", String.valueOf(diffHomeLatE6));
                         Log.e("difference to home lon E6: ", String.valueOf(diffHomeLonE6));

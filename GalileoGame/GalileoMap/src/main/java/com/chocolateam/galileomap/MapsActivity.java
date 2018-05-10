@@ -159,7 +159,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         /** Location Manager **/
-        mGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+
         mLocationListenerGPS = new LocationListener() {
             @Override
             public void onLocationChanged(android.location.Location location) {
@@ -176,7 +176,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     } else {
                         mGPSMarker.setPosition(point);
                     }
-
+                    mGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
                     System.out.println("Location Changed, source - PVT");
                 }
                     mLastKnownLocation = location;

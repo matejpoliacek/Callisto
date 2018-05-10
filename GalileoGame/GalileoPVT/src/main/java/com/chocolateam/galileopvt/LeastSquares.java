@@ -34,6 +34,12 @@ public class LeastSquares {
 
         for (int i = 0; i < satCoords.size(); i++) {
 
+            if (initialClockError != 0.0) {
+                // precyklit satelity a znovu vyratam pre kazdy sat pos(initial clock error)
+
+                // 
+            }
+
             double r_hat = Math.sqrt(Math.pow((satCoords.get(i)[0]) - initialState[0] , 2) + Math.pow((satCoords.get(i)[1]) - initialState[1], 2)
                     + Math.pow((satCoords.get(i)[2]) - initialState[2], 2));
 
