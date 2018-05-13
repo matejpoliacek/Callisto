@@ -5,6 +5,8 @@ import android.location.cts.nano.Ephemeris;
 import android.util.Log;
 
 import java.sql.Time;
+import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,7 +46,7 @@ public class Satellite {
     private SatelliteClockCorrectionCalculator.SatClockCorrection satelliteClockCorrection;
     private double correctedRange;
 
-    private Ephemeris.GpsNavMessageProto navMsg;
+    private Ephemeris.GpsNavMessageProto navMsg; // TODO add Galileo nav msg
     private Ephemeris.GpsEphemerisProto ephemerisProto;
     private EcefToTopocentricConverter.TopocentricAEDValues elevationAzimuthDist;
 
@@ -56,7 +58,7 @@ public class Satellite {
         this.id = id;
         this.constellation = constellation;
         this.state = state;
-        this.navMsg = navMsg; // works for GPS only
+        this.navMsg = navMsg; // works for GPS only,  // TODO adapt for Galileo nav msg - Galileo's can be allegedly remapped into GpsNavMsg class in order to make all the used functions work
         this.fullBiasNanos = fullBiasNanos;
         this.userPositionTempECEFMeters = userPos;
         Log.e("SAT ID: ", String.valueOf(this.id));
@@ -79,7 +81,7 @@ public class Satellite {
      * @param timeNanos Length of time android device has been powered on (receiver's internal hardware clock value)
      * @param timeOffsetNanos Time offset at which the measurement was taken in nanoseconds (for sub-ns precision)
      * @param fullBiasNanos Difference between TimeNanos inside the GPS receiver and the true GPS time since 0000Z, 6 January 1980.
-                            If GNSS time was computed with a non-GPS satellite, an offset will be required to align to GPS time.
+    If GNSS time was computed with a non-GPS satellite, an offset will be required to align to GPS time.
      * @param biasNanos Clock’s sub-nanosecond bias (for sub-ns precision)
      */
     public void computeGnssTime(long timeNanos, double timeOffsetNanos, long fullBiasNanos, double biasNanos) {
@@ -114,8 +116,8 @@ public class Satellite {
     public void computePseudoRange(){
         if (
                 (state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
-                && constellation.equals("GALILEO")) {
-            pseudoRange = (gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI; // TODO test
+                        && constellation.equals("GALILEO")) {
+            pseudoRange = (gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI;
         }
         else {
             pseudoRange = (receivedTime - transmittedTime)/1E9*LIGHTSPEED;
@@ -164,6 +166,60 @@ public class Satellite {
         satelliteClockCorrectionMeters = satelliteClockCorrection.satelliteClockCorrectionMeters;
     }
 
+    private static class GpsTimeOfWeekAndWeekNumber {
+        /** GPS time of week in seconds */
+        private final double gpsTimeOfWeekSeconds;
+
+        /** GPS week number */
+        private final int weekNumber;
+
+        /** Constructor */
+        private GpsTimeOfWeekAndWeekNumber(double gpsTimeOfWeekSeconds, int weekNumber) {
+            this.gpsTimeOfWeekSeconds = gpsTimeOfWeekSeconds;
+            this.weekNumber = weekNumber;
+        }
+    }
+
+    private static GpsTimeOfWeekAndWeekNumber calculateCorrectedTransmitTowAndWeek(
+            Ephemeris.GpsEphemerisProto ephemerisProto, double receiverGpsTowAtReceptionSeconds,
+            int receiverGpsWeek, double pseudorangeMeters) throws Exception {
+        // GPS time of week at time of transmission: Gps time corrected for transit time (page 98 ICD
+        // GPS 200)
+        double receiverGpsTowAtTimeOfTransmission =
+                receiverGpsTowAtReceptionSeconds - pseudorangeMeters / LIGHTSPEED;
+
+        // Adjust for week rollover
+        if (receiverGpsTowAtTimeOfTransmission < 0) {
+            receiverGpsTowAtTimeOfTransmission += WEEKSEC;
+            receiverGpsWeek -= 1;
+        } else if (receiverGpsTowAtTimeOfTransmission > WEEKSEC) {
+            receiverGpsTowAtTimeOfTransmission -= WEEKSEC;
+            receiverGpsWeek += 1;
+        }
+
+        // Compute the satellite clock correction term (Seconds)
+        double clockCorrectionSeconds =
+                SatelliteClockCorrectionCalculator.calculateSatClockCorrAndEccAnomAndTkIteratively(
+                        ephemerisProto, receiverGpsTowAtTimeOfTransmission,
+                        receiverGpsWeek).satelliteClockCorrectionMeters / LIGHTSPEED;
+
+        // Correct with the satellite clock correction term
+        double receiverGpsTowAtTimeOfTransmissionCorrectedSec =
+                receiverGpsTowAtTimeOfTransmission + clockCorrectionSeconds;
+
+        // Adjust for week rollover due to satellite clock correction
+        if (receiverGpsTowAtTimeOfTransmissionCorrectedSec < 0.0) {
+            receiverGpsTowAtTimeOfTransmissionCorrectedSec += WEEKSEC;
+            receiverGpsWeek -= 1;
+        }
+        if (receiverGpsTowAtTimeOfTransmissionCorrectedSec > WEEKSEC) {
+            receiverGpsTowAtTimeOfTransmissionCorrectedSec -= WEEKSEC;
+            receiverGpsWeek += 1;
+        }
+        return new GpsTimeOfWeekAndWeekNumber(receiverGpsTowAtTimeOfTransmissionCorrectedSec,
+                receiverGpsWeek);
+    }
+
     // Custom function to compute satellite clock correction (Navipedia) - alternative to computeSatClockCorrectionMeters()
     public double getMySatClockOffsetMeters(long timeOfTransmissionNanos){
         double t = timeOfTransmissionNanos/1E9; // seconds
@@ -205,11 +261,11 @@ public class Satellite {
     }
 
     /***************************** Compute satellite position ********************************
-   * @par receiverGpsTowAtTimeOfTransmissionCorrectedSec Receiver estimate of GPS time of week
-   *        when signal was transmitted corrected with the satellite clock drift (seconds)
-   * @par receiverGpsWeekAtTimeOfTransmission Receiver estimate of GPS week when signal was
-   *        transmitted
-    *****************************************************************************************/
+     * @par receiverGpsTowAtTimeOfTransmissionCorrectedSec Receiver estimate of GPS time of week
+     *        when signal was transmitted corrected with the satellite clock drift (seconds)
+     * @par receiverGpsWeekAtTimeOfTransmission Receiver estimate of GPS week when signal was
+     *        transmitted
+     *****************************************************************************************/
     public void computeSatellitePosition() {
         try {
             posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
@@ -227,9 +283,9 @@ public class Satellite {
         xECEF = posAndVel.positionXMeters;
         yECEF = posAndVel.positionYMeters;
         zECEF = posAndVel.positionZMeters;
-                Log.e("X Satellite: ", String.valueOf(posAndVel.positionXMeters));
-                Log.e("Y Satellite: ", String.valueOf(posAndVel.positionYMeters));
-                Log.e("Z Satellite: ", String.valueOf(posAndVel.positionZMeters));
+        Log.e("X Satellite: ", String.valueOf(posAndVel.positionXMeters));
+        Log.e("Y Satellite: ", String.valueOf(posAndVel.positionYMeters));
+        Log.e("Z Satellite: ", String.valueOf(posAndVel.positionZMeters));
     }
 
     // Custom computation of calculating satellite positions based on navipedia
@@ -334,9 +390,14 @@ public class Satellite {
 
     public void computeTroposphericCorrection_GPS(double userLatitudeRadians, double userHeightAboveSeaLevelMeters){
         troposphericCorrectionMeters = 0.0;
-        /*troposphericCorrectionMeters = Corrections.computeTropoCorrection_SAAS_withMapping(userLatitudeRadians,
-                userHeightAboveSeaLevelMeters, satElevationRadians);*/
-
+        Calendar localCalendar = Calendar.getInstance(TimeZone.getDefault());
+        int currentDayOfYear  = localCalendar.get(Calendar.DAY_OF_YEAR);
+        troposphericCorrectionMeters = TroposphericModelEgnos.calculateTropoCorrectionMeters(
+                satElevationRadians,
+                userLatitudeRadians,
+                userHeightAboveSeaLevelMeters,
+                currentDayOfYear
+        );
     }
 
     public void computeIonosphericCorrection_GPS(double[] alpha, double[] beta){
@@ -389,59 +450,19 @@ public class Satellite {
 
     public double getTransmittedTimeCorrectedSeconds() {return  this.transmittedTimeCorrectedSeconds; }
 
-
-
-    private static class GpsTimeOfWeekAndWeekNumber {
-        /** GPS time of week in seconds */
-        private final double gpsTimeOfWeekSeconds;
-
-        /** GPS week number */
-        private final int weekNumber;
-
-        /** Constructor */
-        private GpsTimeOfWeekAndWeekNumber(double gpsTimeOfWeekSeconds, int weekNumber) {
-            this.gpsTimeOfWeekSeconds = gpsTimeOfWeekSeconds;
-            this.weekNumber = weekNumber;
-        }
+    /*******************************************************************************
+     *                                  Setters
+     ******************************************************************************/
+    public void setSatElevationRadians(double satElevationRadians){
+        this.satElevationRadians = satElevationRadians;
     }
 
-    private static GpsTimeOfWeekAndWeekNumber calculateCorrectedTransmitTowAndWeek(
-            Ephemeris.GpsEphemerisProto ephemerisProto, double receiverGpsTowAtReceptionSeconds,
-            int receiverGpsWeek, double pseudorangeMeters) throws Exception {
-        // GPS time of week at time of transmission: Gps time corrected for transit time (page 98 ICD
-        // GPS 200)
-        double receiverGpsTowAtTimeOfTransmission =
-                receiverGpsTowAtReceptionSeconds - pseudorangeMeters / LIGHTSPEED;
-
-        // Adjust for week rollover
-        if (receiverGpsTowAtTimeOfTransmission < 0) {
-            receiverGpsTowAtTimeOfTransmission += WEEKSEC;
-            receiverGpsWeek -= 1;
-        } else if (receiverGpsTowAtTimeOfTransmission > WEEKSEC) {
-            receiverGpsTowAtTimeOfTransmission -= WEEKSEC;
-            receiverGpsWeek += 1;
-        }
-
-        // Compute the satellite clock correction term (Seconds)
-        double clockCorrectionSeconds =
-                SatelliteClockCorrectionCalculator.calculateSatClockCorrAndEccAnomAndTkIteratively(
-                        ephemerisProto, receiverGpsTowAtTimeOfTransmission,
-                        receiverGpsWeek).satelliteClockCorrectionMeters / LIGHTSPEED;
-
-        // Correct with the satellite clock correction term
-        double receiverGpsTowAtTimeOfTransmissionCorrectedSec =
-                receiverGpsTowAtTimeOfTransmission + clockCorrectionSeconds;
-
-        // Adjust for week rollover due to satellite clock correction
-        if (receiverGpsTowAtTimeOfTransmissionCorrectedSec < 0.0) {
-            receiverGpsTowAtTimeOfTransmissionCorrectedSec += WEEKSEC;
-            receiverGpsWeek -= 1;
-        }
-        if (receiverGpsTowAtTimeOfTransmissionCorrectedSec > WEEKSEC) {
-            receiverGpsTowAtTimeOfTransmissionCorrectedSec -= WEEKSEC;
-            receiverGpsWeek += 1;
-        }
-        return new GpsTimeOfWeekAndWeekNumber(receiverGpsTowAtTimeOfTransmissionCorrectedSec,
-                receiverGpsWeek);
+    public void setTroposphericCorrectionMeters(double troposphericCorrectionMeters){
+        this.troposphericCorrectionMeters = troposphericCorrectionMeters;
     }
+
+    public void setIonosphericCorrectionSeconds(double ionosphericCorrectionSeconds){
+        this.ionosphericCorrectionSeconds = ionosphericCorrectionSeconds;
+    }
+
 }

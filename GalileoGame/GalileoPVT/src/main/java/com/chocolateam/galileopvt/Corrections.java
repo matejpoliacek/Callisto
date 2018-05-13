@@ -12,10 +12,8 @@ public  final class Corrections {
 
     private Corrections(){
     }
-
-
     /**
-     * @return Troposphere correction value based on Saastamoinen model with inputs from:
+     * @return Tropospheric correction value based on Saastamoinen model with inputs from:
      * http://www.navipedia.net/index.php/Galileo_Tropospheric_Correction_Model
      * and
      * GALILEO Positioning Technology edited by Jari Nurmi, Elena Simona Lohan, Stephan Sand, Heikki Hurskainen, p.153
