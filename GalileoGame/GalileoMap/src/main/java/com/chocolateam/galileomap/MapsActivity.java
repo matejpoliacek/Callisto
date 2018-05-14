@@ -181,8 +181,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
                     mLastKnownLocation = location;
                     System.out.println("Location Changed, source - Fused");
-                
-
 
                 if (playing && game != null) {
 

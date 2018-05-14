@@ -10,7 +10,12 @@ import Jama.Matrix;
 
 public class LeastSquares {
 
-    static final double C = 299792458.0;
+    private double[] result_vector;
+    private long lastCalcTime;
+
+    public LeastSquares() {
+        lastCalcTime = System.currentTimeMillis();
+    }
 
     /**
      * Weighted least squares implementation
@@ -23,7 +28,7 @@ public class LeastSquares {
      */
 
 
-    public static double[] lsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] initialState, double[] satElevation) {
+    public double[] lsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] initialState, double[] satElevation) {
 
         double initialClockError = initialState[3];
 
@@ -109,7 +114,7 @@ public class LeastSquares {
      */
 
 
-    public static double[] recursiveLsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] initialState, double[] satElevation) {
+    public void runRecursiveLsq(ArrayList<double[]> satCoords, double[] pseudoranges, double[] initialState, double[] satElevation) {
 
         boolean largeDiff = true;
         double[] result = new double[initialState.length];
@@ -135,12 +140,20 @@ public class LeastSquares {
             }
         }
 
-        double[] result_vector = new double[initialState.length];
+        this.result_vector = new double[initialState.length];
         for (int i = 0; i < result.length; i++) {
-            result_vector[i] = initialState[i];
+            this.result_vector[i] = initialState[i];
         }
 
-        return result_vector;
+        this.lastCalcTime = System.currentTimeMillis();
+    }
+
+    public double[] getResult() {
+        return this.result_vector;
+    }
+
+    public long getLastCalcTime() {
+        return this.lastCalcTime;
     }
 
 }

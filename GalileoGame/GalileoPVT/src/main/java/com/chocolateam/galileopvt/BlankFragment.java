@@ -70,6 +70,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private long numberOfPVTcalculations;
     private double aggrDiffMinutePerPVTcalc;
 
+    private LeastSquares lsq;
+    private long lastLsq;
+
     public BlankFragment() {
     }
 
@@ -101,6 +104,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         aggrDiffMinute = 0.0;
         numberOfPVTcalculations = 0;
         aggrDiffMinutePerPVTcalc = 0.0;
+
+        lsq = new LeastSquares();
 
         /****************************************************
                        Obtain Navigation message
@@ -301,7 +306,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             satElevations[i] = Math.toDegrees(thisSat.getSatElevationRadians());
                         }
 
-                        userPosECEFandReceiverClockError = LeastSquares.recursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satElevations);
+                        lastLsq = lsq.getLastCalcTime();
+                        lsq.runRecursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satElevations);
+                        userPosECEFandReceiverClockError = lsq.getResult();
 
                         userPositionECEFmeters[0] = userPosECEFandReceiverClockError[0];
                         userPositionECEFmeters[1] = userPosECEFandReceiverClockError[1];
