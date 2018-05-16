@@ -12,65 +12,8 @@ public  final class Corrections {
 
     private Corrections(){
     }
-
-    /** Source: GoGPS (Copyright (c) 2010, Eugenio Realini, Mirko Reguzzoni, Cryms sagl - Switzerland, Daisuke Yoshida. All Rights Reserved. )
-     *  https://www.programcreek.com/java-api-examples/index.php?source_dir=goGPS_Java-master/src/main/java/org/gogpsproject/ReceiverPosition.java#
-     *  @return ionosphere correction value by Klobuchar model
-     */
-
-    // how to get gpsTime: long gpsTime = receiverClock.getTimeNanos() - (long)(fullBiasNanos + biasNanos); // for goGPS iono model
-    public double computeIonosphereCorrection_GoGPS (double alpha, double beta,
-                                               double latitude, double longitude, double azimuth, double elevation, long gpstime) {
-        double ionoCorr = 0;
-
-        elevation = Math.abs(elevation);
-
-        // Parameter conversion to semicircles
-        double lon = longitude / 180; // geod.get(0)
-        double lat = latitude / 180; //geod.get(1)
-        azimuth = azimuth / 180;
-        elevation = elevation / 180;
-
-        // Klobuchar algorithm
-        double f = 1 + 16 * Math.pow((0.53 - elevation), 3);
-        double psi = 0.0137 / (elevation + 0.11) - 0.022;
-        double phi = lat + psi * Math.cos(azimuth * Math.PI);
-        if (phi > 0.416){
-            phi = 0.416;
-        }
-        if (phi < -0.416){
-            phi = -0.416;
-        }
-        double lambda = lon + (psi * Math.sin(azimuth * Math.PI))
-                / Math.cos(phi * Math.PI);
-        double ro = phi + 0.064 * Math.cos((lambda - 1.617) * Math.PI);
-        double t = lambda * 43200 + gpstime;
-        while (t >= 86400)
-            t = t - 86400;
-        while (t < 0)
-            t = t + 86400;
-        //double p = iono.getBeta(0) + iono.getBeta(1) * ro + iono.getBeta(2) * Math.pow(ro, 2) + iono.getBeta(3) * Math.pow(ro, 3);
-        double p = 0;
-        if (p < 72000)
-            p = 72000;
-        //double a = iono.getAlpha(0) + iono.getAlpha(1) * ro + iono.getAlpha(2) * Math.pow(ro, 2) + iono.getAlpha(3) * Math.pow(ro, 3);
-        double a =0;
-        if (a < 0)
-            a = 0;
-        double x = (2 * Math.PI * (t - 50400)) / p;
-        if (Math.abs(x) < 1.57){
-            ionoCorr = Satellite.LIGHTSPEED
-                    * f
-                    * (5e-9 + a
-                    * (1 - (Math.pow(x, 2)) / 2 + (Math.pow(x, 4)) / 24));
-        }else{
-            ionoCorr = Satellite.LIGHTSPEED * f * 5e-9;
-        }
-        return ionoCorr;
-    }
-
     /**
-     * @return Troposphere correction value based on Saastamoinen model with inputs from:
+     * @return Tropospheric correction value based on Saastamoinen model with inputs from:
      * http://www.navipedia.net/index.php/Galileo_Tropospheric_Correction_Model
      * and
      * GALILEO Positioning Technology edited by Jari Nurmi, Elena Simona Lohan, Stephan Sand, Heikki Hurskainen, p.153
@@ -93,15 +36,6 @@ public  final class Corrections {
 
         tropoCorr = hydrostaticDelay*hMapping + wetDelay*wMapping;
         return tropoCorr;
-    }
-
-    /**
-     * @return Troposphere correction value based on Saastamoinen model by
-     * GALILEO Positioning Technology edited by Jari Nurmi, Elena Simona Lohan, Stephan Sand, Heikki Hurskainen, p.153
-     * @param satElevationAngleRadians [rad]
-     */
-    public static double computeTropoCorrection_SAAS_simple(double satElevationAngleRadians) {
-        return 2.47/(Math.sin(satElevationAngleRadians) + 0.0121);
     }
 
     /**
@@ -175,5 +109,62 @@ public  final class Corrections {
                     * (1255 / T + 0.05) * e);
         }
         return tropoCorr;
+    }
+
+    /** Iono correction by GoGPS
+     *  Source: GoGPS (Copyright (c) 2010, Eugenio Realini, Mirko Reguzzoni, Cryms sagl - Switzerland, Daisuke Yoshida. All Rights Reserved. )
+     *  https://www.programcreek.com/java-api-examples/index.php?source_dir=goGPS_Java-master/src/main/java/org/gogpsproject/ReceiverPosition.java#
+     *  @return ionosphere correction value by Klobuchar model
+     */
+
+    // how to get gpsTime: long gpsTime = receiverClock.getTimeNanos() - (long)(fullBiasNanos + biasNanos); // for goGPS iono model
+    public double computeIonosphereCorrection_GoGPS (double alpha, double beta,
+                                                     double latitude, double longitude, double azimuth, double elevation, long gpstime) {
+        double ionoCorr = 0;
+
+        elevation = Math.abs(elevation);
+
+        // Parameter conversion to semicircles
+        double lon = longitude / 180; // geod.get(0)
+        double lat = latitude / 180; //geod.get(1)
+        azimuth = azimuth / 180;
+        elevation = elevation / 180;
+
+        // Klobuchar algorithm
+        double f = 1 + 16 * Math.pow((0.53 - elevation), 3);
+        double psi = 0.0137 / (elevation + 0.11) - 0.022;
+        double phi = lat + psi * Math.cos(azimuth * Math.PI);
+        if (phi > 0.416){
+            phi = 0.416;
+        }
+        if (phi < -0.416){
+            phi = -0.416;
+        }
+        double lambda = lon + (psi * Math.sin(azimuth * Math.PI))
+                / Math.cos(phi * Math.PI);
+        double ro = phi + 0.064 * Math.cos((lambda - 1.617) * Math.PI);
+        double t = lambda * 43200 + gpstime;
+        while (t >= 86400)
+            t = t - 86400;
+        while (t < 0)
+            t = t + 86400;
+        //double p = iono.getBeta(0) + iono.getBeta(1) * ro + iono.getBeta(2) * Math.pow(ro, 2) + iono.getBeta(3) * Math.pow(ro, 3);
+        double p = 0;
+        if (p < 72000)
+            p = 72000;
+        //double a = iono.getAlpha(0) + iono.getAlpha(1) * ro + iono.getAlpha(2) * Math.pow(ro, 2) + iono.getAlpha(3) * Math.pow(ro, 3);
+        double a =0;
+        if (a < 0)
+            a = 0;
+        double x = (2 * Math.PI * (t - 50400)) / p;
+        if (Math.abs(x) < 1.57){
+            ionoCorr = Satellite.LIGHTSPEED
+                    * f
+                    * (5e-9 + a
+                    * (1 - (Math.pow(x, 2)) / 2 + (Math.pow(x, 4)) / 24));
+        }else{
+            ionoCorr = Satellite.LIGHTSPEED * f * 5e-9;
+        }
+        return ionoCorr;
     }
 }
