@@ -324,9 +324,9 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         Log.e("USER Longitude deg: ", String.valueOf(longitudeDegrees));
                         Log.e("USER altitude: ", String.valueOf(altitudeMeters));
 
-                        Log.e("USER Latitude deg: ", String.valueOf(kalman.get_lat_long()[0]));
-                        Log.e("USER Longitude deg: ", String.valueOf(kalman.get_lat_long()[1]));
-                        Log.e("USER Speed: ", String.valueOf(kalman.get_speed(altitudeMeters)));
+                        Log.e("USER KALMAN Latitude deg: ", String.valueOf(kalman.get_lat_long()[0]));
+                        Log.e("USER KALMAN Longitude deg: ", String.valueOf(kalman.get_lat_long()[1]));
+                        Log.e("USER KALMAN Speed: ", String.valueOf(kalman.get_speed(altitudeMeters)));
 
                         double homeLat = 52.161026;
                         double homeLon = 4.496946;
