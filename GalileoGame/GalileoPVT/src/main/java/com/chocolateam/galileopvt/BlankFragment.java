@@ -12,7 +12,6 @@ import android.location.LocationManager;
 import android.location.cts.nano.Ephemeris;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.telephony.CellInfo;
@@ -20,15 +19,7 @@ import android.telephony.CellInfoLte;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.location.cts.nano.Ephemeris.GpsEphemerisProto;
-import android.location.cts.nano.Ephemeris.GpsNavMessageProto;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -71,7 +62,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private double aggrDiffMinutePerPVTcalc;
 
     private LeastSquares lsq;
-    private long lastLsq;
+    private GeoTrackFilter kalman;
+    private long prevLsq;
 
     public BlankFragment() {
     }
@@ -106,7 +98,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         aggrDiffMinutePerPVTcalc = 0.0;
 
         lsq = new LeastSquares();
-
+        kalman = new GeoTrackFilter(1.0);
         /****************************************************
                        Obtain Navigation message
         ****************************************************/
@@ -306,7 +298,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             satElevations[i] = Math.toDegrees(thisSat.getSatElevationRadians());
                         }
 
-                        lastLsq = lsq.getLastCalcTime();
+                        prevLsq = lsq.getLastCalcTime(); // save last time of lsq calculation
                         lsq.runRecursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satElevations);
                         userPosECEFandReceiverClockError = lsq.getResult();
 
@@ -321,9 +313,20 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         latitudeDegrees = Math.toDegrees(lla.latitudeRadians);
                         longitudeDegrees = Math.toDegrees(lla.longitudeRadians);
                         altitudeMeters = lla.altitudeMeters;
+
+                        /**
+                         * Kalman Addition
+                         */
+
+                        kalman.update_velocity2d(latitudeDegrees, longitudeDegrees, lsq.getLastCalcTime() - prevLsq);
+
                         Log.e("USER Latitude deg: ", String.valueOf(latitudeDegrees));
                         Log.e("USER Longitude deg: ", String.valueOf(longitudeDegrees));
                         Log.e("USER altitude: ", String.valueOf(altitudeMeters));
+
+                        Log.e("USER Latitude deg: ", String.valueOf(kalman.get_lat_long()[0]));
+                        Log.e("USER Longitude deg: ", String.valueOf(kalman.get_lat_long()[1]));
+                        Log.e("USER Speed: ", String.valueOf(kalman.get_speed(altitudeMeters)));
 
                         double homeLat = 52.161026;
                         double homeLon = 4.496946;
