@@ -12,137 +12,92 @@
     <ImageView
         android:id="@+id/background"
         android:layout_width="368dp"
-        android:layout_height="407dp"
-        android:scaleType="fitXY"
+        android:layout_height="282dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/constellation_panel"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:src="@drawable/constellation_panel" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
-        android:layout_width="200dp"
-        android:layout_height="350dp"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="4dp"
-        android:orientation="horizontal"
+        android:layout_width="171dp"
+        android:layout_height="201dp"
+        android:layout_marginStart="105dp"
+        android:layout_marginTop="50dp"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <RadioGroup
+            android:layout_width="170dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:checkedButton="@id/galileo_switch"
+            android:orientation="horizontal">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="18dp" />
-
-            <com.chocolateam.galileospaceship.GButtonSwitch
-                android:id="@+id/beidou_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                custom:label="BEIDOU"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="18dp" />
-
-            <com.chocolateam.galileospaceship.GButtonSwitch
-                android:id="@+id/glonass_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                custom:label="GLONASS"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="18dp" />
-
-            <com.chocolateam.galileospaceship.GButtonSwitch
+            <RadioButton
                 android:id="@+id/galileo_switch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                custom:label="GALILEO"/>
+                android:layout_weight="1"
+                android:button="@android:color/transparent"
+                android:drawableTop="@drawable/button_switch_selector"
+                android:gravity="center"
+                android:text="GALILEO"
+                android:fontFamily="@font/roboto_medium"
+                android:textColor="@color/label_off"
+                android:textSize="13dp"/>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="18dp" />
-
-            <com.chocolateam.galileospaceship.GButtonSwitch
+            <RadioButton
                 android:id="@+id/gps_switch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                custom:label="GPS"/>
+                android:layout_weight="1"
+                android:button="@android:color/transparent"
+                android:drawableTop="@drawable/button_switch_selector"
+                android:gravity="center"
+                android:text="GPS"
+                android:fontFamily="@font/roboto_medium"
+                android:textColor="@color/label_off"
+                android:textSize="13dp"/>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="18dp" />
-
-            <com.chocolateam.galileospaceship.GButtonSwitch
-                android:id="@+id/qzss_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                custom:label="QZSS"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="18dp" />
-
-            <com.chocolateam.galileospaceship.GButtonSwitch
-                android:id="@+id/sbas_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                custom:label="SBAS"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center_horizontal">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-
-            <com.chocolateam.galileospaceship.GStickSwitch
+            <RadioButton
                 android:id="@+id/all_switch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                custom:label="ALL" />
+                android:layout_weight="1"
+                android:button="@android:color/transparent"
+                android:drawableTop="@drawable/button_switch_selector"
+                android:gravity="center"
+                android:text="ALL"
+                android:fontFamily="@font/roboto_medium"
+                android:textColor="@color/label_off"
+                android:textSize="13dp"/>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="20dp" />
+        </RadioGroup>
 
-            <com.chocolateam.galileospaceship.GStickSwitch
-                android:id="@+id/galileo_only_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                custom:label="GALILEO ONLY" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="30dp" />
+        <LinearLayout
+            android:layout_width="147dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:orientation="horizontal">
 
             <ImageButton
                 android:id="@+id/cancel_button"
                 android:layout_width="70dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:adjustViewBounds="true"
                 android:background="#00000000"
                 android:scaleType="fitXY"
                 android:src="@drawable/cancel_button_selector" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="15dp" />
-
             <ImageButton
                 android:id="@+id/ok_button"
                 android:layout_width="70dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:adjustViewBounds="true"
                 android:background="#00000000"
                 android:scaleType="fitCenter"

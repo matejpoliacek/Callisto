@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.example.lionelgarcia.galileospaceship.R;
@@ -30,9 +31,13 @@ public class SkyViewFragment extends Fragment {
         SatelliteInfoView satinfoview = mView.findViewById(R.id.satinfoview);
         SatView satview = mView.findViewById(R.id.satview);
         ImageView clouds = mView.findViewById(R.id.clouds);
+        FrameLayout earthAndSat = mView.findViewById(R.id.earth_all);
 
         Animation ViewAnimation = AnimationUtils.loadAnimation(getActivity(), R.anim.rotation_slow);
         clouds.startAnimation(ViewAnimation);
+
+//        Animation EarthPoisitionAnimation = AnimationUtils.loadAnimation(getActivity(), R.anim.earth_sat_initial_position);
+//        earthAndSat.startAnimation(EarthPoisitionAnimation);
 
         satview.setSatInfoView(satinfoview);
 

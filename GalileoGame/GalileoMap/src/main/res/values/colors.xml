@@ -7,10 +7,12 @@
     <color name="title">#222222</color>
     <color name="console">#C6C5BB</color>
     <color name="darkSpace">#191919</color>
-    <color name="hologram_blue">#76CFFF</color>
+    <color name="hologram_blue">#BAF3FF</color>
     <color name="screen_blue">#CFD2DF</color>
     <color name="label_on">#3A897A</color>
     <color name="label_off">#A9A798</color>
+    <color name="buttonGreen">#3A897A</color>
+    <color name="buttonGreenDark">#305553</color>
 
     <color name="beidou_color">#C7843C</color>
     <color name="qzss_color">#A65765</color>

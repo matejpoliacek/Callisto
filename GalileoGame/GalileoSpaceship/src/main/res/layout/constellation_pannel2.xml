@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    android:id="@+id/main_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="left">
+
+    <ImageView
+        android:id="@+id/background"
+        android:layout_width="368dp"
+        android:layout_height="236dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/constellation_panel_2"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="237dp"
+        android:layout_height="146dp"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="40dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checkedButton="@id/galileo_switch"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/galileo_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@android:color/transparent"
+                android:checked="false"
+                android:drawableTop="@drawable/galileo_button_selector"
+                android:gravity="center" />
+
+            <RadioButton
+                android:id="@+id/gps_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@android:color/transparent"
+                android:drawableTop="@drawable/gps_button_selector"
+                android:gravity="center" />
+
+            <RadioButton
+                android:id="@+id/all_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@android:color/transparent"
+                android:drawableTop="@drawable/all_button_selector"
+                android:gravity="center" />
+        </RadioGroup>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/cancel_button"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="#00000000"
+                android:scaleType="fitXY"
+                android:src="@drawable/cancel_button_selector" />
+
+            <ImageButton
+                android:id="@+id/ok_button"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="#00000000"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ok_button_selector" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>

@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -145,6 +144,13 @@
         android:layout_margin="8dp">
 
     </com.chocolateam.galileomap.GameScore>
+
+    <com.chocolateam.galileomap.TutorialView
+        android:id="@+id/tutorial"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </com.chocolateam.galileomap.TutorialView>
 
     <TextView
         android:id="@+id/testTextView"

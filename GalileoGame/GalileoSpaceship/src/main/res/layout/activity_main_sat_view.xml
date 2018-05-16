@@ -74,7 +74,7 @@
         app:srcCompat="@drawable/stars" />
 
     <ImageView
-        android:id="@+id/central_cabin"
+        android:id="@+id/central_panel"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
@@ -83,7 +83,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/main_panel_cabin" />
+        app:srcCompat="@drawable/center_panel" />
 
     <com.chocolateam.galileospaceship.SatelliteInfoView
         android:id="@+id/satinfoview"

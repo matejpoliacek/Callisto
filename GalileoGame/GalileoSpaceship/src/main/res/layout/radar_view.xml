@@ -10,6 +10,7 @@
     android:layout_height="match_parent"
     android:background="@color/darkSpace"
     android:colorMode="wideColorGamut"
+    android:layout_gravity="center_horizontal"
     tools:context="com.example.lionelgarcia.galileospaceship.com.chocolateam.galileospaceship.MainActivity">
 
     <ImageView
@@ -21,12 +22,12 @@
         custom:layout_constraintEnd_toEndOf="parent"
         custom:layout_constraintStart_toStartOf="parent"
         custom:layout_constraintTop_toTopOf="parent"
-        android:src="@drawable/right_cabin" />
+        android:src="@drawable/right_panel" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="top|left"
+        android:gravity="center_horizontal"
         android:orientation="vertical">
 
         <ImageButton
@@ -49,28 +50,26 @@
             android:id="@+id/imageView2"
             android:layout_width="350dp"
             android:layout_height="215dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="28dp"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginStart="40dp"
             android:scaleType="fitCenter"
+            android:layout_marginLeft="20dp"
             android:src="@drawable/slice1" />
 
         <com.chocolateam.galileospaceship.RadarView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-35dp"
-            android:layout_marginLeft="83dp"
+            android:layout_marginTop="-50dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+            app:layout_constraintStart_toStartOf="parent" />
 
         <com.chocolateam.galileospaceship.MeasurementsInfo
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="0dp"
-            android:layout_marginLeft="40dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -84,8 +83,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/left_cabin_light"

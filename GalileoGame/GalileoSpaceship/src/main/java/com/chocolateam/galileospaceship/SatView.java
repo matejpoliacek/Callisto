@@ -77,7 +77,7 @@ public class SatView extends ConstraintLayout {
 
     private float mscreenW;
     private float mviewH = 1000;
-    private int msatWidth = 90;
+    private int msatWidth = 120;
     private int msatHeight;
 
     private List<Satellite> msatList = new ArrayList<>();

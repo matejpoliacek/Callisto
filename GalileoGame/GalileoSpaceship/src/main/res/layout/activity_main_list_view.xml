@@ -21,7 +21,7 @@
         custom:layout_constraintEnd_toEndOf="parent"
         custom:layout_constraintStart_toStartOf="parent"
         custom:layout_constraintTop_toTopOf="parent"
-        custom:srcCompat="@drawable/left_cabin" />
+        custom:srcCompat="@drawable/left_panel" />
 
     <com.chocolateam.galileospaceship.LocInfo
         android:id="@+id/view2"

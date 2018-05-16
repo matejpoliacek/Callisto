@@ -11,8 +11,10 @@
 
     <ImageView
         android:id="@+id/background"
-        android:layout_width="@dimen/radar_width"
-        android:layout_height="@dimen/radar_width"
+        android:layout_width="239dp"
+        android:layout_height="234dp"
+        android:layout_marginRight="36dp"
+        android:layout_marginTop="32dp"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/radar_background" />
@@ -28,14 +30,16 @@
         android:id="@+id/radar_light"
         android:layout_width="@dimen/radar_width"
         android:layout_height="@dimen/radar_width"
+        android:layout_marginRight="24dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/radar_light" />
 
     <ImageView
         android:id="@+id/foreground"
-        android:layout_width="@dimen/radar_width"
-        android:layout_height="@dimen/radar_width"
+        android:layout_width="314dp"
+        android:layout_height="298dp"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/radar_foreground" />

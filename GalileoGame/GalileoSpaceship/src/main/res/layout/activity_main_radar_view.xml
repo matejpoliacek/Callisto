@@ -12,7 +12,7 @@
     tools:context="com.example.lionelgarcia.galileospaceship.com.chocolateam.galileospaceship.MainActivity">
 
     <ImageView
-        android:id="@+id/left_cabin"
+        android:id="@+id/left_panel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitXY"
@@ -20,7 +20,7 @@
         custom:layout_constraintEnd_toEndOf="parent"
         custom:layout_constraintStart_toStartOf="parent"
         custom:layout_constraintTop_toTopOf="parent"
-        custom:srcCompat="@drawable/right_cabin" />
+        custom:srcCompat="@drawable/right_panel" />
 
     <com.chocolateam.galileospaceship.MeasurementsInfo
         android:layout_width="wrap_content"
