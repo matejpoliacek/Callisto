@@ -6,13 +6,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.cts.nano.Ephemeris;
 import android.location.cts.nano.Ephemeris.GpsNavMessageProto;
-import android.location.cts.suplClient.SuplRrlpController;
-import android.os.AsyncTask;
+import android.location.cts.nano.GalileoEphemeris;
 import android.os.Bundle;
-import android.util.Log;
+import android.util.Pair;
+
 import java.lang.*;
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -25,7 +23,7 @@ public class NavReader extends Fragment implements LocationListener {
     private GpsNavMessageProto mHardwareGpsNavMessageProto = null;
     private long[] mReferenceLocation = new long[] {0,1};
     private LocationManager mLocationManager;
-    public Ephemeris.GpsNavMessageProto navMessage;
+    public Pair<GpsNavMessageProto, GalileoEphemeris.GalNavMessageProto> navMessage;
 
     public void setReferencePosition(long lat, long lng, long alt) {
         if (mReferenceLocation == null) {
@@ -54,12 +52,12 @@ public class NavReader extends Fragment implements LocationListener {
      */
     // This function works without providing anything really, as we can't get our lat/lon from Telephony yet
     // Calls Google's server to get Navigation Message
-    private GpsNavMessageProto getSuplNavMessage(long lat, long lng) {
+    private Pair<GpsNavMessageProto, GalileoEphemeris.GalNavMessageProto> getSuplNavMessage(long lat, long lng) {
         // This has to be changed to a dynamic value from the Google Geolocation API
         mReferenceLocation[0] = lat;
         mReferenceLocation[1] = lng;
         try {
-            Ephemeris.GpsNavMessageProto navMsg = new NavThread().execute(mReferenceLocation).get();
+            Pair<GpsNavMessageProto, GalileoEphemeris.GalNavMessageProto> navMsg = new NavThread().execute(mReferenceLocation).get();
             return navMsg;
         } catch (InterruptedException e) {
             e.printStackTrace();
