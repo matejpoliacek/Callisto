@@ -33,7 +33,7 @@ public class PvtActivity extends AppCompatActivity {
     public void createPvtFrag() {
         FragmentManager gamefragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
-        BlankFragment pvtFrag = new BlankFragment();
+        PvtFragment pvtFrag = new PvtFragment();
         fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
         pvtFrag.setContext(PvtActivity.this);
     }

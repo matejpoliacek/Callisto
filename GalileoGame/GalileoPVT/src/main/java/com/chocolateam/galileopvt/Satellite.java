@@ -1,10 +1,8 @@
 package com.chocolateam.galileopvt;
 import android.location.GnssMeasurement;
-import android.location.cts.asn1.supl2.rrlp_components.*;
 import android.location.cts.nano.Ephemeris;
 import android.util.Log;
 
-import java.sql.Time;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -272,9 +270,9 @@ public class Satellite {
                     ephemerisProto,
                     transmittedTimeCorrectedSeconds,
                     ephemerisProto.week,
-                    BlankFragment.getUserPositionECEFmeters()[0],//3904174BlankFragment.getUserPositionECEFmeters()[0]
-                    BlankFragment.getUserPositionECEFmeters()[1],//301788BlankFragment.getUserPositionECEFmeters()[1]
-                    BlankFragment.getUserPositionECEFmeters()[2]//5017699BlankFragment.getUserPositionECEFmeters()[2]
+                    PvtFragment.getUserPositionECEFmeters()[0],//3904174BlankFragment.getUserPositionECEFmeters()[0]
+                    PvtFragment.getUserPositionECEFmeters()[1],//301788BlankFragment.getUserPositionECEFmeters()[1]
+                    PvtFragment.getUserPositionECEFmeters()[2]//5017699BlankFragment.getUserPositionECEFmeters()[2]
             );
         } catch (Exception e) {
             e.printStackTrace();

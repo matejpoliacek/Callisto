@@ -1,7 +1,5 @@
 package com.chocolateam.galileomap;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,7 +15,6 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -36,7 +33,6 @@ import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -52,7 +48,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import com.chocolateam.galileopvt.BlankFragment;
+import com.chocolateam.galileopvt.PvtFragment;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
@@ -166,8 +162,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onLocationChanged(android.location.Location location) {
                 if (ACTIVITY_TYPE.equals("map")) {
 
-                    LatLng point = new LatLng(com.chocolateam.galileopvt.BlankFragment.getUserLatitudeDegrees(),
-                                            com.chocolateam.galileopvt.BlankFragment.getUserLongitudeDegrees());
+                    LatLng point = new LatLng(PvtFragment.getUserLatitudeDegrees(),
+                                            PvtFragment.getUserLongitudeDegrees());
 
                     //mLastKnownLocation.setLatitude(point.latitude);
                     //mLastKnownLocation.setLongitude(point.longitude);
@@ -213,6 +209,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // draw class
         draw = new DrawClass();
 
+        /**
+
+         Stragetgy as follows:
+
+         - hide all game stuff at first
+         - if game
+            - show tutorial
+            - then after tutorial, show game elements again
+         - if map
+            - don't do anything else, just keep the stuff hidden
+
+         CHECK: is .INVISIBLE enough, or do we need to use .GONE?
+
+
+        if (ACTIVITY_TYPE.equals("map")) {
+            playButton.setVisibility(View.GONE);
+
+
+        } else if (ACTIVITY_TYPE.equals("game")){
+
+        }
+
+         **/
+
         scoreText = (TextView) findViewById(R.id.scoretext);
         scoreText.setVisibility(View.INVISIBLE);
 
@@ -256,16 +276,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             System.out.println("TYPE: " + ACTIVITY_TYPE);
         }
-
-        TextView testText = findViewById(R.id.testTextView);
-        if (ACTIVITY_TYPE.equals("map")) {
-            playButton.setVisibility(View.GONE);
-            testText.setText("MAP");
-
-        } else if (ACTIVITY_TYPE.equals("game")){
-            testText.setText("GAME");
-        }
-
     }
 
     private void setLocationSettings() {

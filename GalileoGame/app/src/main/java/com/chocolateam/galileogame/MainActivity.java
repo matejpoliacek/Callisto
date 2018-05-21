@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.chocolateam.galileopvt.BlankFragment;
+import com.chocolateam.galileopvt.PvtFragment;
 import com.chocolateam.galileopvt.PvtActivity;
 import com.chocolateam.galileospaceship.SpaceshipViewActivity;
 
@@ -26,9 +26,9 @@ public class MainActivity extends AppCompatActivity {
         // Start the blank fragment initiating Gal/Gps PVT on app start
         FragmentManager gamefragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
-        BlankFragment pvtFrag = new BlankFragment();
+        PvtFragment pvtFrag = new PvtFragment();
         fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
-        Log.e("uvodny text",String.valueOf(com.chocolateam.galileopvt.BlankFragment.getUserLatitudeDegrees()));
+        Log.e("uvodny text",String.valueOf(PvtFragment.getUserLatitudeDegrees()));
     }
 
     public void goToGame(View view) {
