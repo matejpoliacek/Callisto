@@ -70,6 +70,10 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private GeoTrackFilter kalman;
     private long prevLsq;
 
+    private boolean firstRun = true;
+    private GnssLogger mGnssLogger = new GnssLogger();
+
+
     public BlankFragment() {
     }
 
@@ -238,6 +242,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                             pseudoSats.add(pseudosat);
                             Log.e("",""); // empty line
                         }
+
                     }
                     /*********************************** GALILEO **********************************/
                     // TODO only start computing satellite data if there are enough for a PVT (>3)
@@ -336,6 +341,15 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         Log.e("USER KALMAN Latitude deg: ", String.valueOf(kalman.get_lat_long()[0]));
                         Log.e("USER KALMAN Longitude deg: ", String.valueOf(kalman.get_lat_long()[1]));
                         Log.e("USER KALMAN Speed: ", String.valueOf(kalman.get_speed(altitudeMeters)));
+
+                        /***
+                         *  Adding here a call to (file) logging functions
+                         */
+                        if (firstRun){
+                            mGnssLogger.startNewLog(CONSTELLATION_SWITCH);
+                            firstRun = false;
+                        }
+                        mGnssLogger.appendLog(CONSTELLATION_SWITCH, longitudeDegrees, latitudeDegrees, altitudeMeters, pseudoSats.size(), 0);
 
                         // Testing configuration
                         double homeLat = 52.161002;
