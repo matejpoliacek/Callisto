@@ -20,6 +20,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -54,12 +55,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     private LatLng lastClickedLocation;
-    private Button playButton;
-    private TextView scoreText;
     private Button zoomButton;
     private GameScore inGameScore;
     private GamePanel gameBottomPanel;
     private TutorialView tutorialView;
+    private View checkboxLayout;
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private CameraPosition mCameraPosition;
@@ -126,6 +126,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // flag to indicate if the activity is for the game or just of a map
     private String ACTIVITY_TYPE;
+    private final String TYPE_GAME = "game";
+    private final String TYPE_MAP = "map";
+
+    // selected constellation switch
+    private String constellation = "ALL";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,7 +141,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
             ACTIVITY_TYPE = savedInstanceState.getString(KEY_ACTIVITY_TYPE);
-            System.out.println("SAVED STATE");
+            System.out.println("SAVED STATE: " + ACTIVITY_TYPE);
+        }
+
+        if (mLocationPermissionGranted == false) {
+            mLocationPermissionGranted = getIntent().getExtras().getBoolean("location_permit");
+        }
+
+
+        // Distinguish if the activity represents a game or map
+        // TODO: finish
+        System.out.println("TYPE: " + ACTIVITY_TYPE);
+        if (ACTIVITY_TYPE == null) {
+            ACTIVITY_TYPE = getIntent().getExtras().getString("activity_type");
+
+            // Horrible hack
+            // if the getIntent() returns null, it means we're coming back from the ScoreActivity
+            // hence it was a game
+            // This is easier than trying to rely on savedInstanceState (not working), or setting up
+            // elaborate data stream from the child activity
+            if (ACTIVITY_TYPE == null) {
+                ACTIVITY_TYPE = TYPE_GAME;
+            }
+            System.out.println("TYPE: " + ACTIVITY_TYPE);
         }
 
         // Remove the top option bar
@@ -160,7 +187,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mLocationListenerGPS = new LocationListener() {
             @Override
             public void onLocationChanged(android.location.Location location) {
-                if (ACTIVITY_TYPE.equals("map")) {
+
+                // SET MAP LOCATION, markers and default
+                if (ACTIVITY_TYPE.equals(TYPE_MAP)) {
+
 
                     LatLng point = new LatLng(PvtFragment.getUserLatitudeDegrees(),
                                             PvtFragment.getUserLongitudeDegrees());
@@ -175,9 +205,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                     mGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
                     System.out.println("Location Changed, source - PVT");
-                }
+
                     mLastKnownLocation = location;
                     System.out.println("Location Changed, source - Fused");
+                } else { // ELSE if we're playing the game, set the location to the selected source
+                    switch (constellation) {
+                        case "ALL":
+                            mLastKnownLocation = location;
+                            break;
+                        case "GPS":
+                            LatLng point = new LatLng(PvtFragment.getUserLatitudeDegrees(),
+                                    PvtFragment.getUserLongitudeDegrees());
+                            mLastKnownLocation.setLatitude(point.latitude);
+                            mLastKnownLocation.setLongitude(point.longitude);
+                            break;
+                        case "GAL":
+                            break; // TODO
+                    }
+                }
+
 
                 if (playing && game != null) {
 
@@ -209,47 +255,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // draw class
         draw = new DrawClass();
 
-        /**
-
-         Stragetgy as follows:
-
-         - hide all game stuff at first
-         - if game
-            - show tutorial
-            - then after tutorial, show game elements again
-         - if map
-            - don't do anything else, just keep the stuff hidden
-
-         CHECK: is .INVISIBLE enough, or do we need to use .GONE?
-
-
-        if (ACTIVITY_TYPE.equals("map")) {
-            playButton.setVisibility(View.GONE);
-
-
-        } else if (ACTIVITY_TYPE.equals("game")){
-
-        }
-
-         **/
-
-        scoreText = (TextView) findViewById(R.id.scoretext);
-        scoreText.setVisibility(View.INVISIBLE);
-
-        playButton = (Button) findViewById(R.id.playButton);
-
         zoomButton = (Button) findViewById(R.id.zoomButton);
 //        zoomButton.setVisibility(View.INVISIBLE);
 //        zoomButton.setEnabled(false);
 
-        playButton = (Button) findViewById(R.id.playButton);
-        playButton.setVisibility(View.INVISIBLE);
 
         inGameScore = findViewById(R.id.in_game_score);
         gameBottomPanel = findViewById(R.id.game_bottom_panel);
 
         tutorialView = findViewById(R.id.tutorial);
         tutorialView.setGame(this);
+
+        checkboxLayout = findViewById(R.id.checkboxLayout);
+
+        if (ACTIVITY_TYPE.equals(TYPE_MAP)) {
+            inGameScore.setVisibility(View.INVISIBLE);
+            gameBottomPanel.setVisibility(View.INVISIBLE);
+            tutorialView.setVisibility(View.GONE);
+        } else if (ACTIVITY_TYPE.equals(TYPE_GAME)) {
+            checkboxLayout.setVisibility(View.GONE);
+        }
+
+
 
         // sensor variables for compass
         sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -258,23 +285,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (sensor != null) {
             sensorService.registerListener(mySensorEventListener, sensor,
                     SensorManager.SENSOR_DELAY_NORMAL);
-        }
-
-        // Distinguish if the activity represents a game or map
-        // TODO: finish
-        System.out.println("TYPE: " + ACTIVITY_TYPE);
-        if (ACTIVITY_TYPE == null) {
-            ACTIVITY_TYPE = getIntent().getExtras().getString("maptype");
-
-            // Horrible hack
-            // if the getIntent() returns null, it means we're coming back from the ScoreActivity
-            // hence it was a game
-            // This is easier than trying to rely on savedInstanceState (not working), or setting up
-            // elaborate data stream from the child activity
-            if (ACTIVITY_TYPE == null) {
-                ACTIVITY_TYPE = "game";
-            }
-            System.out.println("TYPE: " + ACTIVITY_TYPE);
         }
     }
 
@@ -354,9 +364,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
-
-        // TODO: tutorial dialog
-//        showTutorialDialog();
     }
 
 
@@ -595,6 +602,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void startGame(View view) {
 
+        constellation = tutorialView.getConst();
         tutorialView.setVisibility(View.GONE);
 
         // if we're already playing, make next click stop the game first
@@ -606,11 +614,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             firstPoint = true;
             point1 = null;
             point2 = null;
-
-            // add some button behavior (disable?)
-            playButton.setEnabled(false);
-            playButton.setAlpha(0.5f);
-            playButton.setText("Stop");
         }
     }
 
@@ -619,10 +622,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // keep screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        // re-enable button
         gameSetup = false;
-        playButton.setEnabled(true);
-        playButton.setAlpha(1.0f);
 
         // zoom onto the player
         priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
@@ -656,14 +656,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         game.setPlaying(false);
         gameSetup = false;
         firstPoint = true;
-        // re-enable button
-        playButton.setEnabled(true);
-        playButton.setAlpha(1.0f);
-        playButton.setText("Play");
 
-        // hide score text
-        scoreText.setVisibility(View.INVISIBLE);
-        showScore(0,0);
 
 //        zoomButton.setVisibility(View.INVISIBLE);
 //        zoomButton.setEnabled(false);
@@ -808,14 +801,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void showTutorialDialog() {
-        FragmentManager fm = getSupportFragmentManager();
-        TutorialDialogFragment editNameDialogFragment = TutorialDialogFragment.newInstance("Some Title");
-        editNameDialogFragment.show(fm, "fragment_edit_name");
-
+    public void backToMenu(View view) {
+        if (ACTIVITY_TYPE.equals(TYPE_GAME)) {
+            stopGame();
+        }
+        finish();
     }
-
-    public void run() {}
 
     // TODO: this method can be deleted with the debug button when not necessary anymore
     public void toggleDebug(View view) {

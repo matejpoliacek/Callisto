@@ -137,4 +137,17 @@ public class TutorialView extends LinearLayout {
     public void startGame(View view) {
         mactivity.startGame(view);
     }
+
+    public String getConst() {
+        String constellation = "";
+        if (gpsButton.isEnabled()) {
+            constellation = "GPS";
+        } else if (galButton.isEnabled()) {
+            constellation = "Galileo";
+        } else if (allButton.isEnabled()) {
+            constellation = "ALL";
+        }
+
+        return constellation;
+    }
 }
