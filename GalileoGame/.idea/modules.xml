@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/GalileoGame.iml" filepath="$PROJECT_DIR$/GalileoGame.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GalileoMap/GalileoMap.iml" filepath="$PROJECT_DIR$/GalileoMap/GalileoMap.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GalileoPVT/GalileoPVT.iml" filepath="$PROJECT_DIR$/GalileoPVT/GalileoPVT.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GalileoSpaceship/GalileoSpaceship.iml" filepath="$PROJECT_DIR$/GalileoSpaceship/GalileoSpaceship.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SuplClient/SuplClient.iml" filepath="$PROJECT_DIR$/SuplClient/SuplClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+    </modules>
+  </component>
+</project>
