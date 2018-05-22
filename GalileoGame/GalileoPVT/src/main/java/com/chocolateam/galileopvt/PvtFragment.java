@@ -132,8 +132,6 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
          Obtain Navigation message
          ****************************************************/
 
-        NavThread navThread = new NavThread();
-
         try {
             long[] mReferenceLocation = new long[] {0,0};
             navMsg = new NavThread().execute(mReferenceLocation).get(); // TODO Galileo nav msg
