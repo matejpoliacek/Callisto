@@ -49,8 +49,7 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
     private ArrayList<Satellite> pseudoSatsGalileo;
 
     private Ephemeris.GpsNavMessageProto navMsg;
-    // TODO private Pair<Ephemeris.GpsNavMessageProto, GalileoEphemeris.GalNavMessageProto> fullNavMsg;
-    private Ephemeris.GpsNavMessageProto galNavMsg;
+
 
     private static double[] userPositionECEFmetersGPS;
     private static double latitudeDegreesGPS;

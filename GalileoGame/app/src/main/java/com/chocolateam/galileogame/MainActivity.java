@@ -27,6 +27,10 @@ public class MainActivity extends AppCompatActivity {
     };
     private static final int LOCATION_REQUEST_ID = 1;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> cc0f99110d4f59ba723a847111135870cd969cfb
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,12 +39,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         requestPermissionAndSetupFragments(this);
 
+<<<<<<< HEAD
         // Start the blank fragment initiating Gal/Gps PVT on app start
         /*FragmentManager gamefragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
         BlankFragment pvtFrag = new BlankFragment();
         fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
         Log.e("uvodny text",String.valueOf(com.chocolateam.galileopvt.BlankFragment.getUserLatitudeDegrees()));*/
+=======
+        /*
+        // Start the blank fragment initiating Gal/Gps PVT on app start
+        FragmentManager gamefragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
+        BlankFragment pvtFrag = new BlankFragment();
+        fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
+        Log.e("uvodny text",String.valueOf(com.chocolateam.galileopvt.BlankFragment.getUserLatitudeDegrees()));
+        */
+>>>>>>> cc0f99110d4f59ba723a847111135870cd969cfb
     }
 
     public void goToGame(View view) {
@@ -82,8 +97,12 @@ public class MainActivity extends AppCompatActivity {
         if (hasPermissions(activity)) {
             return;
         } else {
+<<<<<<< HEAD
 
+=======
+>>>>>>> cc0f99110d4f59ba723a847111135870cd969cfb
             ActivityCompat.requestPermissions(activity, REQUIRED_PERMISSIONS, LOCATION_REQUEST_ID);
         }
     }
 }
+

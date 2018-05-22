@@ -1,13 +1,14 @@
 package com.chocolateam.galileopvt;
 
 import android.location.cts.nano.Ephemeris;
+import android.location.cts.nano.GalileoEphemeris;
 import android.location.cts.suplClient.SuplRrlpController;
 import android.os.AsyncTask;
-import android.util.Log;
+import android.util.Pair;
 
 import java.io.IOException;
 
-public class NavThread extends AsyncTask<long[], Integer, Ephemeris.GpsNavMessageProto> {
+public class NavThread extends AsyncTask<long[], Integer, Pair<Ephemeris.GpsNavMessageProto, GalileoEphemeris.GalNavMessageProto>> {
 
     /*public interface AsyncResponse {
         void processFinish(Ephemeris.GpsNavMessageProto output);
@@ -19,8 +20,8 @@ public class NavThread extends AsyncTask<long[], Integer, Ephemeris.GpsNavMessag
     }*/
 
     @Override
-    protected Ephemeris.GpsNavMessageProto doInBackground(long[]... doubles) {
-        Ephemeris.GpsNavMessageProto navMsg;
+    protected Pair<Ephemeris.GpsNavMessageProto, GalileoEphemeris.GalNavMessageProto> doInBackground(long[]... doubles) {
+        Pair<Ephemeris.GpsNavMessageProto, GalileoEphemeris.GalNavMessageProto> navMsg;
         SuplRrlpController mSuplController = new SuplRrlpController("supl-dev.google.com", 7280);
         try{
             navMsg = mSuplController.generateNavMessage(521601100, 44970100);
@@ -29,10 +30,5 @@ public class NavThread extends AsyncTask<long[], Integer, Ephemeris.GpsNavMessag
             e.printStackTrace();
             return null;
         }
-    }
-
-    @Override
-    protected void onPostExecute(Ephemeris.GpsNavMessageProto navMsg) {
-        Log.e("WENT THRU THE LOOOOP", "wasntme");
     }
 }
