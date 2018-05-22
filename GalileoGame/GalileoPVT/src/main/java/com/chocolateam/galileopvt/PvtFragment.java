@@ -43,7 +43,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
     private boolean fullBiasNanosSet;
     private double biasNanos;
     private boolean biasNanosSet;
-    private Collection<GnssMeasurement> noisySatellites;
+    private static Collection<GnssMeasurement> noisySatellites;
     private ArrayList<GnssMeasurement> galileoSatellites;
     private ArrayList<GnssMeasurement> gpsSatellites;
     private ArrayList<Satellite> pseudoSatsGPS;
@@ -194,30 +194,30 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                         // Filter satellites for bad carrier to noise ratio
                         if (m.getCn0DbHz() >= MIN_CARRIER_TO_NOISE) {
 
-                                if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
-                                    if (
-                                            (
-                                                    (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
-                                                            ||
-                                                            (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
-                                            ) &&
-                                                    (m.getState() & GnssMeasurement.STATE_CODE_LOCK) == GnssMeasurement.STATE_CODE_LOCK
-                                            ) {
-                                        gpsSatellites.add(m);
-                                    }
+                            if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
+                                if (
+                                        (
+                                                (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
+                                                        ||
+                                                        (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
+                                        ) &&
+                                                (m.getState() & GnssMeasurement.STATE_CODE_LOCK) == GnssMeasurement.STATE_CODE_LOCK
+                                        ) {
+                                    gpsSatellites.add(m);
                                 }
+                            }
 
-                                if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
-                                    if (
-                                            (m.getState() & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
-                                                    ||
-                                                    (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
-                                                    ||
-                                                    (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
-                                            ) {
-                                        galileoSatellites.add(m);
-                                    }
+                            if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
+                                if (
+                                        (m.getState() & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
+                                                ||
+                                                (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
+                                                ||
+                                                (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
+                                        ) {
+                                    galileoSatellites.add(m);
                                 }
+                            }
 
                         }
                     }
@@ -418,44 +418,44 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                     }
 
 
-					/***
-					 *  Adding here a call to (file) logging functions
-					 */
-					if (firstRunGPS){
-						mGnssLogger.startNewLog("GPS");
-						firstRunGPS = false;
-					}
-					mGnssLogger.appendLog("GPS", longitudeDegreesGPS, latitudeDegreesGPS, altitudeMetersGPS, pseudoSatsGPS.size(), 0);
+                    /***
+                     *  Adding here a call to (file) logging functions
+                     */
+                    if (firstRunGPS){
+                        mGnssLogger.startNewLog("GPS");
+                        firstRunGPS = false;
+                    }
+                    mGnssLogger.appendLog("GPS", longitudeDegreesGPS, latitudeDegreesGPS, altitudeMetersGPS, pseudoSatsGPS.size(), 0);
                     if (firstRunGalileo){
                         mGnssLogger.startNewLog("GALILEO");
                         firstRunGalileo = false;
                     }
                     mGnssLogger.appendLog("GALILEO", longitudeDegreesGalileo, latitudeDegreesGalileo, altitudeMetersGalileo, pseudoSatsGalileo.size(), 0);
 
-                        // Testing configuration
-                        double homeLat = 52.161002;
-                        double homeLon = 4.496935;
+                    // Testing configuration
+                    double homeLat = 52.161002;
+                    double homeLon = 4.496935;
 
-                        double diffHomeLatE6 = Math.abs(latitudeDegreesGPS-homeLat)*1e6;
-                        double diffHomeLonE6 = Math.abs(longitudeDegreesGPS-homeLon)*1e6;
+                    double diffHomeLatE6 = Math.abs(latitudeDegreesGPS-homeLat)*1e6;
+                    double diffHomeLonE6 = Math.abs(longitudeDegreesGPS-homeLon)*1e6;
 
-                        Log.e("","");
-                        Log.e("difference to home lat E6: ", String.valueOf(diffHomeLatE6));
-                        Log.e("difference to home lon E6: ", String.valueOf(diffHomeLonE6));
-                        Log.e("difference combined:: ", String.valueOf(diffHomeLonE6 + diffHomeLonE6));
-                        Log.e("","");
+                    Log.e("","");
+                    Log.e("difference to home lat E6: ", String.valueOf(diffHomeLatE6));
+                    Log.e("difference to home lon E6: ", String.valueOf(diffHomeLonE6));
+                    Log.e("difference combined:: ", String.valueOf(diffHomeLonE6 + diffHomeLonE6));
+                    Log.e("","");
 
-                        if (myTimeStamp == 0.0) {
-                            myTimeStamp = System.currentTimeMillis();
-                        }
-                        if ((System.currentTimeMillis() - myTimeStamp) <= 60000 ) {
-                            aggrDiffMinute += diffHomeLonE6 + diffHomeLonE6;
-                            numberOfPVTcalculations += 1;
-                        } else {
-                            Log.e("Aggregated latlong difference in 1 min: ", String.valueOf(aggrDiffMinute));
-                            Log.e("Total pvt calculations in 1 min: ", String.valueOf(numberOfPVTcalculations));
-                            Log.e("Average difference per PVT calc in 1 min: ", String.valueOf(aggrDiffMinute/numberOfPVTcalculations));
-                        }
+                    if (myTimeStamp == 0.0) {
+                        myTimeStamp = System.currentTimeMillis();
+                    }
+                    if ((System.currentTimeMillis() - myTimeStamp) <= 60000 ) {
+                        aggrDiffMinute += diffHomeLonE6 + diffHomeLonE6;
+                        numberOfPVTcalculations += 1;
+                    } else {
+                        Log.e("Aggregated latlong difference in 1 min: ", String.valueOf(aggrDiffMinute));
+                        Log.e("Total pvt calculations in 1 min: ", String.valueOf(numberOfPVTcalculations));
+                        Log.e("Average difference per PVT calc in 1 min: ", String.valueOf(aggrDiffMinute/numberOfPVTcalculations));
+                    }
 
                 } else {
                     Log.e("CLOCK DISCONTINUITY", "Hardware clock discontinuity is not zero.");
@@ -470,7 +470,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
     }
 
     /*********************************************************************
-                                     Misc
+     Misc
      ********************************************************************/
     /** Computes atmospheric corrections of Satellite every 10 seconds */
     public void computeAtmosphericCorrectionsEvery10secondsGPS(Satellite pseudosat){
@@ -591,6 +591,8 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
     public static double getUserLatitudeDegreesGalileo() { return latitudeDegreesGalileo; }
 
     public static double getUserLongitudeDegreesGalileo() { return longitudeDegreesGalileo; }
+
+    public static Collection<GnssMeasurement> getNoisySatellites() { return noisySatellites; }
 
     public void cellIDLocation(){
         // Update cellCID, cellMCC, cellMNC, cellID, cellLAC from Telephony API
