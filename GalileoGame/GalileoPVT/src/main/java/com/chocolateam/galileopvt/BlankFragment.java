@@ -112,8 +112,6 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
          Obtain Navigation message
          ****************************************************/
 
-        NavThread navThread = new NavThread();
-
         try {
             long[] mReferenceLocation = new long[] {0,0};
             fullNavMsg = new NavThread().execute(mReferenceLocation).get();
