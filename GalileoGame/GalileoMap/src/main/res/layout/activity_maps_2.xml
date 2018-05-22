@@ -15,7 +15,7 @@
         android:layout_alignParentTop="true"
         android:layout_margin="16dp"
         android:background="@drawable/buttonshape"
-        android:onClick="startGame"
+        android:onClick="startGameViaButton"
         android:padding="8dp"
         android:text="@string/startDrawing"
         android:textColor="#ffffff" />

@@ -42,12 +42,12 @@ public class MainActivity extends AppCompatActivity {
         requestPermissionAndSetupFragments(this);
 
         // Start the blank fragment initiating Gal/Gps PVT on app start
-        /*FragmentManager gamefragmentManager = getSupportFragmentManager();
-        //FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
+        FragmentManager gamefragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
 
         PvtFragment pvtFrag = new PvtFragment();
         fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
-        Log.e("uvodny text",String.valueOf(com.chocolateam.galileopvt.BlankFragment.getUserLatitudeDegrees()));*/
+        //Log.e("uvodny text",String.valueOf(com.chocolateam.galileopvt.BlankFragment.getUserLatitudeDegrees()));*/
 
     }
 

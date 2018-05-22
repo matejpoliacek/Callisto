@@ -20,12 +20,12 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -60,6 +60,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GamePanel gameBottomPanel;
     private TutorialView tutorialView;
     private View checkboxLayout;
+    private CheckBox checkBoxGPS;
+    private CheckBox checkBoxGAL;
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private CameraPosition mCameraPosition;
@@ -114,6 +116,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private Marker mMarker;
     private Marker mGPSMarker;
+    private Marker mGALMarker;
 
     private SensorManager sensorService;
     private Sensor sensor;
@@ -150,7 +153,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         // Distinguish if the activity represents a game or map
-        // TODO: finish
         System.out.println("TYPE: " + ACTIVITY_TYPE);
         if (ACTIVITY_TYPE == null) {
             ACTIVITY_TYPE = getIntent().getExtras().getString("activity_type");
@@ -182,6 +184,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        checkBoxGPS = findViewById(R.id.checkBoxGPS);
+        checkBoxGAL = findViewById(R.id.checkBoxGAL);
+
+        Button bDebugButton = findViewById(R.id.debugButton);
+        Button bDebugGraphicsButton = findViewById(R.id.debugGraphicsButton);
+
+        bDebugButton.setVisibility(View.GONE);
+        bDebugGraphicsButton.setVisibility(View.GONE);
+
         /** Location Manager **/
 
         mLocationListenerGPS = new LocationListener() {
@@ -191,23 +202,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // SET MAP LOCATION, markers and default
                 if (ACTIVITY_TYPE.equals(TYPE_MAP)) {
 
+                    if (checkBoxGPS.isChecked()){
+                        LatLng point = new LatLng(PvtFragment.getUserLatitudeDegrees(),
+                                PvtFragment.getUserLongitudeDegrees());
 
-                    LatLng point = new LatLng(PvtFragment.getUserLatitudeDegrees(),
-                                            PvtFragment.getUserLongitudeDegrees());
-
-                    //mLastKnownLocation.setLatitude(point.latitude);
-                    //mLastKnownLocation.setLongitude(point.longitude);
-
-                    if (mGPSMarker == null) {
-                        mGPSMarker = mMap.addMarker(new MarkerOptions().position(point));
-                    } else {
-                        mGPSMarker.setPosition(point);
+                        if (mGPSMarker == null) {
+                            mGPSMarker = mMap.addMarker(new MarkerOptions().position(point));
+                            mGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                        } else {
+                            mGPSMarker.remove();
+                            mGPSMarker = mMap.addMarker(new MarkerOptions().position(point));
+                            mGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                        }
+                    } else if (!checkBoxGPS.isChecked() && mGPSMarker != null) {
+                        mGPSMarker.remove();
                     }
-                    mGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-                    System.out.println("Location Changed, source - PVT");
+
+                    if (checkBoxGAL.isChecked()){
+                        // TODO: change to galileo
+                        LatLng point = new LatLng(PvtFragment.getUserLatitudeDegrees(),
+                                PvtFragment.getUserLongitudeDegrees());
+
+                        if (mGALMarker == null) {
+                            mGALMarker = mMap.addMarker(new MarkerOptions().position(point));
+                            mGALMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                        } else {
+                            mGALMarker.remove();
+                            mGALMarker = mMap.addMarker(new MarkerOptions().position(point));
+                            mGALMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                        }
+                    } else if (!checkBoxGAL.isChecked() && mGALMarker != null) {
+                        mGALMarker.remove();
+                    }
 
                     mLastKnownLocation = location;
-                    System.out.println("Location Changed, source - Fused");
+
                 } else { // ELSE if we're playing the game, set the location to the selected source
                     switch (constellation) {
                         case "ALL":
@@ -569,7 +598,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapClick(LatLng point) {
         lastClickedLocation = point;
-        Toast.makeText(getApplicationContext(), "Clicked at " + point, Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "Clicked at " + point, Toast.LENGTH_LONG).show();
         if (gameSetup) {
             if (firstPoint) {
                 point1 = lastClickedLocation;
@@ -600,11 +629,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void startGame(View view) {
+    public void startGameViaButton(View view) {
 
         constellation = tutorialView.getConst();
         tutorialView.setVisibility(View.GONE);
 
+        startGame();
+    }
+
+    public void startGame() {
         // if we're already playing, make next click stop the game first
         if (playing == true) {
             stopGame();
@@ -670,14 +703,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (playingArea != null) {
             playingArea.remove();
             playingArea = null;
-            gp.removeAllObjects();
+            if (gp != null) {
+                gp.removeAllObjects();
+            }
         }
         if (playing && !gameThread.isInterrupted()) {
             gameThread.interrupt();
         }
         playing = false;
         updateCameraBearing(mMap, 0);
+
+        startGame();
     }
+    
     // TODO: switch arrays to lists for faster access?
     private void gameInit() {
 

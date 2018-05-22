@@ -3,7 +3,6 @@ package com.chocolateam.galileomap;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -135,7 +134,7 @@ public class TutorialView extends LinearLayout {
     }
 
     public void startGame(View view) {
-        mactivity.startGame(view);
+        mactivity.startGameViaButton(view);
     }
 
     public String getConst() {
