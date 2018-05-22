@@ -41,13 +41,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         requestPermissionAndSetupFragments(this);
 
+        while ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
+            requestPermissionAndSetupFragments(this);
+        }
+    }
+
+    @Override
+    protected void onResume() {
         // Start the blank fragment initiating Gal/Gps PVT on app start
-        FragmentManager gamefragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
-
-        PvtFragment pvtFrag = new PvtFragment();
-        fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
-
+        super.onResume();
+        if ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
+            FragmentManager gamefragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
+            PvtFragment pvtFrag = new PvtFragment();
+            fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
+//            Log.e("uvodny text", String.valueOf(PvtFragment.getUserLatitudeDegrees()));
+        }
     }
 
     public void goToGame(View view) {

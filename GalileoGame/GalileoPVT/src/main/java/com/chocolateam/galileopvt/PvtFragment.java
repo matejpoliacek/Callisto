@@ -343,6 +343,13 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                         //Log.e("USER KALMAN Longitude deg: ", String.valueOf(kalman.get_lat_long()[1]));
                         //Log.e("USER KALMAN Speed: ", String.valueOf(kalman.get_speed(altitudeMeters)));
 
+                        if (firstRun){
+                            mGnssLogger.startNewLog(CONSTELLATION_SWITCH);
+                            firstRun = false;
+                        }
+                        mGnssLogger.appendLog(CONSTELLATION_SWITCH, longitudeDegrees, latitudeDegrees, altitudeMeters, pseudoSats.size(), 0);
+
+
                         // Testing configuration
                         double homeLat = 52.161002;
                         double homeLon = 4.496935;
@@ -542,6 +549,64 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
         for (int i = 0; i < cellInfoList.size(); i++){
             //Log.e("CELL ", String.valueOf(cellInfoList.get(i)));
         }
+    }
+
+    /**
+     *  This function will take a GalileoEphemeris and create an (almost) equivalent under GPS Ephemeris format in order to simplify calculations.
+     */
+
+    private Ephemeris.GpsNavMessageProto convertGalileoToGPS(GalileoEphemeris.GalNavMessageProto originalNavMsg) {
+        Ephemeris.GpsNavMessageProto galNavMsg = new Ephemeris.GpsNavMessageProto();
+
+        galNavMsg.rpcStatus = originalNavMsg.rpcStatus;
+        galNavMsg.utcModel = null; // Is always null in what I saw
+
+        Ephemeris.IonosphericModelProto ionosphericModelProto = new Ephemeris.IonosphericModelProto();
+        ionosphericModelProto.alpha = originalNavMsg.iono.alpha;
+        ionosphericModelProto.beta = null;
+        galNavMsg.iono = ionosphericModelProto;
+        galNavMsg.iono.dataTime = null; // Is always null in what I saw
+
+        int arrayLength = originalNavMsg.ephemerids.length;
+
+        List<Ephemeris.GpsEphemerisProto> EphemerisList  = new ArrayList<>();
+        for (int i = 0; i < arrayLength; i++){
+            EphemerisList.add(new Ephemeris.GpsEphemerisProto());
+        }
+        galNavMsg.ephemerids = EphemerisList.toArray(new Ephemeris.GpsEphemerisProto[0]);
+
+        for (int ephemeris = 0; ephemeris < originalNavMsg.ephemerids.length; ephemeris ++){
+            galNavMsg.ephemerids[ephemeris].af0 = originalNavMsg.ephemerids[ephemeris].af0;
+            galNavMsg.ephemerids[ephemeris].af1 = originalNavMsg.ephemerids[ephemeris].af1;
+            galNavMsg.ephemerids[ephemeris].af2 = originalNavMsg.ephemerids[ephemeris].af2;
+            galNavMsg.ephemerids[ephemeris].cic = originalNavMsg.ephemerids[ephemeris].cic;
+            galNavMsg.ephemerids[ephemeris].cis = originalNavMsg.ephemerids[ephemeris].cis;
+            galNavMsg.ephemerids[ephemeris].crc = originalNavMsg.ephemerids[ephemeris].crc;
+            galNavMsg.ephemerids[ephemeris].crs = originalNavMsg.ephemerids[ephemeris].crs;
+            galNavMsg.ephemerids[ephemeris].cuc = originalNavMsg.ephemerids[ephemeris].cuc;
+            galNavMsg.ephemerids[ephemeris].cus = originalNavMsg.ephemerids[ephemeris].cus;
+            galNavMsg.ephemerids[ephemeris].dataTime = null;
+            galNavMsg.ephemerids[ephemeris].deltaN = originalNavMsg.ephemerids[ephemeris].deltaN;
+            galNavMsg.ephemerids[ephemeris].e = originalNavMsg.ephemerids[ephemeris].e;
+            galNavMsg.ephemerids[ephemeris].fitInterval = originalNavMsg.ephemerids[ephemeris].fitInterval;
+            galNavMsg.ephemerids[ephemeris].i0 = originalNavMsg.ephemerids[ephemeris].i0;
+            galNavMsg.ephemerids[ephemeris].iDot = originalNavMsg.ephemerids[ephemeris].iDot;
+            galNavMsg.ephemerids[ephemeris].iodc = originalNavMsg.ephemerids[ephemeris].iodc;
+            galNavMsg.ephemerids[ephemeris].iode = originalNavMsg.ephemerids[ephemeris].iode;
+            galNavMsg.ephemerids[ephemeris].m0 = originalNavMsg.ephemerids[ephemeris].m0;
+            galNavMsg.ephemerids[ephemeris].omega = originalNavMsg.ephemerids[ephemeris].omega;
+            galNavMsg.ephemerids[ephemeris].omegaDot = originalNavMsg.ephemerids[ephemeris].omegaDot;
+            galNavMsg.ephemerids[ephemeris].prn = originalNavMsg.ephemerids[ephemeris].prn;
+            galNavMsg.ephemerids[ephemeris].rootOfA = originalNavMsg.ephemerids[ephemeris].rootOfA;
+            galNavMsg.ephemerids[ephemeris].svAccuracyM = originalNavMsg.ephemerids[ephemeris].svAccuracyM;
+            galNavMsg.ephemerids[ephemeris].svHealth = originalNavMsg.ephemerids[ephemeris].svHealth;
+            galNavMsg.ephemerids[ephemeris].tgd = originalNavMsg.ephemerids[ephemeris].tgd;
+            galNavMsg.ephemerids[ephemeris].toc = originalNavMsg.ephemerids[ephemeris].toc;
+            galNavMsg.ephemerids[ephemeris].toe = originalNavMsg.ephemerids[ephemeris].toe;
+            galNavMsg.ephemerids[ephemeris].tom = originalNavMsg.ephemerids[ephemeris].tom;
+            galNavMsg.ephemerids[ephemeris].week = originalNavMsg.ephemerids[ephemeris].week;
+        }
+        return galNavMsg;
     }
 
     /****************************
