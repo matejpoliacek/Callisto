@@ -203,8 +203,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (ACTIVITY_TYPE.equals(TYPE_MAP)) {
 
                     if (checkBoxGPS.isChecked()){
-                        LatLng point = new LatLng(PvtFragment.getUserLatitudeDegrees(),
-                                PvtFragment.getUserLongitudeDegrees());
+                        LatLng point = new LatLng(PvtFragment.getUserLatitudeDegreesGPS(),
+                                PvtFragment.getUserLongitudeDegreesGPS());
 
                         if (mGPSMarker == null) {
                             mGPSMarker = mMap.addMarker(new MarkerOptions().position(point));
@@ -219,9 +219,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
 
                     if (checkBoxGAL.isChecked()){
-                        // TODO: change to galileo
-                        LatLng point = new LatLng(PvtFragment.getUserLatitudeDegrees(),
-                                PvtFragment.getUserLongitudeDegrees());
+                        LatLng point = new LatLng(PvtFragment.getUserLatitudeDegreesGalileo(),
+                                PvtFragment.getUserLongitudeDegreesGalileo());
 
                         if (mGALMarker == null) {
                             mGALMarker = mMap.addMarker(new MarkerOptions().position(point));
@@ -238,18 +237,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     mLastKnownLocation = location;
 
                 } else { // ELSE if we're playing the game, set the location to the selected source
+                    LatLng point;
                     switch (constellation) {
                         case "ALL":
                             mLastKnownLocation = location;
                             break;
                         case "GPS":
-                            LatLng point = new LatLng(PvtFragment.getUserLatitudeDegrees(),
-                                    PvtFragment.getUserLongitudeDegrees());
+                            point = new LatLng(PvtFragment.getUserLatitudeDegreesGPS(),
+                                    PvtFragment.getUserLongitudeDegreesGPS());
                             mLastKnownLocation.setLatitude(point.latitude);
                             mLastKnownLocation.setLongitude(point.longitude);
+                            location.setLatitude(point.latitude);
+                            location.setLongitude(point.longitude);
                             break;
                         case "GAL":
-                            break; // TODO
+                            point = new LatLng(PvtFragment.getUserLatitudeDegreesGalileo(),
+                                    PvtFragment.getUserLongitudeDegreesGalileo());
+                            mLastKnownLocation.setLatitude(point.latitude);
+                            mLastKnownLocation.setLongitude(point.longitude);
+                            location.setLatitude(point.latitude);
+                            location.setLongitude(point.longitude);
+                            break;
                     }
                 }
 
