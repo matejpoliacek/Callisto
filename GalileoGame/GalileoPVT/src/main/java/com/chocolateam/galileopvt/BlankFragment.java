@@ -328,19 +328,19 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
                         longitudeDegrees = Math.toDegrees(lla.longitudeRadians);
                         altitudeMeters = lla.altitudeMeters;
 
-                        /**
-                         * Kalman Addition
-                         */
-
-                        kalman.update_velocity2d(latitudeDegrees, longitudeDegrees, lsq.getLastCalcTime() - prevLsq);
-
-                        Log.e("USER Latitude deg: ", String.valueOf(latitudeDegrees));
-                        Log.e("USER Longitude deg: ", String.valueOf(longitudeDegrees));
-                        Log.e("USER altitude: ", String.valueOf(altitudeMeters));
-
-                        Log.e("USER KALMAN Latitude deg: ", String.valueOf(kalman.get_lat_long()[0]));
-                        Log.e("USER KALMAN Longitude deg: ", String.valueOf(kalman.get_lat_long()[1]));
-                        Log.e("USER KALMAN Speed: ", String.valueOf(kalman.get_speed(altitudeMeters)));
+//                        /**
+//                         * Kalman Addition
+//                         */
+//
+//                        kalman.update_velocity2d(latitudeDegrees, longitudeDegrees, lsq.getLastCalcTime() - prevLsq);
+//
+//                        Log.e("USER Latitude deg: ", String.valueOf(latitudeDegrees));
+//                        Log.e("USER Longitude deg: ", String.valueOf(longitudeDegrees));
+//                        Log.e("USER altitude: ", String.valueOf(altitudeMeters));
+//
+//                        Log.e("USER KALMAN Latitude deg: ", String.valueOf(kalman.get_lat_long()[0]));
+//                        Log.e("USER KALMAN Longitude deg: ", String.valueOf(kalman.get_lat_long()[1]));
+//                        Log.e("USER KALMAN Speed: ", String.valueOf(kalman.get_speed(altitudeMeters)));
 
                         /***
                          *  Adding here a call to (file) logging functions
@@ -535,6 +535,8 @@ public class BlankFragment extends Fragment implements Runnable, LocationListene
         }
         return galNavMsg;
     }
+
+
 
     /****************************
      LocationListener boilerplate
