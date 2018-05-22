@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.List;
 
 import static android.content.Context.LOCATION_SERVICE;
-import static android.content.Context.POWER_SERVICE;
 
 /**
  * Created by Peter Vanik on 16/03/2018.
@@ -35,7 +34,6 @@ import static android.content.Context.POWER_SERVICE;
 public class PvtFragment extends Fragment implements Runnable, LocationListener {
     public static final int MIN_CARRIER_TO_NOISE = 18;
     public static final double MIN_SAT_ELEVATION = Math.toRadians(10.0);
-    private static String CONSTELLATION_SWITCH = "GPS"; // possible values: GPS, GALILEO
 
     private Context context;
     private LocationManager mLocationManager;
@@ -47,23 +45,35 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
     private Collection<GnssMeasurement> noisySatellites;
     private ArrayList<GnssMeasurement> galileoSatellites;
     private ArrayList<GnssMeasurement> gpsSatellites;
-    private ArrayList<Satellite> pseudoSats;
+    private ArrayList<Satellite> pseudoSatsGPS;
+    private ArrayList<Satellite> pseudoSatsGalileo;
 
     private Ephemeris.GpsNavMessageProto navMsg;
 
-    private static double[] userPositionECEFmeters;
-    private static double latitudeDegrees;
-    private static double longitudeDegrees;
-    private double altitudeMeters;
-    private static double receiverClockErrorMeters;
 
+    private static double[] userPositionECEFmetersGPS;
+    private static double latitudeDegreesGPS;
+    private static double longitudeDegreesGPS;
+    private double altitudeMetersGPS;
+    private static double receiverClockErrorMetersGPS;
+
+    // GALILEO
+    private static double[] userPositionECEFmetersGalileo;
+    private static double latitudeDegreesGalileo;
+    private static double longitudeDegreesGalileo;
+    private double altitudeMetersGalileo;
+    private static double receiverClockErrorMetersGalileo;
+    private ArrayList<double[]> atmosphericCorrectionsPerSatelliteGalileo; // [id, elevationRad, tropoMeters,ionoSeconds]
+
+    // for testing
     private double myTimeStamp;
     private double aggrDiffMinute;
     private long numberOfPVTcalculations;
 
-    private ArrayList<double[]> atmosphericCorrectionsPerSatellite; // [id, elevationRad, tropoMeters,ionoSeconds]
+    private ArrayList<double[]> atmosphericCorrectionsPerSatelliteGPS; // [id, elevationRad, tropoMeters,ionoSeconds]
 
     private LeastSquares lsq;
+    private LeastSquares lsq_gal;
     private GeoTrackFilter kalman;
     private long prevLsq;
 
@@ -86,21 +96,35 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
 
         // Set initial location TODO cellID()
         // Hardcoded Noordwijk
-        userPositionECEFmeters = new double[3];
-        userPositionECEFmeters [0] = 3904174;
-        userPositionECEFmeters [1] = 301788;
-        userPositionECEFmeters [2] = 5017699;
-        latitudeDegrees = 52.21831;
-        longitudeDegrees = 4.42004;
-        altitudeMeters = 0.0;
-        receiverClockErrorMeters = 0.0;
-        atmosphericCorrectionsPerSatellite = new ArrayList<>();
+        userPositionECEFmetersGPS = new double[3];
+        userPositionECEFmetersGPS[0] = 3904174;
+        userPositionECEFmetersGPS[1] = 301788;
+        userPositionECEFmetersGPS[2] = 5017699;
+        latitudeDegreesGPS = 52.21831;
+        longitudeDegreesGPS = 4.42004;
+        altitudeMetersGPS = 0.0;
+        receiverClockErrorMetersGPS = 0.0;
+        atmosphericCorrectionsPerSatelliteGPS = new ArrayList<>();
+
+        // GALILEO ONES
+        userPositionECEFmetersGalileo = new double[3];
+        userPositionECEFmetersGalileo[0] = 3904174;
+        userPositionECEFmetersGalileo[1] = 301788;
+        userPositionECEFmetersGalileo[2] = 5017699;
+        latitudeDegreesGalileo = 52.21831;
+        longitudeDegreesGalileo = 4.42004;
+        altitudeMetersGalileo = 0.0;
+        receiverClockErrorMetersGalileo = 0.0;
+        atmosphericCorrectionsPerSatelliteGalileo = new ArrayList<>();
+
+        // testing
         myTimeStamp = 0.0;
         aggrDiffMinute = 0.0;
         numberOfPVTcalculations = 0;
 
         lsq = new LeastSquares();
-        kalman = new GeoTrackFilter(1.0);
+        lsq_gal = new LeastSquares();
+
         /****************************************************
          Obtain Navigation message
          ****************************************************/
@@ -109,7 +133,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
 
         try {
             long[] mReferenceLocation = new long[] {0,0};
-            navMsg = new NavThread().execute(mReferenceLocation).get();
+            navMsg = new NavThread().execute(mReferenceLocation).get(); // TODO Galileo nav msg
             Log.e("Obtaining navigation message...", "SUCCESSFUL");
         } catch (Exception e) {
             e.printStackTrace();
@@ -154,7 +178,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                     for (GnssMeasurement m : noisySatellites) {
                         // Filter satellites for bad carrier to noise ratio
                         if (m.getCn0DbHz() >= MIN_CARRIER_TO_NOISE) {
-                            if (CONSTELLATION_SWITCH.equals("GPS")) {
+
                                 if (m.getConstellationType() == GnssStatus.CONSTELLATION_GPS) {
                                     if (
                                             (
@@ -167,7 +191,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                                         gpsSatellites.add(m);
                                     }
                                 }
-                            } else if (CONSTELLATION_SWITCH.equals("GALILEO")) {
+
                                 if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
                                     if (
                                             (m.getState() & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
@@ -179,7 +203,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                                         galileoSatellites.add(m);
                                     }
                                 }
-                            }
+
                         }
                     }
                     Log.e("Total cleaned GPS: ", String.valueOf(gpsSatellites.size()));
@@ -189,11 +213,11 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                      For every cleaned satellite in constellation, compute pseudorange and corrections
                      ********************************************************************************/
                     // Start computing satellite data only if there are enough for a PVT (>3)
-                    if (CONSTELLATION_SWITCH.equals("GPS") && (gpsSatellites.size() > 3)) {
-                        pseudoSats = new ArrayList<>();
+                    if ((gpsSatellites.size() > 3)) {
+                        pseudoSatsGPS = new ArrayList<>();
 
                         for (int i = 0; i < gpsSatellites.size(); i++) {
-                            Satellite pseudosat = new Satellite(gpsSatellites.get(i).getSvid(), CONSTELLATION_SWITCH, navMsg, fullBiasNanos, userPositionECEFmeters, gpsSatellites.get(i).getState());
+                            Satellite pseudosat = new Satellite(gpsSatellites.get(i).getSvid(), "GPS", navMsg, fullBiasNanos, userPositionECEFmetersGPS, gpsSatellites.get(i).getState());
 
                             // Pseudorange
                             pseudosat.computeGnssTime(
@@ -206,14 +230,14 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
 
                             // Satellite clock correction
-                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMeters);
+                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMetersGPS);
                             Log.e("Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
                             pseudosat.computeSatellitePosition();
 
                             // Atmospheric corrections and satellite elevation (either every 10s or every measurement)
                             // computeAtmosphericCorrectionsEvery10seconds(pseudosat);
                             pseudosat.computeSatElevationRadians();
-                            pseudosat.computeTroposphericCorrection_GPS(Math.toRadians(latitudeDegrees), altitudeMeters);
+                            pseudosat.computeTroposphericCorrection_GPS(Math.toRadians(latitudeDegreesGPS), altitudeMetersGPS);
                             double alpha[] = navMsg.iono.alpha;
                             double beta[] = navMsg.iono.beta;
                             pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
@@ -225,19 +249,18 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                             // Corrected pseudorange
                             pseudosat.computeCorrectedRange();
                             Log.e("CORRECTED RANGE: ", String.valueOf(pseudosat.getCorrectedRange()));
-                            pseudoSats.add(pseudosat);
+                            pseudoSatsGPS.add(pseudosat);
                             Log.e("",""); // empty line
                         }
                     }
                     /*********************************** GALILEO **********************************/
-                    // TODO only start computing satellite data if there are enough for a PVT (>3)
-                    else if (CONSTELLATION_SWITCH.equals("GALILEO") && (galileoSatellites.size() > 0)) {
+                    if ( (galileoSatellites.size() > 3)) {
 
-                        pseudoSats = new ArrayList<>(galileoSatellites.size());
+                        pseudoSatsGalileo = new ArrayList<>(galileoSatellites.size());
 
                         for (int i = 0; i < galileoSatellites.size(); i++) {
                             // TODO below replace the navMsg with Galileo's nav message
-                            Satellite pseudosat = new Satellite(galileoSatellites.get(i).getSvid(), CONSTELLATION_SWITCH, navMsg, fullBiasNanos, userPositionECEFmeters, galileoSatellites.get(i).getState());
+                            Satellite pseudosat = new Satellite(galileoSatellites.get(i).getSvid(), "GALILEO", navMsg, fullBiasNanos, userPositionECEFmetersGPS, galileoSatellites.get(i).getState());
 
                             // Pseudorange
                             pseudosat.computeGnssTime(
@@ -250,14 +273,14 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                             pseudosat.computePseudoRange();
                             Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
                             // Satellite clock correction
-                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMeters);
+                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMetersGPS);
                             Log.e("Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
                             pseudosat.computeSatellitePosition();
 
                             // Atmospheric corrections and satellite elevation (either every 10s or every measurement)
                             // computeAtmosphericCorrectionsEvery10seconds(pseudosat);
                             pseudosat.computeSatElevationRadians();
-                            pseudosat.computeTroposphericCorrection_GPS(Math.toRadians(latitudeDegrees), altitudeMeters);
+                            pseudosat.computeTroposphericCorrection_GPS(Math.toRadians(latitudeDegreesGPS), altitudeMetersGPS);
                             double alpha[] = navMsg.iono.alpha; // TODO replace with Galileo nav msg
                             double beta[] = navMsg.iono.beta; // TODO replace with Galileo nav msg
                             pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
@@ -269,7 +292,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                             // Corrected pseudorange
                             pseudosat.computeCorrectedRange();
                             Log.e("CORRECTED RANGE: ", String.valueOf(pseudosat.getCorrectedRange()));
-                            pseudoSats.add(pseudosat);
+                            pseudoSatsGalileo.add(pseudosat);
                             Log.e("",""); // empty line
                         }
                     }
@@ -277,20 +300,20 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                     /************************************************************************************
                      If there are enough satellites with pseudorange, perform linearisation and get x y z
                      ***********************************************************************************/
-                    if (pseudoSats.size() > 3) {
+                    if (pseudoSatsGPS.size() > 3) {
                         Log.e("---------------------------", "PVT computation in progress-----------------------");
                         ArrayList<double[]> satCoords = new ArrayList<>();
-                        double[] correctedRanges = new double[pseudoSats.size()];
-                        double[] satClockErrors = new double[pseudoSats.size()];
-                        double[] userPosECEFandReceiverClockError = new double[4];
-                        for (int i = 0; i < userPositionECEFmeters.length; i++) {
-                            userPosECEFandReceiverClockError[i] = userPositionECEFmeters[i];
+                        double[] correctedRanges = new double[pseudoSatsGPS.size()];
+                        double[] satClockErrors = new double[pseudoSatsGPS.size()];
+                        double[] userPosECEFandReceiverClockErrorGPS = new double[4];
+                        for (int i = 0; i < userPositionECEFmetersGPS.length; i++) {
+                            userPosECEFandReceiverClockErrorGPS[i] = userPositionECEFmetersGPS[i];
                         }
-                        userPosECEFandReceiverClockError[3] = 0.0; // initial clock error
-                        double[] satElevations = new double[pseudoSats.size()];
+                        userPosECEFandReceiverClockErrorGPS[3] = 0.0; // initial clock error
+                        double[] satElevations = new double[pseudoSatsGPS.size()];
 
-                        for (int i = 0; i < pseudoSats.size(); i++) {
-                            Satellite thisSat = pseudoSats.get(i);
+                        for (int i = 0; i < pseudoSatsGPS.size(); i++) {
+                            Satellite thisSat = pseudoSatsGPS.get(i);
                             satCoords.add(thisSat.getSatPositionECEFmeters());
                             correctedRanges[i] = thisSat.getCorrectedRange();
                             satClockErrors[i] = thisSat.getSatelliteClockCorrectionMeters();// getMySatClockOffsetSeconds(thisSat.getTransmittedTime())*Satellite.LIGHTSPEED; // using my offset instead of Google's
@@ -298,30 +321,23 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                         }
 
                         prevLsq = lsq.getLastCalcTime(); // save last time of lsq calculation
-                        lsq.runRecursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockError, satElevations);
-                        userPosECEFandReceiverClockError = lsq.getResult();
+                        lsq.runRecursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockErrorGPS, satElevations);
+                        userPosECEFandReceiverClockErrorGPS = lsq.getResult();
 
-                        userPositionECEFmeters[0] = userPosECEFandReceiverClockError[0];
-                        userPositionECEFmeters[1] = userPosECEFandReceiverClockError[1];
-                        userPositionECEFmeters[2] = userPosECEFandReceiverClockError[2];
-                        receiverClockErrorMeters = userPosECEFandReceiverClockError[3];
-                        Log.e("RX ERROR meters", String.valueOf(receiverClockErrorMeters));
+                        userPositionECEFmetersGPS[0] = userPosECEFandReceiverClockErrorGPS[0];
+                        userPositionECEFmetersGPS[1] = userPosECEFandReceiverClockErrorGPS[1];
+                        userPositionECEFmetersGPS[2] = userPosECEFandReceiverClockErrorGPS[2];
+                        receiverClockErrorMetersGPS = userPosECEFandReceiverClockErrorGPS[3];
+                        Log.e("RX ERROR meters", String.valueOf(receiverClockErrorMetersGPS));
                         Ecef2LlaConverter.GeodeticLlaValues lla =
-                                Ecef2LlaConverter.convertECEFToLLACloseForm(userPositionECEFmeters[0],
-                                        userPositionECEFmeters[1], userPositionECEFmeters[2]);
-                        latitudeDegrees = Math.toDegrees(lla.latitudeRadians);
-                        longitudeDegrees = Math.toDegrees(lla.longitudeRadians);
-                        altitudeMeters = lla.altitudeMeters;
-
-                        /**
-                         * Kalman Addition
-                         */
-
-                        //kalman.update_velocity2d(latitudeDegrees, longitudeDegrees, lsq.getLastCalcTime() - prevLsq);
-
-                        Log.e("USER Latitude deg: ", String.valueOf(latitudeDegrees));
-                        Log.e("USER Longitude deg: ", String.valueOf(longitudeDegrees));
-                        Log.e("USER altitude: ", String.valueOf(altitudeMeters));
+                                Ecef2LlaConverter.convertECEFToLLACloseForm(userPositionECEFmetersGPS[0],
+                                        userPositionECEFmetersGPS[1], userPositionECEFmetersGPS[2]);
+                        latitudeDegreesGPS = Math.toDegrees(lla.latitudeRadians);
+                        longitudeDegreesGPS = Math.toDegrees(lla.longitudeRadians);
+                        altitudeMetersGPS = lla.altitudeMeters;
+                        Log.e("USER Latitude deg: ", String.valueOf(latitudeDegreesGPS));
+                        Log.e("USER Longitude deg: ", String.valueOf(longitudeDegreesGPS));
+                        Log.e("USER altitude: ", String.valueOf(altitudeMetersGPS));
 
                         //Log.e("USER KALMAN Latitude deg: ", String.valueOf(kalman.get_lat_long()[0]));
                         //Log.e("USER KALMAN Longitude deg: ", String.valueOf(kalman.get_lat_long()[1]));
@@ -331,8 +347,9 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                         double homeLat = 52.161002;
                         double homeLon = 4.496935;
 
-                        double diffHomeLatE6 = Math.abs(latitudeDegrees-homeLat)*1e6;
-                        double diffHomeLonE6 = Math.abs(longitudeDegrees-homeLon)*1e6;
+                        double diffHomeLatE6 = Math.abs(latitudeDegreesGPS -homeLat)*1e6;
+                        double diffHomeLonE6 = Math.abs(longitudeDegreesGPS -homeLon)*1e6;
+
                         Log.e("","");
                         Log.e("difference to home lat E6: ", String.valueOf(diffHomeLatE6));
                         Log.e("difference to home lon E6: ", String.valueOf(diffHomeLonE6));
@@ -351,6 +368,73 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                             Log.e("Average difference per PVT calc in 1 min: ", String.valueOf(aggrDiffMinute/numberOfPVTcalculations));
                         }
                     }
+
+                    // NEW BLOCK FOR GALILEO
+
+                    if (pseudoSatsGalileo.size() > 3) {
+                        Log.e("---------------------------", "PVT computation in progress-----------------------");
+                        ArrayList<double[]> satCoords = new ArrayList<>();
+                        double[] correctedRanges = new double[pseudoSatsGalileo.size()];
+                        double[] satClockErrors = new double[pseudoSatsGalileo.size()];
+                        double[] userPosECEFandReceiverClockErrorGalileo = new double[4];
+                        for (int i = 0; i < userPositionECEFmetersGalileo.length; i++) {
+                            userPosECEFandReceiverClockErrorGalileo[i] = userPositionECEFmetersGalileo[i];
+                        }
+                        userPosECEFandReceiverClockErrorGalileo[3] = 0.0; // initial clock error
+                        double[] satElevations = new double[pseudoSatsGalileo.size()];
+
+                        for (int i = 0; i < pseudoSatsGalileo.size(); i++) {
+                            Satellite thisSat = pseudoSatsGalileo.get(i);
+                            satCoords.add(thisSat.getSatPositionECEFmeters());
+                            correctedRanges[i] = thisSat.getCorrectedRange();
+                            satClockErrors[i] = thisSat.getSatelliteClockCorrectionMeters();// getMySatClockOffsetSeconds(thisSat.getTransmittedTime())*Satellite.LIGHTSPEED; // using my offset instead of Google's
+                            satElevations[i] = Math.toDegrees(thisSat.getSatElevationRadians());
+                        }
+
+                        lsq_gal.runRecursiveLsq(satCoords, correctedRanges, userPosECEFandReceiverClockErrorGalileo, satElevations);
+                        userPosECEFandReceiverClockErrorGalileo = lsq_gal.getResult();
+
+                        userPositionECEFmetersGalileo[0] = userPosECEFandReceiverClockErrorGalileo[0];
+                        userPositionECEFmetersGalileo[1] = userPosECEFandReceiverClockErrorGalileo[1];
+                        userPositionECEFmetersGalileo[2] = userPosECEFandReceiverClockErrorGalileo[2];
+                        receiverClockErrorMetersGalileo = userPosECEFandReceiverClockErrorGalileo[3];
+                        Log.e("RX ERROR meters", String.valueOf(receiverClockErrorMetersGalileo));
+                        Ecef2LlaConverter.GeodeticLlaValues lla =
+                                Ecef2LlaConverter.convertECEFToLLACloseForm(userPositionECEFmetersGalileo[0],
+                                        userPositionECEFmetersGalileo[1], userPositionECEFmetersGalileo[2]);
+                        latitudeDegreesGalileo = Math.toDegrees(lla.latitudeRadians);
+                        longitudeDegreesGalileo = Math.toDegrees(lla.longitudeRadians);
+                        altitudeMetersGalileo = lla.altitudeMeters;
+                        Log.e("USER Latitude deg: ", String.valueOf(latitudeDegreesGalileo));
+                        Log.e("USER Longitude deg: ", String.valueOf(longitudeDegreesGalileo));
+                        Log.e("USER altitude: ", String.valueOf(altitudeMetersGalileo));
+
+                        // Testing configuration
+                        /*double homeLat = 52.161002;
+                        double homeLon = 4.496935;
+                        double diffHomeLatE6 = Math.abs(latitudeDegreesGPS -homeLat)*1e6;
+                        double diffHomeLonE6 = Math.abs(longitudeDegreesGPS -homeLon)*1e6;
+                        Log.e("","");
+                        Log.e("difference to home lat E6: ", String.valueOf(diffHomeLatE6));
+                        Log.e("difference to home lon E6: ", String.valueOf(diffHomeLonE6));
+                        Log.e("difference combined:: ", String.valueOf(diffHomeLonE6 + diffHomeLonE6));
+                        Log.e("","");
+
+                        if (myTimeStamp == 0.0) {
+                            myTimeStamp = System.currentTimeMillis();
+                        }
+                        if ((System.currentTimeMillis() - myTimeStamp) <= 60000 ) {
+                            aggrDiffMinute += diffHomeLonE6 + diffHomeLonE6;
+                            numberOfPVTcalculations += 1;
+                        } else {
+                            Log.e("Aggregated latlong difference in 1 min: ", String.valueOf(aggrDiffMinute));
+                            Log.e("Total pvt calculations in 1 min: ", String.valueOf(numberOfPVTcalculations));
+                            Log.e("Average difference per PVT calc in 1 min: ", String.valueOf(aggrDiffMinute/numberOfPVTcalculations));
+                        }*/
+                    }
+
+
+
                 } else {
                     Log.e("CLOCK DISCONTINUITY", "Hardware clock discontinuity is not zero.");
                 }
@@ -372,24 +456,24 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
         int indexInList = getIndexInListOfAtmoshepricCorrectionsPerSatellite(pseudosat.getId());
         if (indexInList < 0){
             double[] pseudosatAtmCorrections = getAtmosphericCorrections(pseudosat);
-            atmosphericCorrectionsPerSatellite.add(pseudosatAtmCorrections);
+            atmosphericCorrectionsPerSatelliteGPS.add(pseudosatAtmCorrections);
         }
         // Otherwise, if 10 seconds have passed, recompute the corrections and modify them in the list
         else if (System.currentTimeMillis() % 10000 < 1000) {
             double[] pseudosatAtmCorrections = getAtmosphericCorrections(pseudosat);
-            atmosphericCorrectionsPerSatellite.set(indexInList, pseudosatAtmCorrections);
+            atmosphericCorrectionsPerSatelliteGPS.set(indexInList, pseudosatAtmCorrections);
         }
         // Otherwise, use the corrections from the list
         else {
-            pseudosat.setSatElevationRadians(atmosphericCorrectionsPerSatellite.get(indexInList)[1]);
-            pseudosat.setTroposphericCorrectionMeters(atmosphericCorrectionsPerSatellite.get(indexInList)[2]);
-            pseudosat.setIonosphericCorrectionSeconds(atmosphericCorrectionsPerSatellite.get(indexInList)[3]);
+            pseudosat.setSatElevationRadians(atmosphericCorrectionsPerSatelliteGPS.get(indexInList)[1]);
+            pseudosat.setTroposphericCorrectionMeters(atmosphericCorrectionsPerSatelliteGPS.get(indexInList)[2]);
+            pseudosat.setIonosphericCorrectionSeconds(atmosphericCorrectionsPerSatelliteGPS.get(indexInList)[3]);
         }
     }
     // Returns a double[] representing the computed atmospheric satellite corrections and elevation
     public double[] getAtmosphericCorrections(Satellite pseudosat){
         pseudosat.computeSatElevationRadians();
-        pseudosat.computeTroposphericCorrection_GPS(Math.toRadians(latitudeDegrees), altitudeMeters);
+        pseudosat.computeTroposphericCorrection_GPS(Math.toRadians(latitudeDegreesGPS), altitudeMetersGPS);
         double alpha[] = navMsg.iono.alpha;
         double beta[] = navMsg.iono.beta;
         pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
@@ -403,9 +487,9 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
 
     // Returns true if a satellite with the given ID is in the list of satellites with atmospheric corrections
     public int getIndexInListOfAtmoshepricCorrectionsPerSatellite(int satelliteId) {
-        if (!atmosphericCorrectionsPerSatellite.isEmpty()) {
-            for (int i = 0; i < atmosphericCorrectionsPerSatellite.size(); i++) {
-                if (atmosphericCorrectionsPerSatellite.get(i)[0] == satelliteId) {
+        if (!atmosphericCorrectionsPerSatelliteGPS.isEmpty()) {
+            for (int i = 0; i < atmosphericCorrectionsPerSatelliteGPS.size(); i++) {
+                if (atmosphericCorrectionsPerSatelliteGPS.get(i)[0] == satelliteId) {
                     return i;
                 }
             }
@@ -417,17 +501,23 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
         this.context = context;
     }
 
-    public static double[] getUserPositionECEFmeters() {
-        return userPositionECEFmeters;
+    public static double[] getUserPositionECEFmetersGPS() {
+        return userPositionECEFmetersGPS;
     }
 
-    public void switchConstellation(String constellation) {
-        CONSTELLATION_SWITCH = constellation;
+    public static double getUserLatitudeDegreesGPS() { return latitudeDegreesGPS; }
+
+    public static double getUserLongitudeDegreesGPS() { return longitudeDegreesGPS; }
+
+    // NEW GALILEO BLOCK
+
+    public static double[] getUserPositionECEFmetersGalileo() {
+        return userPositionECEFmetersGalileo;
     }
 
-    public static double getUserLatitudeDegrees() { return latitudeDegrees; }
+    public static double getUserLatitudeDegreesGalileo() { return latitudeDegreesGalileo; }
 
-    public static double getUserLongitudeDegrees() { return longitudeDegrees; }
+    public static double getUserLongitudeDegreesGalileo() { return longitudeDegreesGalileo; }
 
     public void cellIDLocation(){
         // Update cellCID, cellMCC, cellMNC, cellID, cellLAC from Telephony API

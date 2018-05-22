@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
 
         PvtFragment pvtFrag = new PvtFragment();
         fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
-        //Log.e("uvodny text",String.valueOf(com.chocolateam.galileopvt.BlankFragment.getUserLatitudeDegrees()));*/
 
     }
 
@@ -92,8 +91,8 @@ public class MainActivity extends AppCompatActivity {
         if (hasPermissions(activity)) {
             return;
         } else {
-
             ActivityCompat.requestPermissions(activity, REQUIRED_PERMISSIONS, LOCATION_REQUEST_ID);
         }
     }
 }
+
