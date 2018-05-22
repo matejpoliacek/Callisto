@@ -161,7 +161,9 @@ public class MainActivity extends AppCompatActivity {
         msatList.add(satellite);
 
         satellite= new Satellite(0,0, 0);
-        msatList.add(satellite);        satellite= new Satellite(0,0, 0);
+        msatList.add(satellite);
+
+        satellite= new Satellite(0,0, 0);
         msatList.add(satellite);
 
         satellite= new Satellite(0,0, 0);

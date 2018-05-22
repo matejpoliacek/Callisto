@@ -317,15 +317,15 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                          * Kalman Addition
                          */
 
-                        kalman.update_velocity2d(latitudeDegrees, longitudeDegrees, lsq.getLastCalcTime() - prevLsq);
+                        //kalman.update_velocity2d(latitudeDegrees, longitudeDegrees, lsq.getLastCalcTime() - prevLsq);
 
                         Log.e("USER Latitude deg: ", String.valueOf(latitudeDegrees));
                         Log.e("USER Longitude deg: ", String.valueOf(longitudeDegrees));
                         Log.e("USER altitude: ", String.valueOf(altitudeMeters));
 
-                        Log.e("USER KALMAN Latitude deg: ", String.valueOf(kalman.get_lat_long()[0]));
-                        Log.e("USER KALMAN Longitude deg: ", String.valueOf(kalman.get_lat_long()[1]));
-                        Log.e("USER KALMAN Speed: ", String.valueOf(kalman.get_speed(altitudeMeters)));
+                        //Log.e("USER KALMAN Latitude deg: ", String.valueOf(kalman.get_lat_long()[0]));
+                        //Log.e("USER KALMAN Longitude deg: ", String.valueOf(kalman.get_lat_long()[1]));
+                        //Log.e("USER KALMAN Speed: ", String.valueOf(kalman.get_speed(altitudeMeters)));
 
                         // Testing configuration
                         double homeLat = 52.161002;

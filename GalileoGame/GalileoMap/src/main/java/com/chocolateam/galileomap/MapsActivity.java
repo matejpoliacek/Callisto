@@ -611,7 +611,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (game.isLocationValid() && game.isSizeValid()) {
                     playing();
                 } else {
-                    stopGame();
+                    stopGame(true);
                 }
             }
             // TODO: delete this else after debugs
@@ -640,7 +640,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void startGame() {
         // if we're already playing, make next click stop the game first
         if (playing == true) {
-            stopGame();
+            stopGame(true);
         } else {
             Toast.makeText(getApplicationContext(), "Select 2 points to mark playing area", Toast.LENGTH_LONG).show();
             gameSetup = true;
@@ -681,12 +681,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         gameThread.start();
     }
 
-    public void stopGame() {
+    public void stopGame(boolean restart) {
 
         // disable keeping screen on
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        game.setPlaying(false);
+        if (game != null) {
+            game.setPlaying(false);
+        }
         gameSetup = false;
         firstPoint = true;
 
@@ -713,9 +715,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         playing = false;
         updateCameraBearing(mMap, 0);
 
-        startGame();
+        if (restart) {
+            startGame();
+        }
     }
-    
+
     // TODO: switch arrays to lists for faster access?
     private void gameInit() {
 
@@ -841,7 +845,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void backToMenu(View view) {
         if (ACTIVITY_TYPE.equals(TYPE_GAME)) {
-            stopGame();
+            stopGame(false);
         }
         finish();
     }
@@ -870,7 +874,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (bGraphicsDebug) {
             debugGraphicsButton .setText("Start Graphics Debugging");
             bGraphicsDebug = false;
-            stopGame();
+            stopGame(true);
         } else {
             debugGraphicsButton .setText("Stop Graphics Debugging");
             bGraphicsDebug = true;

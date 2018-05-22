@@ -69,7 +69,7 @@ public class GameFragment extends Fragment implements Runnable {
     @Override
     public  void onDestroy() {
         super.onDestroy();
-        ((MapsActivity)context).stopGame();
+        ((MapsActivity)context).stopGame(true);
     }
 
     public int[][] fieldTypeGenerator(int rows, int cols){
@@ -315,7 +315,7 @@ public class GameFragment extends Fragment implements Runnable {
             ((MapsActivity) context).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    ((MapsActivity) context).stopGame();
+                    ((MapsActivity) context).stopGame(true);
                 }
             });
         }
