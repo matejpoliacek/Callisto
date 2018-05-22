@@ -10,6 +10,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.cts.nano.Ephemeris;
+import android.location.cts.nano.GalileoEphemeris;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
@@ -19,6 +20,7 @@ import android.telephony.CellInfoLte;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
+import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +50,8 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
     private ArrayList<Satellite> pseudoSatsGalileo;
 
     private Ephemeris.GpsNavMessageProto navMsg;
+    private Pair<Ephemeris.GpsNavMessageProto, GalileoEphemeris.GalNavMessageProto> fullNavMsg;
+    private Ephemeris.GpsNavMessageProto galNavMsg;
 
     private static double[] userPositionECEFmetersGPS;
     private static double latitudeDegreesGPS;
@@ -134,12 +138,22 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
 
         try {
             long[] mReferenceLocation = new long[] {0,0};
-            navMsg = new NavThread().execute(mReferenceLocation).get(); // TODO Galileo nav msg
+            fullNavMsg = new NavThread().execute(mReferenceLocation).get(); // TODO Galileo nav msg
             Log.e("Obtaining navigation message...", "SUCCESSFUL");
         } catch (Exception e) {
             e.printStackTrace();
             Log.e("Obtaining navigation message...", "FAILED");
         }
+
+        navMsg = fullNavMsg.first;
+
+        /**
+
+         *  Filling galNavMsg, a GPS nav message class with Galileo nav message data
+
+         */
+
+        galNavMsg = convertGalileoToGPS(fullNavMsg.second);
 
         /*******************************************************************************
          GNSS Measurements Event for obtaining receiver clock and Satellite measurements
