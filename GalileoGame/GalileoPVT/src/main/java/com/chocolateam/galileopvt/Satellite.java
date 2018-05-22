@@ -1,10 +1,8 @@
 package com.chocolateam.galileopvt;
 import android.location.GnssMeasurement;
-import android.location.cts.asn1.supl2.rrlp_components.*;
 import android.location.cts.nano.Ephemeris;
 import android.util.Log;
 
-import java.sql.Time;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -268,14 +266,28 @@ public class Satellite {
      *****************************************************************************************/
     public void computeSatellitePosition() {
         try {
-            posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
-                    ephemerisProto,
-                    transmittedTimeCorrectedSeconds,
-                    ephemerisProto.week,
-                    BlankFragment.getUserPositionECEFmeters()[0],//3904174BlankFragment.getUserPositionECEFmeters()[0]
-                    BlankFragment.getUserPositionECEFmeters()[1],//301788BlankFragment.getUserPositionECEFmeters()[1]
-                    BlankFragment.getUserPositionECEFmeters()[2]//5017699BlankFragment.getUserPositionECEFmeters()[2]
-            );
+            if (constellation.equals("GPS")) {
+                posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
+                        ephemerisProto,
+                        transmittedTimeCorrectedSeconds,
+                        ephemerisProto.week,
+                        BlankFragment.getUserPositionECEFmetersGPS()[0],//3904174BlankFragment.getUserPositionECEFmetersGPS()[0]
+                        BlankFragment.getUserPositionECEFmetersGPS()[1],//301788BlankFragment.getUserPositionECEFmetersGPS()[1]
+                        BlankFragment.getUserPositionECEFmetersGPS()[2]//5017699BlankFragment.getUserPositionECEFmetersGPS()[2]
+                );
+            }
+            // GALILEO BLOCK
+            else if (constellation.equals("GALILEO")){
+                posAndVel = SatellitePositionCalculator.calculateSatellitePositionAndVelocityFromEphemeris(
+                        ephemerisProto,
+                        transmittedTimeCorrectedSeconds,
+                        ephemerisProto.week,
+                        BlankFragment.getUserPositionECEFmetersGalileo()[0],//3904174BlankFragment.getUserPositionECEFmetersGPS()[0]
+                        BlankFragment.getUserPositionECEFmetersGalileo()[1],//301788BlankFragment.getUserPositionECEFmetersGPS()[1]
+                        BlankFragment.getUserPositionECEFmetersGalileo()[2]//5017699BlankFragment.getUserPositionECEFmetersGPS()[2]
+                );
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             Log.e("E X C E P T I O N", "Couldn't compute satellite position.");
