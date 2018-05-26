@@ -13,6 +13,7 @@ import android.location.cts.nano.Ephemeris;
 import android.location.cts.nano.GalileoEphemeris;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.telephony.CellInfo;
@@ -315,6 +316,8 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                             Log.e("",""); // empty line
                         }
                     }
+                    long utcTime = (long) (receiverClock.getTimeNanos() - (fullBiasNanos + biasNanos) - receiverClock.getLeapSecond() * 1000000000);
+
 
                     /************************************************************************************
                      If there are enough satellites with pseudorange, perform linearisation and get x y z
@@ -367,6 +370,12 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                         Log.e("USER Latitude deg: ", String.valueOf(latitudeDegreesGPS));
                         Log.e("USER Longitude deg: ", String.valueOf(longitudeDegreesGPS));
                         Log.e("USER altitude: ", String.valueOf(altitudeMetersGPS));
+
+                        if (firstRunGPS){
+                            mGnssLogger.startNewLog("GPS");
+                            firstRunGPS = false;
+                        }
+                        mGnssLogger.appendLog(utcTime,"GPS", longitudeDegreesGPS, latitudeDegreesGPS, altitudeMetersGPS, pseudoSatsGPS.size(), 0);
                     }
                     if (pseudoSatsGalileo.size() > 3) {
                         Log.e("---------------------------", "PVT computation in progress-----------------------");
@@ -403,6 +412,13 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                         longitudeDegreesGalileo = Math.toDegrees(lla.longitudeRadians);
                         altitudeMetersGalileo = lla.altitudeMeters;
 
+                        if (firstRunGalileo){
+                            mGnssLogger.startNewLog("GALILEO");
+                            firstRunGalileo = false;
+                        }
+                        mGnssLogger.appendLog(utcTime,"GALILEO", longitudeDegreesGalileo, latitudeDegreesGalileo, altitudeMetersGalileo, pseudoSatsGalileo.size(), 0);
+
+
                         /**
                          * Kalman Addition
                          */
@@ -421,16 +437,6 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
 					/***
 					 *  Adding here a call to (file) logging functions
 					 */
-					if (firstRunGPS){
-						mGnssLogger.startNewLog("GPS");
-						firstRunGPS = false;
-					}
-					mGnssLogger.appendLog("GPS", longitudeDegreesGPS, latitudeDegreesGPS, altitudeMetersGPS, pseudoSatsGPS.size(), 0);
-                    if (firstRunGalileo){
-                        mGnssLogger.startNewLog("GALILEO");
-                        firstRunGalileo = false;
-                    }
-                    mGnssLogger.appendLog("GALILEO", longitudeDegreesGalileo, latitudeDegreesGalileo, altitudeMetersGalileo, pseudoSatsGalileo.size(), 0);
 
                         // Testing configuration
                         double homeLat = 52.161002;
