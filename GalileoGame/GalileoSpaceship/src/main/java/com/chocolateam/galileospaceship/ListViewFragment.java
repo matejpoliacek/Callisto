@@ -65,45 +65,6 @@ public class ListViewFragment extends Fragment {
         Satellite satellite= new Satellite(582,5, 2);
         msatList.add(satellite);
 
-        satellite= new Satellite(4580,3, 4);
-        msatList.add(satellite);
-
-        satellite= new Satellite(89,4, 6);
-        msatList.add(satellite);
-
-        satellite= new Satellite(38,5, 1);
-        msatList.add(satellite);
-
-        satellite= new Satellite(45,6, 1);
-        msatList.add(satellite);
-
-        satellite= new Satellite(102,1, 5);
-        msatList.add(satellite);
-
-        satellite= new Satellite(209,1, 2);
-        msatList.add(satellite);
-
-        satellite= new Satellite(10,4, 3);
-        msatList.add(satellite);
-
-        satellite= new Satellite(5,2, 5);
-        msatList.add(satellite);
-
-        satellite= new Satellite(1,4, 1);
-        msatList.add(satellite);
-
-        satellite= new Satellite(28,3, 10);
-        msatList.add(satellite);
-
-        satellite= new Satellite(23,2, 5);
-        msatList.add(satellite);
-
-        satellite= new Satellite(21,6, 4);
-        msatList.add(satellite);
-        satellite= new Satellite(22,3, 0);
-        msatList.add(satellite);
-
-
         mAdapter.notifyDataSetChanged();
     }
 }

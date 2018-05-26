@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void listView() {
+    /*private void listView() {
 
         setContentView(R.layout.activity_main_list_view);
 
@@ -63,9 +63,9 @@ public class MainActivity extends AppCompatActivity {
 
         prepareSatellitesData();
 
-    }
+    }*/
 
-    private void radarView() {
+    /*private void radarView() {
 
         setContentView(R.layout.activity_main_radar_view);
 
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-    }
+    }*/
 
     private void satView() {
 
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         satview.setSatInfoView(satinfoview);
     }
 
-    private void prepareSatellitesData() {
+    /*private void prepareSatellitesData() {
 
         Satellite satellite= new Satellite(0,0, 0);
         msatList.add(satellite);
@@ -180,5 +180,5 @@ public class MainActivity extends AppCompatActivity {
 
 
         mAdapter.notifyDataSetChanged();
-    }
+    }*/
 }

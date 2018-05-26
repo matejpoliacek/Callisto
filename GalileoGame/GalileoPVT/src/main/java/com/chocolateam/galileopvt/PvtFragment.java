@@ -317,8 +317,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                         }
                     }
                     long utcTime = (long) (receiverClock.getTimeNanos() - (fullBiasNanos + biasNanos) - receiverClock.getLeapSecond() * 1000000000);
-
-
+     
                     /************************************************************************************
                      If there are enough satellites with pseudorange, perform linearisation and get x y z
                      ***********************************************************************************/

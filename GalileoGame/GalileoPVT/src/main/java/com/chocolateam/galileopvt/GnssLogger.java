@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.Buffer;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -48,10 +49,11 @@ public class GnssLogger {
             try {
                 BufferedWriter buf = new BufferedWriter(new FileWriter(currentFile, true));
                 // We don't have the HDOP calculated so I'll just skip it for now
-                double utcHours = utcTime / 1E9 / 60 / 60;
-                double utcMinutes = utcTime / 1E9 / 60;
-                double utcSeconds = utcTime / 1E9;
-                buf.append("UTC: ").append((char) utcHours).append(":").append((char)utcMinutes).append(":").append((char)utcSeconds).append(",").append("Constellation: ").append(constellation).append(",").append("Lon").append(String.valueOf(longitude)).append(",").append("Lat").append(String.valueOf(latitude)).append(",").append("Alt").append(String.valueOf(alt)).append(",").append("SatNumber").append(String.valueOf(satnumber));
+                int utcHours = (int) (utcTime / 1E9 / 60 / 60 % 24);
+                int utcMinutes = (int) (utcTime / 1E9 / 60 % 60);
+                String utcSeconds = new DecimalFormat("##.##").format(utcTime / 1E9 % 60);
+
+                buf.append("UTC: ").append((String.valueOf(utcHours))).append(":").append((String.valueOf(utcMinutes))).append(":").append(utcSeconds).append(",").append("Constellation: ").append(constellation).append(",").append("Lon").append(String.valueOf(longitude)).append(",").append("Lat").append(String.valueOf(latitude)).append(",").append("Alt").append(String.valueOf(alt)).append(",").append("SatNumber").append(String.valueOf(satnumber));
                 buf.newLine();
                 buf.close();
                 Log.e("LOG SUCCESS", "Wrote log");
