@@ -44,7 +44,7 @@ public class Satellite {
     private SatelliteClockCorrectionCalculator.SatClockCorrection satelliteClockCorrection;
     private double correctedRange;
 
-    private Ephemeris.GpsNavMessageProto navMsg; // TODO add Galileo nav msg
+    private Ephemeris.GpsNavMessageProto navMsg;
     private Ephemeris.GpsEphemerisProto ephemerisProto;
     private EcefToTopocentricConverter.TopocentricAEDValues elevationAzimuthDist;
 
@@ -56,7 +56,7 @@ public class Satellite {
         this.id = id;
         this.constellation = constellation;
         this.state = state;
-        this.navMsg = navMsg; // works for GPS only,  // TODO adapt for Galileo nav msg - Galileo's can be allegedly remapped into GpsNavMsg class in order to make all the used functions work
+        this.navMsg = navMsg;
         this.fullBiasNanos = fullBiasNanos;
         this.userPositionTempECEFMeters = userPos;
         Log.e("SAT ID: ", String.valueOf(this.id));
@@ -100,10 +100,12 @@ public class Satellite {
         if (
                 (state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
                         && constellation.equals("GALILEO")) {
-            this.receivedTime = gnssTime - milliSecondsNumberNanos;
+            this.receivedTime = gnssTime % NUMBERNANOSECONDS100MILI;
+            Log.e("received time computed as ", "milliseconds E1C2ND");
         }
         else {
             this.receivedTime = gnssTime - weekNumberNanos;
+            Log.e("received time computed as ", "weeknumber TOW");
         }
     }
 
@@ -115,7 +117,10 @@ public class Satellite {
         if (
                 (state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
                         && constellation.equals("GALILEO")) {
-            pseudoRange = (gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI;
+            //pseudoRange = (gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI; // original, wrong
+            //pseudoRange = (receivedTime - transmittedTime) % NUMBERNANOSECONDS100MILI/1E9*LIGHTSPEED; // test alt 1
+            //pseudoRange = (gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI/1E9*LIGHTSPEED; // test alt 2
+            pseudoRange = ((gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI)/1E9*LIGHTSPEED;
         }
         else {
             pseudoRange = (receivedTime - transmittedTime)/1E9*LIGHTSPEED;
@@ -460,6 +465,8 @@ public class Satellite {
     public long getGnssTime() {return this.gnssTime; }
 
     public double getTransmittedTimeCorrectedSeconds() {return  this.transmittedTimeCorrectedSeconds; }
+
+    public long getMilliSecondsNumberNanos() {return this.milliSecondsNumberNanos;}
 
     /*******************************************************************************
      *                                  Setters

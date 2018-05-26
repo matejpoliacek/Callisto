@@ -34,7 +34,7 @@ import static android.content.Context.LOCATION_SERVICE;
  */
 
 public class PvtFragment extends Fragment implements Runnable, LocationListener {
-    public static final int MIN_CARRIER_TO_NOISE = 18;
+    public static final int MIN_CARRIER_TO_NOISE = 10;
 
     private Context context;
     private LocationManager mLocationManager;
@@ -208,17 +208,22 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                             }
 
                             if (m.getConstellationType() == GnssStatus.CONSTELLATION_GALILEO) {
+                                Log.e("GALILEO (among visible) state: ", String.valueOf(m.getState()));
                                 if (
                                         (m.getState() & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
                                                 ||
-                                                (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
-                                                ||
-                                                (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
+                                                (
+                                                    (
+                                                            (m.getState() & GnssMeasurement.STATE_TOW_DECODED) == GnssMeasurement.STATE_TOW_DECODED
+                                                                    ||
+                                                                    (m.getState() & GnssMeasurement.STATE_TOW_KNOWN) == GnssMeasurement.STATE_TOW_KNOWN
+                                                    ) &&
+                                                            (m.getState() & GnssMeasurement.STATE_CODE_LOCK) == GnssMeasurement.STATE_CODE_LOCK
+                                        )
                                         ) {
                                     galileoSatellites.add(m);
                                 }
                             }
-
                         }
                     }
                     Log.e("Total cleaned GPS: ", String.valueOf(gpsSatellites.size()));
@@ -229,7 +234,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                      ********************************************************************************/
                     // Start computing satellite data only if there are enough for a PVT (>3)
 
-                    if ( (gpsSatellites.size() > 3)) {
+                    if ( (gpsSatellites.size() > 0)) {
 
                         pseudoSatsGPS = new ArrayList<>();
 
@@ -240,15 +245,18 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                             pseudosat.computeGnssTime(
                                     receiverClock.getTimeNanos(), gpsSatellites.get(i).getTimeOffsetNanos(),
                                     fullBiasNanos,  biasNanos);
+                            Log.e("GPS gnss time: ", String.valueOf(pseudosat.getGnssTime()));
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
                             pseudosat.computeReceivedTime();
+                            Log.e("GPS received time: ", String.valueOf(pseudosat.getReceivedTime()));
                             pseudosat.computeTransmittedTime(gpsSatellites.get(i).getReceivedSvTimeNanos() + (long)gpsSatellites.get(i).getTimeOffsetNanos());
+                            Log.e("GPS transmitted time: ", String.valueOf(pseudosat.getTransmittedTime()));
                             pseudosat.computePseudoRange();
-                            Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
+                            Log.e("GPS Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
 
                             // Satellite clock correction
                             pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMetersGPS);
-                            Log.e("Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
+                            Log.e("GPS Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
                             pseudosat.computeSatellitePosition();
 
                             // Atmospheric corrections and satellite elevation (either every 10s or every measurement)
@@ -265,13 +273,13 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
 
                             // Corrected pseudorange
                             pseudosat.computeCorrectedRange();
-                            Log.e("CORRECTED RANGE: ", String.valueOf(pseudosat.getCorrectedRange()));
+                            Log.e("Corrected range: ", String.valueOf(pseudosat.getCorrectedRange()));
                             pseudoSatsGPS.add(pseudosat);
                             Log.e("",""); // empty line
                         }
                     }
                     /*********************************** GALILEO **********************************/
-                    if ((galileoSatellites.size() > 3)) {
+                    if ((galileoSatellites.size() > 0)) {
 
                         pseudoSatsGalileo = new ArrayList<>(galileoSatellites.size());
 
@@ -282,12 +290,17 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                             pseudosat.computeGnssTime(
                                     receiverClock.getTimeNanos(), galileoSatellites.get(i).getTimeOffsetNanos(),
                                     fullBiasNanos,  biasNanos);
+                            Log.e("GALILEO gnss time: ", String.valueOf(pseudosat.getGnssTime()));
                             pseudosat.computeWeekNumberNanos(fullBiasNanos);
                             pseudosat.computeMillisecondsNumberNanos(fullBiasNanos);
+                            Log.e("GALILEO millisecondsnumberNanos: ", String.valueOf(pseudosat.getMilliSecondsNumberNanos()));
+                            Log.e("GALILEO Ns in 100ms: ", String.valueOf(Satellite.NUMBERNANOSECONDS100MILI));
                             pseudosat.computeReceivedTime();
+                            Log.e("GALILEO received time: ", String.valueOf(pseudosat.getReceivedTime()));
                             pseudosat.computeTransmittedTime(galileoSatellites.get(i).getReceivedSvTimeNanos() + (long)galileoSatellites.get(i).getTimeOffsetNanos()); // TODO test the time offset nano
+                            Log.e("GALILEO transmitted time: ", String.valueOf(pseudosat.getTransmittedTime()));
                             pseudosat.computePseudoRange();
-                            Log.e("Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
+                            Log.e("GALILEO Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
                             // Satellite clock correction
                             pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMetersGalileo);
                             Log.e("GALILEO Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
@@ -303,9 +316,9 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
 
                             pseudosat.computeIonosphericCorrection_GPS(alpha, beta);
 
-                            Log.e("Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
-                            Log.e("Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
-                            Log.e("IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
+                            Log.e("GALILEO Sat elevation in radians: ", String.valueOf(pseudosat.getSatElevationRadians()));
+                            Log.e("GALILEO Tropo correction meters: ", String.valueOf(pseudosat.getTroposphericCorrectionMeters()));
+                            Log.e("GALILEO IONO correction meters: ", String.valueOf(pseudosat.getIonosphericCorrectionSeconds()*pseudosat.LIGHTSPEED));
 
                             // Corrected pseudorange
                             pseudosat.computeCorrectedRange();
@@ -433,7 +446,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                     mGnssLogger.appendLog("GALILEO", longitudeDegreesGalileo, latitudeDegreesGalileo, altitudeMetersGalileo, pseudoSatsGalileo.size(), 0);
 
                     // Testing configuration
-                    double homeLat = 52.161002;
+                    /*double homeLat = 52.161002;
                     double homeLon = 4.496935;
 
                     double diffHomeLatE6 = Math.abs(latitudeDegreesGPS-homeLat)*1e6;
@@ -455,7 +468,7 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                         Log.e("Aggregated latlong difference in 1 min: ", String.valueOf(aggrDiffMinute));
                         Log.e("Total pvt calculations in 1 min: ", String.valueOf(numberOfPVTcalculations));
                         Log.e("Average difference per PVT calc in 1 min: ", String.valueOf(aggrDiffMinute/numberOfPVTcalculations));
-                    }
+                    }*/
 
                 } else {
                     Log.e("CLOCK DISCONTINUITY", "Hardware clock discontinuity is not zero.");

@@ -1,20 +1,29 @@
 package com.chocolateam.galileospaceship;
 
+import android.Manifest;
+import android.location.GnssMeasurement;
+import android.location.GnssMeasurementsEvent;
+import android.location.LocationManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
+import com.chocolateam.galileopvt.PvtFragment;
 import com.example.lionelgarcia.galileospaceship.R;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static android.content.Context.LOCATION_SERVICE;
 
 /**
  * Created by Lionel Garcia on 25/01/2018.
@@ -28,8 +37,6 @@ public class ListViewFragment extends Fragment {
     private ImageButton  mconstellationPannelButton;
     private List<Satellite> msatList = new ArrayList<>();
     private SatelliteItemAdapter mAdapter;
-
-    private Collection mMeasurements;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -55,55 +62,17 @@ public class ListViewFragment extends Fragment {
         mrecyclerView.setAdapter(mAdapter);
 
         prepareSatellitesData();
-
         return mView;
     }
 
-
-    private void prepareSatellitesData() {
-
-        Satellite satellite= new Satellite(582,5, 2);
-        msatList.add(satellite);
-
-        satellite= new Satellite(4580,3, 4);
-        msatList.add(satellite);
-
-        satellite= new Satellite(89,4, 6);
-        msatList.add(satellite);
-
-        satellite= new Satellite(38,5, 1);
-        msatList.add(satellite);
-
-        satellite= new Satellite(45,6, 1);
-        msatList.add(satellite);
-
-        satellite= new Satellite(102,1, 5);
-        msatList.add(satellite);
-
-        satellite= new Satellite(209,1, 2);
-        msatList.add(satellite);
-
-        satellite= new Satellite(10,4, 3);
-        msatList.add(satellite);
-
-        satellite= new Satellite(5,2, 5);
-        msatList.add(satellite);
-
-        satellite= new Satellite(1,4, 1);
-        msatList.add(satellite);
-
-        satellite= new Satellite(28,3, 10);
-        msatList.add(satellite);
-
-        satellite= new Satellite(23,2, 5);
-        msatList.add(satellite);
-
-        satellite= new Satellite(21,6, 4);
-        msatList.add(satellite);
-        satellite= new Satellite(22,3, 0);
-        msatList.add(satellite);
-
-
-        mAdapter.notifyDataSetChanged();
+    public void prepareSatellitesData() {
+        if (PvtFragment.getNoisySatellites() != null) {
+            msatList = new ArrayList<>();
+            for (GnssMeasurement m : PvtFragment.getNoisySatellites()) {
+                Satellite satellite = new Satellite(m.getSvid(), m.getConstellationType(), (int) (m.getCn0DbHz() * 0.15));
+                msatList.add(satellite);
+            }
+            mAdapter.notifyDataSetChanged();
+        }
     }
 }
