@@ -47,8 +47,8 @@ public class SpaceshipViewActivity extends AppCompatActivity {
         mRadarViewFragment = new RadarViewFragment();
 
         // Put fragment on thread and run it
-        listThread = new Thread(mListViewFragment);
-        listThread.start();
+        //listThread = new Thread(mListViewFragment);
+        //listThread.start();
 
         mAdapter = new SpacecraftPagerAdapter(getSupportFragmentManager());
 
