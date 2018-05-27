@@ -117,9 +117,6 @@ public class Satellite {
         if (
                 (state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
                         && constellation.equals("GALILEO")) {
-            //pseudoRange = (gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI; // original, wrong
-            //pseudoRange = (receivedTime - transmittedTime) % NUMBERNANOSECONDS100MILI/1E9*LIGHTSPEED; // test alt 1
-            //pseudoRange = (gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI/1E9*LIGHTSPEED; // test alt 2
             pseudoRange = ((gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI)/1E9*LIGHTSPEED;
         }
         else {
@@ -140,7 +137,6 @@ public class Satellite {
      *      transmitted (0-1024+)
      * @para rxError Receiver clock error in meters
      */
-    // within lsq you must recompute satellite positions based on transmitted time-receiver clock error
 
     public void computeSatClockCorrectionAndRecomputeTransmissionTime(double rxError){
         try {
@@ -152,7 +148,6 @@ public class Satellite {
             e.printStackTrace();
             Log.e("EXCEPTION: ","Could not compute satellite correction");
         }
-
         computeSatClockCorrectionMeters();
     }
 
@@ -224,7 +219,7 @@ public class Satellite {
     }
 
     // Custom function to compute satellite clock correction (Navipedia) - alternative to computeSatClockCorrectionMeters()
-    public double getMySatClockOffsetMeters(long timeOfTransmissionNanos){
+    public void computeMySatClockCorrectionMeters(long timeOfTransmissionNanos){
         double t = timeOfTransmissionNanos/1E9; // seconds
         double t0 = ephemerisProto.toe;
         double a0 = ephemerisProto.af0;
@@ -233,8 +228,7 @@ public class Satellite {
         double satClockOffsetSec = a0 + a1*(t - t0) + a2*(t - t0)*(t - t0);
         double satClockOffsetMeters = satClockOffsetSec*LIGHTSPEED;
         double mySatClockOffset = satClockOffsetMeters + getRelativisticCorrectionMeters();
-        Log.e("My sat clock offset in meters: ", String.valueOf(mySatClockOffset));
-        return mySatClockOffset;
+        satelliteClockCorrectionMeters = mySatClockOffset;
     }
 
     // Custom function to compute relativistic correction according to Navipedia
@@ -276,9 +270,9 @@ public class Satellite {
                         ephemerisProto,
                         transmittedTimeCorrectedSeconds,
                         ephemerisProto.week,
-                        PvtFragment.getUserPositionECEFmetersGPS()[0],//3904174BlankFragment.getUserPositionECEFmetersGPS()[0]
-                        PvtFragment.getUserPositionECEFmetersGPS()[1],//301788BlankFragment.getUserPositionECEFmetersGPS()[1]
-                        PvtFragment.getUserPositionECEFmetersGPS()[2]//5017699BlankFragment.getUserPositionECEFmetersGPS()[2]
+                        PvtFragment.getUserPositionECEFmetersGPS()[0],//3904174
+                        PvtFragment.getUserPositionECEFmetersGPS()[1],//301788
+                        PvtFragment.getUserPositionECEFmetersGPS()[2]//5017699
                 );
             }
             // GALILEO BLOCK
@@ -287,9 +281,9 @@ public class Satellite {
                         ephemerisProto,
                         transmittedTimeCorrectedSeconds,
                         ephemerisProto.week,
-                        PvtFragment.getUserPositionECEFmetersGalileo()[0],//3904174BlankFragment.getUserPositionECEFmetersGPS()[0]
-                        PvtFragment.getUserPositionECEFmetersGalileo()[1],//301788BlankFragment.getUserPositionECEFmetersGPS()[1]
-                        PvtFragment.getUserPositionECEFmetersGalileo()[2]//5017699BlankFragment.getUserPositionECEFmetersGPS()[2]
+                        PvtFragment.getUserPositionECEFmetersGalileo()[0],//3904174
+                        PvtFragment.getUserPositionECEFmetersGalileo()[1],//301788
+                        PvtFragment.getUserPositionECEFmetersGalileo()[2]//5017699
                 );
             }
         } catch (Exception e) {
