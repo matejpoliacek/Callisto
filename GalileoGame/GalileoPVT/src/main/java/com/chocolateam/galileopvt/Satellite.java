@@ -44,7 +44,7 @@ public class Satellite {
     private SatelliteClockCorrectionCalculator.SatClockCorrection satelliteClockCorrection;
     private double correctedRange;
 
-    private Ephemeris.GpsNavMessageProto navMsg; // TODO add Galileo nav msg
+    private Ephemeris.GpsNavMessageProto navMsg;
     private Ephemeris.GpsEphemerisProto ephemerisProto;
     private EcefToTopocentricConverter.TopocentricAEDValues elevationAzimuthDist;
 
@@ -56,7 +56,7 @@ public class Satellite {
         this.id = id;
         this.constellation = constellation;
         this.state = state;
-        this.navMsg = navMsg; // works for GPS only,  // TODO adapt for Galileo nav msg - Galileo's can be allegedly remapped into GpsNavMsg class in order to make all the used functions work
+        this.navMsg = navMsg;
         this.fullBiasNanos = fullBiasNanos;
         this.userPositionTempECEFMeters = userPos;
         Log.e("SAT ID: ", String.valueOf(this.id));
@@ -100,10 +100,12 @@ public class Satellite {
         if (
                 (state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
                         && constellation.equals("GALILEO")) {
-            this.receivedTime = gnssTime - milliSecondsNumberNanos;
+            this.receivedTime = gnssTime % NUMBERNANOSECONDS100MILI;
+            Log.e("received time computed as ", "milliseconds E1C2ND");
         }
         else {
             this.receivedTime = gnssTime - weekNumberNanos;
+            Log.e("received time computed as ", "weeknumber TOW");
         }
     }
 
@@ -115,7 +117,7 @@ public class Satellite {
         if (
                 (state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
                         && constellation.equals("GALILEO")) {
-            pseudoRange = (gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI;
+            pseudoRange = ((gnssTime - transmittedTime) % NUMBERNANOSECONDS100MILI)/1E9*LIGHTSPEED;
         }
         else {
             pseudoRange = (receivedTime - transmittedTime)/1E9*LIGHTSPEED;
@@ -135,7 +137,6 @@ public class Satellite {
      *      transmitted (0-1024+)
      * @para rxError Receiver clock error in meters
      */
-    // within lsq you must recompute satellite positions based on transmitted time-receiver clock error
 
     public void computeSatClockCorrectionAndRecomputeTransmissionTime(double rxError){
         try {
@@ -147,7 +148,6 @@ public class Satellite {
             e.printStackTrace();
             Log.e("EXCEPTION: ","Could not compute satellite correction");
         }
-
         computeSatClockCorrectionMeters();
     }
 
@@ -219,7 +219,7 @@ public class Satellite {
     }
 
     // Custom function to compute satellite clock correction (Navipedia) - alternative to computeSatClockCorrectionMeters()
-    public double getMySatClockOffsetMeters(long timeOfTransmissionNanos){
+    public void computeMySatClockCorrectionMeters(long timeOfTransmissionNanos){
         double t = timeOfTransmissionNanos/1E9; // seconds
         double t0 = ephemerisProto.toe;
         double a0 = ephemerisProto.af0;
@@ -228,8 +228,7 @@ public class Satellite {
         double satClockOffsetSec = a0 + a1*(t - t0) + a2*(t - t0)*(t - t0);
         double satClockOffsetMeters = satClockOffsetSec*LIGHTSPEED;
         double mySatClockOffset = satClockOffsetMeters + getRelativisticCorrectionMeters();
-        Log.e("My sat clock offset in meters: ", String.valueOf(mySatClockOffset));
-        return mySatClockOffset;
+        satelliteClockCorrectionMeters = mySatClockOffset;
     }
 
     // Custom function to compute relativistic correction according to Navipedia
@@ -271,9 +270,9 @@ public class Satellite {
                         ephemerisProto,
                         transmittedTimeCorrectedSeconds,
                         ephemerisProto.week,
-                        PvtFragment.getUserPositionECEFmetersGPS()[0],//3904174BlankFragment.getUserPositionECEFmetersGPS()[0]
-                        PvtFragment.getUserPositionECEFmetersGPS()[1],//301788BlankFragment.getUserPositionECEFmetersGPS()[1]
-                        PvtFragment.getUserPositionECEFmetersGPS()[2]//5017699BlankFragment.getUserPositionECEFmetersGPS()[2]
+                        PvtFragment.getUserPositionECEFmetersGPS()[0],//3904174
+                        PvtFragment.getUserPositionECEFmetersGPS()[1],//301788
+                        PvtFragment.getUserPositionECEFmetersGPS()[2]//5017699
                 );
             }
             // GALILEO BLOCK
@@ -282,9 +281,9 @@ public class Satellite {
                         ephemerisProto,
                         transmittedTimeCorrectedSeconds,
                         ephemerisProto.week,
-                        PvtFragment.getUserPositionECEFmetersGalileo()[0],//3904174BlankFragment.getUserPositionECEFmetersGPS()[0]
-                        PvtFragment.getUserPositionECEFmetersGalileo()[1],//301788BlankFragment.getUserPositionECEFmetersGPS()[1]
-                        PvtFragment.getUserPositionECEFmetersGalileo()[2]//5017699BlankFragment.getUserPositionECEFmetersGPS()[2]
+                        PvtFragment.getUserPositionECEFmetersGalileo()[0],//3904174
+                        PvtFragment.getUserPositionECEFmetersGalileo()[1],//301788
+                        PvtFragment.getUserPositionECEFmetersGalileo()[2]//5017699
                 );
             }
         } catch (Exception e) {
@@ -460,6 +459,8 @@ public class Satellite {
     public long getGnssTime() {return this.gnssTime; }
 
     public double getTransmittedTimeCorrectedSeconds() {return  this.transmittedTimeCorrectedSeconds; }
+
+    public long getMilliSecondsNumberNanos() {return this.milliSecondsNumberNanos;}
 
     /*******************************************************************************
      *                                  Setters

@@ -1,17 +1,23 @@
 package com.chocolateam.galileospaceship;
 
 
+import android.location.GnssMeasurement;
+import android.location.GnssMeasurementsEvent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
 import com.example.lionelgarcia.galileospaceship.R;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Created by Lionel Garcia on 25/01/2018.
