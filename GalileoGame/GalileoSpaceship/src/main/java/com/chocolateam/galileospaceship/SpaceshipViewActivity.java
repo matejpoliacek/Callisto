@@ -29,6 +29,8 @@ public class SpaceshipViewActivity extends AppCompatActivity {
     SpacecraftPagerAdapter mAdapter;
     ViewPager mPager;
 
+    private Thread listThread;
+
     static ListViewFragment mListViewFragment;
     static SkyViewFragment mSkyViewFragment;
     static RadarViewFragment mRadarViewFragment;
@@ -43,6 +45,10 @@ public class SpaceshipViewActivity extends AppCompatActivity {
         mListViewFragment = new ListViewFragment();
         mSkyViewFragment = new SkyViewFragment();
         mRadarViewFragment = new RadarViewFragment();
+
+        // Put fragment on thread and run it
+        listThread = new Thread(mListViewFragment);
+        listThread.start();
 
         mAdapter = new SpacecraftPagerAdapter(getSupportFragmentManager());
 

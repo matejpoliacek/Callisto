@@ -29,7 +29,7 @@ import static android.content.Context.LOCATION_SERVICE;
  * Created by Lionel Garcia on 25/01/2018.
  */
 
-public class ListViewFragment extends Fragment {
+public class ListViewFragment extends Fragment implements Runnable {
 
     private View mView;
     private RecyclerView mrecyclerView;
@@ -68,12 +68,21 @@ public class ListViewFragment extends Fragment {
 
     public void prepareSatellitesData() {
         if (PvtFragment.getNoisySatellites() != null) {
-            msatList = new ArrayList<>();
             for (GnssMeasurement m : PvtFragment.getNoisySatellites()) {
                 Satellite satellite = new Satellite(m.getSvid(), m.getConstellationType(), (int) (m.getCn0DbHz() * 0.15));
                 msatList.add(satellite);
             }
             mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public void run() {
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            prepareSatellitesData();
         }
     }
 }

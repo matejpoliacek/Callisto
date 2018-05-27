@@ -448,16 +448,6 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                     /***
                      *  Adding here a call to (file) logging functions
                      */
-                    if (firstRunGPS){
-                        mGnssLogger.startNewLog("GPS");
-                        firstRunGPS = false;
-                    }
-                    mGnssLogger.appendLog("GPS", longitudeDegreesGPS, latitudeDegreesGPS, altitudeMetersGPS, pseudoSatsGPS.size(), 0);
-                    if (firstRunGalileo){
-                        mGnssLogger.startNewLog("GALILEO");
-                        firstRunGalileo = false;
-                    }
-                    mGnssLogger.appendLog("GALILEO", longitudeDegreesGalileo, latitudeDegreesGalileo, altitudeMetersGalileo, pseudoSatsGalileo.size(), 0);
 
                     // Testing configuration
                     /*double homeLat = 52.161002;
