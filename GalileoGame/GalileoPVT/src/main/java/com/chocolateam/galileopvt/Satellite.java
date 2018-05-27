@@ -113,6 +113,11 @@ public class Satellite {
         this.transmittedTime = transmittedTime;
     }
 
+    public long getRecomputedTransmittedTimeGalileo(){
+        long Ttx = (long)(receivedTime - pseudoRange/LIGHTSPEED);
+        return Ttx;
+    }
+
     public void computePseudoRange(){
         if (
                 (state & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) == GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK
@@ -219,8 +224,8 @@ public class Satellite {
     }
 
     // Custom function to compute satellite clock correction (Navipedia) - alternative to computeSatClockCorrectionMeters()
-    public void computeMySatClockCorrectionMeters(long timeOfTransmissionNanos){
-        double t = timeOfTransmissionNanos/1E9; // seconds
+    public void computeMySatClockCorrectionMeters(){
+        double t = getRecomputedTransmittedTimeGalileo()/1E9; // seconds
         double t0 = ephemerisProto.toe;
         double a0 = ephemerisProto.af0;
         double a1 = ephemerisProto.af1;
@@ -300,7 +305,7 @@ public class Satellite {
 
     // Custom computation of calculating satellite positions based on navipedia
     public void computeMySatPos() {
-        double t = transmittedTime/1E9 - satelliteClockCorrectionMeters/LIGHTSPEED;
+        double t = getRecomputedTransmittedTimeGalileo()/1E9 - satelliteClockCorrectionMeters/LIGHTSPEED;
         double toe = ephemerisProto.toe;
         double tk = t - toe;
         if (tk > 302400){
