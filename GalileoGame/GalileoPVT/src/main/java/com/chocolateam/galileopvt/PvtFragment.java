@@ -298,14 +298,16 @@ public class PvtFragment extends Fragment implements Runnable, LocationListener 
                             Log.e("GALILEO Ns in 100ms: ", String.valueOf(Satellite.NUMBERNANOSECONDS100MILI));
                             pseudosat.computeReceivedTime();
                             Log.e("GALILEO received time: ", String.valueOf(pseudosat.getReceivedTime()));
-                            pseudosat.computeTransmittedTime(galileoSatellites.get(i).getReceivedSvTimeNanos() + (long)galileoSatellites.get(i).getTimeOffsetNanos()); // TODO test the time offset nano
+                            pseudosat.computeTransmittedTime(galileoSatellites.get(i).getReceivedSvTimeNanos() + (long)galileoSatellites.get(i).getTimeOffsetNanos());
                             Log.e("GALILEO transmitted time: ", String.valueOf(pseudosat.getTransmittedTime()));
                             pseudosat.computePseudoRange();
                             Log.e("GALILEO Pseudorange: ", String.valueOf(pseudosat.getPseudoRange()));
                             // Satellite clock correction
-                            pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMetersGalileo);
+                            //pseudosat.computeSatClockCorrectionAndRecomputeTransmissionTime(receiverClockErrorMetersGalileo);
+                            pseudosat.computeMySatClockCorrectionMeters();
                             Log.e("GALILEO Sat clock correction meters: ", String.valueOf(pseudosat.getSatelliteClockCorrectionMeters()));
-                            pseudosat.computeSatellitePosition();
+                            //pseudosat.computeSatellitePosition();
+                            pseudosat.computeMySatPos();
 
                             // Atmospheric corrections and satellite elevation (either every 10s or every measurement)
                             // computeAtmosphericCorrectionsEvery10seconds(pseudosat);
