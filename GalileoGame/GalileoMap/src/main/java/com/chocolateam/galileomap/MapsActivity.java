@@ -117,6 +117,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         /** Location Manager **/
+        //TODO: Check if this gets properly updated in the subclasses (ideally by checking if the MapOnly markers work as intended)
+        mLocationListenerGPS = new LocationListener() {
+            @Override
+            public void onLocationChanged(android.location.Location location) {}
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+            @Override
+            public void onProviderEnabled(String provider) {}
+
+            @Override
+            public void onProviderDisabled(String provider) {}
+        };
+
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         setLocationSettings();
     }
@@ -157,7 +172,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        System.out.println("MAP: visited parent onMapReady");
         // Use a custom info window adapter to handle multiple lines of text in the
         // info window contents.
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {

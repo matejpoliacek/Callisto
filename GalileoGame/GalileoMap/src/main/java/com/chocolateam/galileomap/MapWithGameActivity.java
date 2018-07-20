@@ -97,12 +97,10 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // run the rest of the onCreate method from superclass
         super.onCreate(savedInstanceState);
 
-
         /** Location Manager **/
-
-        // THIS WILL be migrated to subclasess (presumably)
         mLocationListenerGPS = new LocationListener() {
             @Override
             public void onLocationChanged(android.location.Location location) {
@@ -209,6 +207,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
         super.onMapReady(mMap);
         mMap.setOnMapClickListener(this);
     }

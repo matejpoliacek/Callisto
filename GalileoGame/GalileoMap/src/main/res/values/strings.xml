@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">GalileoMap</string>
     <string name="title_activity_maps">Map</string>
+    <string name="title_activity_mapOnly">Map_Only</string>
+    <string name="title_activity_mapGame">Map_Game</string>
     <string name="startDrawing">Play</string>
 
     <string name="default_info_title">Default Location</string>

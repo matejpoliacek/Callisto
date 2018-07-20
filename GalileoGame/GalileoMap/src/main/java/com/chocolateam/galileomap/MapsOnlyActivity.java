@@ -26,10 +26,11 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // run the rest of the onCreate method from superclass
         super.onCreate(savedInstanceState);
 
-        checkBoxGPS = findViewById(R.id.checkBoxGPS);
-        checkBoxGAL = findViewById(R.id.checkBoxGAL);
+       checkBoxGPS = findViewById(R.id.checkBoxGPS);
+       checkBoxGAL = findViewById(R.id.checkBoxGAL);
 
         /** Location Manager **/
         mLocationListenerGPS = new LocationListener() {
@@ -87,6 +88,8 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
             }
         };
+
+
 
         checkboxLayout = findViewById(R.id.checkboxLayout);
         checkboxLayout.setVisibility(View.VISIBLE);

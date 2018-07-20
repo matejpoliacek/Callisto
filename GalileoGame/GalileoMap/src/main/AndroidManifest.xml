@@ -39,6 +39,17 @@
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps">
         </activity>
+
+        <activity
+            android:name=".MapsOnlyActivity"
+            android:label="@string/title_activity_mapOnly">
+        </activity>
+
+        <activity
+            android:name=".MapWithGameActivity"
+            android:label="@string/title_activity_mapGame">
+        </activity>
+
         <activity android:name=".SummaryActivity"
                   android:parentActivityName=".MapsActivity">
             >
