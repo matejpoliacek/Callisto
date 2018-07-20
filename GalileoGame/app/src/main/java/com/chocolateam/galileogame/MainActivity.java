@@ -60,15 +60,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void goToGame(View view) {
-        Intent intent = new Intent(this, com.chocolateam.galileomap.MapsActivity.class);
-        intent.putExtra("activity_type", TYPE_GAME);
+        Intent intent = new Intent(this, com.chocolateam.galileomap.MapWithGameActivity.class);
         intent.putExtra("location_permit", mLocationPermissionGranted);
         startActivity(intent);
     }
 
     public void goToMap(View view) {
-        Intent intent = new Intent(this, com.chocolateam.galileomap.MapsActivity.class);
-        intent.putExtra("activity_type", TYPE_MAP);
+        Intent intent = new Intent(this, com.chocolateam.galileomap.MapsOnlyActivity.class);
         intent.putExtra("location_permit", mLocationPermissionGranted);
         startActivity(intent);
     }
