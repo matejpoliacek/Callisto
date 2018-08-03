@@ -76,7 +76,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Keys for storing activity state.
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
-    private static final String KEY_ACTIVITY_TYPE = "activity_type";
 
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;

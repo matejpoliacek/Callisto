@@ -22,9 +22,6 @@ import com.chocolateam.galileospaceship.SpaceshipViewActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-
-    private final String TYPE_GAME = "game";
-    private final String TYPE_MAP = "map";
     private boolean mLocationPermissionGranted = false;
 
     private static final String[] REQUIRED_PERMISSIONS = {
@@ -78,6 +75,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void goToPVT(View view) {
         Intent intent = new Intent(this, PvtActivity.class);
+        startActivity(intent);
+    }
+
+    public void goToDesc(View view) {
+        Intent intent = new Intent(this, DescriptionActivity.class);
         startActivity(intent);
     }
 
