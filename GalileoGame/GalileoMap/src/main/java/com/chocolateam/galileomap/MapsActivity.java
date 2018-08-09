@@ -51,6 +51,9 @@ import com.google.android.gms.tasks.Task;
 
 import com.chocolateam.galileopvt.PvtFragment;
 
+import java.util.Observable;
+import java.util.Observer;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     protected GoogleMap mMap;
@@ -84,6 +87,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationManager locationManager;
     protected LocationListener mLocationListenerGPS;
     private boolean LocationManagerSuccess = false;
+
+    private Observer mapUpdater = new Observer() {
+        @Override
+        public void update(Observable o, Object arg) {
+            //TODO: get location
+            //TODO: update map
+
+            //TODO: would it be better to put this in the  subclasses?
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +146,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         setLocationSettings();
+
+        //TODO: gnssInit.addObserver(mapUpdater)
     }
 
     private void setLocationSettings() {

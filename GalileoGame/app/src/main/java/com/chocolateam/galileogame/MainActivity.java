@@ -19,6 +19,7 @@ import android.view.WindowManager;
 import com.chocolateam.galileopvt.PvtFragment;
 import com.chocolateam.galileopvt.PvtActivity;
 import com.chocolateam.galileospaceship.SpaceshipViewActivity;
+import com.galfins.gnss_compare.GNSSCompareInitFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     };
     private static final int LOCATION_REQUEST_ID = 1;
 
+    public static GNSSCompareInitFragment gnssInit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,14 @@ public class MainActivity extends AppCompatActivity {
         while ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
             requestPermissionAndSetupFragments(this);
         }
+
+        /**
+         * Initialise GNSS Compare Fragment
+         */
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        gnssInit = new GNSSCompareInitFragment();
+        fragmentTransaction.add(android.R.id.content, gnssInit).commit();
     }
 
     @Override
@@ -48,8 +58,8 @@ public class MainActivity extends AppCompatActivity {
         // Start the blank fragment initiating Gal/Gps PVT on app start
         super.onResume();
         if ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
-            FragmentManager gamefragmentManager = getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = gamefragmentManager.beginTransaction();
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             PvtFragment pvtFrag = new PvtFragment();
             fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
 //            Log.e("uvodny text", String.valueOf(PvtFragment.getUserLatitudeDegrees()));
