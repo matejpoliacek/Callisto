@@ -13,7 +13,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
-import com.example.lionelgarcia.galileospaceship.R;
+import com.chocolateam.galileospaceship.R;
 
 import java.util.ArrayList;
 import java.util.Collection;

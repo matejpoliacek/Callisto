@@ -16,9 +16,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.chocolateam.galileopvt.PvtFragment;
-import com.chocolateam.galileopvt.PvtActivity;
-import com.galfins.gnss_compare.GNSSCompareInitFragment;
+import com.galfins.gnss_compare.PvtMethods.StartGNSSFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,8 +26,6 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
     private static final int LOCATION_REQUEST_ID = 1;
-
-    public static GNSSCompareInitFragment gnssInit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,13 +39,10 @@ public class MainActivity extends AppCompatActivity {
             requestPermissionAndSetupFragments(this);
         }
 
-        /**
-         * Initialise GNSS Compare Fragment
-         */
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        gnssInit = new GNSSCompareInitFragment();
-        fragmentTransaction.add(android.R.id.content, gnssInit).commit();
+        StartGNSSFragment startedFragment = new StartGNSSFragment();
+        fragmentTransaction.add(android.R.id.content, startedFragment).commit();
     }
 
     @Override
@@ -57,10 +50,10 @@ public class MainActivity extends AppCompatActivity {
         // Start the blank fragment initiating Gal/Gps PVT on app start
         super.onResume();
         if ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            PvtFragment pvtFrag = new PvtFragment();
-            fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
+            // FragmentManager fragmentManager = getSupportFragmentManager();
+            // FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            // PvtFragment pvtFrag = new PvtFragment();
+            // fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
 //            Log.e("uvodny text", String.valueOf(PvtFragment.getUserLatitudeDegrees()));
         }
     }
@@ -82,10 +75,12 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
     public void goToPVT(View view) {
         Intent intent = new Intent(this, PvtActivity.class);
         startActivity(intent);
     }
+     **/
 
     public void goToDesc(View view) {
         Intent intent = new Intent(this, DescriptionActivity.class);

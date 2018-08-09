@@ -14,7 +14,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.example.lionelgarcia.galileospaceship.R;
+import com.chocolateam.galileospaceship.R;
 
 import java.util.ArrayList;
 import java.util.Collection;

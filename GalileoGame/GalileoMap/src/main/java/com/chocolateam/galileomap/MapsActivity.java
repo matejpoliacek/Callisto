@@ -31,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.galfins.gnss_compare.PvtMethods.StartGNSSFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -91,10 +92,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public Observer mapUpdater = new Observer() {
         @Override
         public void update(Observable o, Object arg) {
+            Log.e("OBSERVER", "-- observer tick");
+            System.out.println("Observer tick");
+
             //TODO: get location
             //TODO: update map
 
-            //TODO: would it be better to put this in the  subclasses?
+            //TODO: would it be better to put this in the subclasses, or at least inherit from a generic observer
         }
     };
 
@@ -148,6 +152,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setLocationSettings();
 
         //TODO: add observer
+        StartGNSSFragment.gnssInit.addObservers(mapUpdater);
     }
 
     private void setLocationSettings() {

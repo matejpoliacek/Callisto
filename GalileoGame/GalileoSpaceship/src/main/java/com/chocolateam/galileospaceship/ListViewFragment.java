@@ -17,7 +17,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 
 import com.chocolateam.galileopvt.PvtFragment;
-import com.example.lionelgarcia.galileospaceship.R;
+import com.chocolateam.galileospaceship.R;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -10,7 +10,7 @@
     android:layout_height="match_parent"
     android:background="@color/darkSpace"
     android:colorMode="wideColorGamut"
-    tools:context="com.example.lionelgarcia.galileospaceship.com.chocolateam.galileospaceship.MainActivity">
+    tools:context="com.chocolateam.galileospaceship.com.chocolateam.galileospaceship.MainActivity">
 
     <ImageView
         android:id="@+id/left_cabin"

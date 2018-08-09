@@ -11,7 +11,7 @@ import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 
-import com.example.lionelgarcia.galileospaceship.R;
+import com.chocolateam.galileospaceship.R;
 
 /**
  * Created by lgr on 21/01/2018.
