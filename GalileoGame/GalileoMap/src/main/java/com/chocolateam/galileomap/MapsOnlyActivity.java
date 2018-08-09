@@ -6,7 +6,6 @@ import android.location.LocationListener;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.CheckBox;
-import com.chocolateam.galileopvt.PvtFragment;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -39,8 +38,8 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
                 // SET MAP LOCATION, markers and default
                 if (checkBoxGPS.isChecked()){
-                    LatLng point = new LatLng(PvtFragment.getUserLatitudeDegreesGPS(),
-                            PvtFragment.getUserLongitudeDegreesGPS());
+                    // TODO
+                    LatLng point = null; // new LatLng(PvtFragment.getUserLatitudeDegreesGPS(), PvtFragment.getUserLongitudeDegreesGPS());
 
                     if (mGPSMarker == null) {
                         mGPSMarker = mMap.addMarker(new MarkerOptions().position(point));
@@ -55,8 +54,8 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
                 }
 
                 if (checkBoxGAL.isChecked()){
-                    LatLng point = new LatLng(PvtFragment.getUserLatitudeDegreesGalileo(),
-                            PvtFragment.getUserLongitudeDegreesGalileo());
+                    //TODO
+                    LatLng point = null; // new LatLng(PvtFragment.getUserLatitudeDegreesGalileo(),PvtFragment.getUserLongitudeDegreesGalileo());
 
                     if (mGALMarker == null) {
                         mGALMarker = mMap.addMarker(new MarkerOptions().position(point));

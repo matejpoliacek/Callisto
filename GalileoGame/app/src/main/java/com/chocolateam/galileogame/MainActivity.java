@@ -18,7 +18,6 @@ import android.view.WindowManager;
 
 import com.chocolateam.galileopvt.PvtFragment;
 import com.chocolateam.galileopvt.PvtActivity;
-import com.chocolateam.galileospaceship.SpaceshipViewActivity;
 import com.galfins.gnss_compare.GNSSCompareInitFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -79,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void goToSpaceship(View view) {
-        Intent intent = new Intent(this, SpaceshipViewActivity.class);
+        Intent intent = new Intent(this, com.chocolateam.galileospaceship.SpaceshipViewActivity.class);
         startActivity(intent);
     }
 

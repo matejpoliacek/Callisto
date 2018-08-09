@@ -29,12 +29,6 @@ import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.chocolateam.galileopvt.PvtFragment;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -111,16 +105,16 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
                         mLastKnownLocation = location;
                         break;
                     case "GPS":
-                        point = new LatLng(PvtFragment.getUserLatitudeDegreesGPS(),
-                                PvtFragment.getUserLongitudeDegreesGPS());
+                        //TODO
+                        point = null; //new LatLng(PvtFragment.getUserLatitudeDegreesGPS(), PvtFragment.getUserLongitudeDegreesGPS());
                         mLastKnownLocation.setLatitude(point.latitude);
                         mLastKnownLocation.setLongitude(point.longitude);
                         location.setLatitude(point.latitude);
                         location.setLongitude(point.longitude);
                         break;
                     case "GAL":
-                        point = new LatLng(PvtFragment.getUserLatitudeDegreesGalileo(),
-                                PvtFragment.getUserLongitudeDegreesGalileo());
+                        //TODO
+                        point = null; //new LatLng(PvtFragment.getUserLatitudeDegreesGalileo(), PvtFragment.getUserLongitudeDegreesGalileo());
                         mLastKnownLocation.setLatitude(point.latitude);
                         mLastKnownLocation.setLongitude(point.longitude);
                         location.setLatitude(point.latitude);

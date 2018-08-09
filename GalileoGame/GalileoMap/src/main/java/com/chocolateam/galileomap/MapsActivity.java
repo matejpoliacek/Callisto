@@ -49,7 +49,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import com.chocolateam.galileopvt.PvtFragment;
+//import com.chocolateam.galileopvt.PvtFragment;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -88,7 +88,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected LocationListener mLocationListenerGPS;
     private boolean LocationManagerSuccess = false;
 
-    private Observer mapUpdater = new Observer() {
+    public Observer mapUpdater = new Observer() {
         @Override
         public void update(Observable o, Object arg) {
             //TODO: get location
@@ -147,7 +147,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         setLocationSettings();
 
-        //TODO: gnssInit.addObserver(mapUpdater)
+        //TODO: add observer
     }
 
     private void setLocationSettings() {
