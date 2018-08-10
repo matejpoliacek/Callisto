@@ -3,13 +3,21 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/GNSSCompare/GNSSCompare.iml" filepath="$PROJECT_DIR$/GNSSCompare/GNSSCompare.iml" />
+      <module fileurl="file://C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\GNSSCompare\GNSSCompare.iml" filepath="C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\GNSSCompare\GNSSCompare.iml" />
       <module fileurl="file://$PROJECT_DIR$/GalileoGame.iml" filepath="$PROJECT_DIR$/GalileoGame.iml" />
+      <module fileurl="file://C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\GalileoGame.iml" filepath="C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\GalileoGame.iml" />
       <module fileurl="file://$PROJECT_DIR$/GalileoMap/GalileoMap.iml" filepath="$PROJECT_DIR$/GalileoMap/GalileoMap.iml" />
+      <module fileurl="file://C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\GalileoMap\GalileoMap.iml" filepath="C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\GalileoMap\GalileoMap.iml" />
       <module fileurl="file://$PROJECT_DIR$/GalileoPVT/GalileoPVT.iml" filepath="$PROJECT_DIR$/GalileoPVT/GalileoPVT.iml" />
+      <module fileurl="file://C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\GalileoPVT\GalileoPVT.iml" filepath="C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\GalileoPVT\GalileoPVT.iml" />
       <module fileurl="file://$PROJECT_DIR$/GalileoSpaceship/GalileoSpaceship.iml" filepath="$PROJECT_DIR$/GalileoSpaceship/GalileoSpaceship.iml" />
+      <module fileurl="file://C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\GalileoSpaceship\GalileoSpaceship.iml" filepath="C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\GalileoSpaceship\GalileoSpaceship.iml" />
       <module fileurl="file://$PROJECT_DIR$/SuplClient/SuplClient.iml" filepath="$PROJECT_DIR$/SuplClient/SuplClient.iml" />
+      <module fileurl="file://C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\SuplClient\SuplClient.iml" filepath="C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\SuplClient\SuplClient.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\app\app.iml" filepath="C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\app\app.iml" />
       <module fileurl="file://$PROJECT_DIR$/gogpsextracts/gogpsextracts.iml" filepath="$PROJECT_DIR$/gogpsextracts/gogpsextracts.iml" />
+      <module fileurl="file://C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\gogpsextracts\gogpsextracts.iml" filepath="C:\Work\3 - Gallapp\dev\GalileoGameApp\GalileoGame\gogpsextracts\gogpsextracts.iml" />
     </modules>
   </component>
 </project>
