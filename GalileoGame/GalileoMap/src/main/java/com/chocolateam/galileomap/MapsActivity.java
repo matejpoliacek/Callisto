@@ -85,7 +85,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             System.out.println("Observer tick: " + ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
             System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude());
             System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
-            ((CalculationModule.CalculationModuleObservable) o).getParentReference().g
             //TODO: get location
             //TODO: update map
 
