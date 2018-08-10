@@ -110,7 +110,7 @@
         android:visibility="gone">
 
         <ImageButton
-            android:id="@+id/imageButton"
+            android:id="@+id/zoomButton"
             android:layout_width="45dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"

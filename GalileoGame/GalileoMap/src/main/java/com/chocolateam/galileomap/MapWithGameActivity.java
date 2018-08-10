@@ -27,6 +27,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -45,7 +46,7 @@ import com.google.android.gms.tasks.Task;
 
 public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
-    private Button zoomButton;
+    private ImageButton zoomButton;
     private GameScore inGameScore;
     private GamePanel gameBottomPanel;
     private TutorialView tutorialView;
@@ -177,7 +178,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         // draw class
         draw = new DrawClass();
 
-        zoomButton = (Button) findViewById(R.id.zoomButton);
+        zoomButton = (ImageButton) findViewById(R.id.zoomButton);
 //        zoomButton.setVisibility(View.INVISIBLE);
 //        zoomButton.setEnabled(false);
 
