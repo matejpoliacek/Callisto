@@ -93,4 +93,8 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
         checkboxLayout = findViewById(R.id.checkboxLayout);
         checkboxLayout.setVisibility(View.VISIBLE);
     }
+
+    public void backToMenu(View view) {
+        finish();
+    }
 }
