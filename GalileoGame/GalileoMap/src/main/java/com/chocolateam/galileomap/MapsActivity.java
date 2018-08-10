@@ -4,10 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -15,8 +11,6 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -24,13 +18,11 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
+import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.PvtMethods.StartGNSSFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -40,17 +32,14 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polygon;
-import com.google.android.gms.maps.model.PolygonOptions;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-//import com.chocolateam.galileopvt.PvtFragment;
+
 
 import java.util.Observable;
 import java.util.Observer;
@@ -93,12 +82,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void update(Observable o, Object arg) {
             Log.e("OBSERVER", "-- observer tick");
-            System.out.println("Observer tick");
-
+            System.out.println("Observer tick: " + ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
+            System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude());
+            System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
+            ((CalculationModule.CalculationModuleObservable) o).getParentReference().g
             //TODO: get location
             //TODO: update map
 
             //TODO: would it be better to put this in the subclasses, or at least inherit from a generic observer
+
         }
     };
 
@@ -153,6 +145,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //TODO: add observer
         StartGNSSFragment.gnssInit.addObservers(mapUpdater);
+
     }
 
     private void setLocationSettings() {

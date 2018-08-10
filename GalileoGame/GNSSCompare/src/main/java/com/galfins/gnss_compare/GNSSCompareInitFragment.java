@@ -236,9 +236,11 @@ public class GNSSCompareInitFragment extends Fragment {
 
         // todo test this "context" operations
         Context applicationContext = getContext();
-        if(applicationContext != null)
-
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext);
+        System.out.println("APP CONTEXT: checking in onCreate...");
+        if(applicationContext != null) {
+            System.out.println("APP CONTEXT: not null");
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext);
+        }
 
 //        if(savedInstanceState != null)
 //            savedState = savedInstanceState;
@@ -422,11 +424,11 @@ public class GNSSCompareInitFragment extends Fragment {
         locationCallback = new LocationCallback(){
             @Override
             public void onLocationResult(LocationResult locationResult) {
-
+                //TODO: verify if this chunk gets accessed
                 final Location lastLocation = locationResult.getLocations().get(locationResult.getLocations().size()-1);
-
+                System.out.println("LAST LOCATION: checking...");
                 if(lastLocation != null) {
-
+                    System.out.println("LAST LOCATION: not null");
                     Log.i(TAG, "locationFromGoogleServices: New location (phone): "
                             + lastLocation.getLatitude() + ", "
                             + lastLocation.getLongitude() + ", "
