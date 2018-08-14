@@ -2,6 +2,7 @@ package com.chocolateam.galileogame;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -11,17 +12,17 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.galfins.gnss_compare.PvtMethods.StartGNSSFragment;
+import com.galfins.gnss_compare.GNSSCompareInitFragment;
+import com.galfins.gnss_compare.StartGNSSFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GNSSCompareInitFragment.OnFinishedListener{
 
     private boolean mLocationPermissionGranted = false;
-
+    private StartGNSSFragment startedFragment;
     private static final String[] REQUIRED_PERMISSIONS = {
             Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
@@ -41,8 +42,15 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        StartGNSSFragment startedFragment = new StartGNSSFragment();
+        startedFragment = new StartGNSSFragment();
         fragmentTransaction.add(android.R.id.content, startedFragment).commit();
+
+        findViewById(R.id.GameButton).setEnabled(false);
+        findViewById(R.id.GameButton).setAlpha(0.6f);
+        findViewById(R.id.spaceshipButton).setEnabled(false);
+        findViewById(R.id.spaceshipButton).setAlpha(0.6f);
+        findViewById(R.id.MapButton).setEnabled(false);
+        findViewById(R.id.MapButton).setAlpha(0.6f);
     }
 
     @Override
@@ -56,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
             // fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
 //            Log.e("uvodny text", String.valueOf(PvtFragment.getUserLatitudeDegrees()));
         }
+
+
     }
 
     public void goToGame(View view) {
@@ -106,6 +116,16 @@ public class MainActivity extends AppCompatActivity {
         } else {
             ActivityCompat.requestPermissions(activity, REQUIRED_PERMISSIONS, LOCATION_REQUEST_ID);
         }
+    }
+
+    @Override
+    public void onFragmentReady() {
+        findViewById(R.id.GameButton).setEnabled(true);
+        findViewById(R.id.GameButton).setAlpha(1.0f);
+        findViewById(R.id.spaceshipButton).setEnabled(true);
+        findViewById(R.id.spaceshipButton).setAlpha(1.0f);
+        findViewById(R.id.MapButton).setEnabled(true);
+        findViewById(R.id.MapButton).setAlpha(1.0f);
     }
 }
 

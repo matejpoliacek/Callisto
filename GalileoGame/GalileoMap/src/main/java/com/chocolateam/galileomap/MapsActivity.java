@@ -23,7 +23,7 @@ import android.widget.TextView;
 
 
 import com.galfins.gnss_compare.CalculationModule;
-import com.galfins.gnss_compare.PvtMethods.StartGNSSFragment;
+import com.galfins.gnss_compare.StartGNSSFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;

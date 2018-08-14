@@ -44,6 +44,21 @@ import com.galfins.gnss_compare.PvtMethods.PvtMethod;
 public class GNSSCompareInitFragment extends Fragment {
 
     /**
+     * Listener to notify parent activity that the fragment is ready
+     */
+
+    OnFinishedListener mCallback;
+
+    public interface OnFinishedListener {
+        public void onFragmentReady();
+    }
+
+    /**
+     * Flag to monitor if notification that fragment is ready was sent
+     */
+    private boolean FragmentReadyNotified = false;
+
+    /**
      * Tag used for logging to logcat
      */
     @SuppressWarnings("unused")
@@ -110,6 +125,7 @@ public class GNSSCompareInitFragment extends Fragment {
     LocationCallback locationCallback;
     private static final Object metaDataMutex = new Object();
 
+
     public static Location getLocationFromGoogleServices() {
         synchronized (locationFromGoogleServicesMutex) {
             return locationFromGoogleServices;
@@ -160,7 +176,20 @@ public class GNSSCompareInitFragment extends Fragment {
                     calculationModule.updateMeasurements(eventArgs);
 
                 notifyCalculationObservers();
+
+                // Notify parent activity that fragment is fully ready on first observer notification
+                if(!FragmentReadyNotified) {
+                    FragmentReadyNotified = true;
+                    Log.e("START-INIT:", "OnFragmentReady Invoked");
+                    ((Activity) mCallback).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mCallback.onFragmentReady();
+                        }
+                    });
+                }
             }
+
         };
 
         // todo test this "context" operations
@@ -236,9 +265,7 @@ public class GNSSCompareInitFragment extends Fragment {
 
         // todo test this "context" operations
         Context applicationContext = getContext();
-        System.out.println("APP CONTEXT: checking in onCreate...");
         if(applicationContext != null) {
-            System.out.println("APP CONTEXT: not null");
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext);
         }
 
@@ -273,7 +300,7 @@ public class GNSSCompareInitFragment extends Fragment {
 //
 //        snackbar.show();
 
-        setRetainInstance(true);
+        this.setRetainInstance(true);
     }
 
     @Override
@@ -386,7 +413,7 @@ public class GNSSCompareInitFragment extends Fragment {
                                     createdCalculationModules.remove(module);
                                 } catch (Exception e2){
                                     e2.printStackTrace();
-                                    Log.e(TAG, "run: Removal of initial module failed");
+                                    Log.d(TAG, "run: Removal of initial module failed");
                                 }
                             }
                             CalculationModule.clear();
@@ -426,9 +453,7 @@ public class GNSSCompareInitFragment extends Fragment {
             public void onLocationResult(LocationResult locationResult) {
                 //TODO: verify if this chunk gets accessed
                 final Location lastLocation = locationResult.getLocations().get(locationResult.getLocations().size()-1);
-                System.out.println("LAST LOCATION: checking...");
                 if(lastLocation != null) {
-                    System.out.println("LAST LOCATION: not null");
                     Log.i(TAG, "locationFromGoogleServices: New location (phone): "
                             + lastLocation.getLatitude() + ", "
                             + lastLocation.getLongitude() + ", "
@@ -437,7 +462,6 @@ public class GNSSCompareInitFragment extends Fragment {
                     synchronized (GNSSCompareInitFragment.this) {
                         for (CalculationModule calculationModule : createdCalculationModules)
                             calculationModule.updateLocationFromGoogleServices(lastLocation);
-
                     }
                 }
             }
@@ -446,10 +470,11 @@ public class GNSSCompareInitFragment extends Fragment {
         // todo test this "context" operations
         Context applicationContext = getContext();
 
+        // TODO: check if phone's location is received
         if(applicationContext != null) {
             if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     || ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+            mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
             }
         }
     }
@@ -510,5 +535,24 @@ public class GNSSCompareInitFragment extends Fragment {
         snackbar.show();
     }
 
+    /**
+     * Listener callback to notify activity that fragment has finished
+     */
+
+    @Override
+    public void onAttach(Context activity) {
+        super.onAttach(activity);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            //parent = activity;
+            mCallback = (OnFinishedListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFinishedListener");
+        }
+
+    }
 }
 
