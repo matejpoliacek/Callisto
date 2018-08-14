@@ -37,6 +37,7 @@ public class ListViewFragment extends Fragment implements Runnable {
     private ImageButton  mconstellationPannelButton;
     private List<Satellite> msatList = new ArrayList<>();
     private SatelliteItemAdapter mAdapter;
+    private LocInfo mLocationInfo;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,6 +48,7 @@ public class ListViewFragment extends Fragment implements Runnable {
         mrecyclerView = mView.findViewById(R.id.recycler_view);
         mconstellationPannel = mView.findViewById(R.id.constellation_panel);
         mconstellationPannelButton = mView.findViewById(R.id.constellation_panel_button);
+        mLocationInfo = mView.findViewById(R.id.location_info);
 
         mconstellationPannelButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -68,6 +70,7 @@ public class ListViewFragment extends Fragment implements Runnable {
 
     public void prepareSatellitesData() {
         if (PvtFragment.getNoisySatellites() != null) {
+            msatList.clear();
             for (GnssMeasurement m : PvtFragment.getNoisySatellites()) {
                 Satellite satellite = new Satellite(m.getSvid(), m.getConstellationType(), (int) (m.getCn0DbHz() * 0.15));
                 msatList.add(satellite);
@@ -85,4 +88,24 @@ public class ListViewFragment extends Fragment implements Runnable {
             prepareSatellitesData();
         }
     }
+
+    public void setSatellites(List<Satellite> satellitesList){
+        msatList.clear();
+        msatList = satellitesList;
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public void setLatLong(float latitude, float longitude){
+        mLocationInfo.setLatLong(latitude, longitude);
+    }
+
+    public void setAltitude(float altitude) {
+        mLocationInfo.setAltitude(altitude);
+    }
+
+    public void setSpeed(float speed){
+        mLocationInfo.setSpeed(speed);
+    }
+
+
 }

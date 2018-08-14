@@ -18,6 +18,7 @@ import com.chocolateam.galileospaceship.R;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by Lionel Garcia on 25/01/2018.
@@ -81,11 +82,39 @@ public class SpaceshipViewActivity extends AppCompatActivity {
                 default:
                     return new Fragment();
             }
-
         }
     }
 
     public void backToMenu(View view) {
         finish();
     }
+
+    // Methods to fill the UI
+
+        // Left panel - mListViewFragment
+
+    public void setSatellitesList(List<Satellite> satellitesList){
+        // Set the list of satellites
+        // check Satellite class to see how to build a Satellite object from the Observer output
+        mListViewFragment.setSatellites(satellitesList);
+    }
+
+    public void setLatLongIndicator(float latitude, float longitude){
+        // Set Latitude and Longitude indicator (first screen on the Left Spaceship view)
+        mListViewFragment.setLatLong(latitude, longitude);
+    }
+
+    public void setSpeedIndicator(float speed){
+        // Set speed indicator (second screen on the Left Spaceship view)
+        mListViewFragment.setSpeed(speed);
+    }
+
+    public void setAltitudeIndicator(float altitude){
+        // Set Altitude indicator (third screen on the Left Spaceship view)
+        mListViewFragment.setAltitude(altitude);
+    }
+
+        // Right pannel - mRadarViewFragment
+
+    // TO DO
 }
