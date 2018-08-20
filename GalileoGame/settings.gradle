@@ -1,1 +1,1 @@
-include ':app', ':GalileoSpaceship', ':GalileoMap', ':GalileoPVT', ':SuplClient', ':GNSSCompare', ':gogpsextracts'
+include ':app', ':GalileoSpaceship', ':GalileoMap', ':GNSSCompare', ':gogpsextracts'

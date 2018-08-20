@@ -35,10 +35,6 @@ dependencies {
     releaseImplementation project(':GalileoMap')
     debugImplementation project(':GalileoSpaceship')
     releaseImplementation project(':GalileoSpaceship')
-    debugImplementation project(':GalileoPVT')
-    releaseImplementation project(':GalileoPVT')
-    debugImplementation project(':SuplClient')
-    releaseImplementation project(':SuplClient')
 
     debugImplementation project(':GNSSCompare')
     releaseImplementation project(':GNSSCompare')
