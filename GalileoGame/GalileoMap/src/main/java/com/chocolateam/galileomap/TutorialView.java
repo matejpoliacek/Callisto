@@ -23,7 +23,7 @@ public class TutorialView extends LinearLayout {
     private TextView mLabel;
     private View mView;
     private Context mContext;
-    private MapsActivity mactivity;
+    private MapWithGameActivity mactivity;
 
     private RadioButton galButton;
     private RadioButton gpsButton;
@@ -129,7 +129,7 @@ public class TutorialView extends LinearLayout {
         }
     }
 
-    public void setGame(MapsActivity mapsActivity){
+    public void setGame(MapWithGameActivity mapsActivity){
         mactivity = mapsActivity;
     }
 

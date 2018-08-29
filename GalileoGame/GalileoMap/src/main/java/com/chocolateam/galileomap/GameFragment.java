@@ -69,7 +69,7 @@ public class GameFragment extends Fragment implements Runnable {
     @Override
     public  void onDestroy() {
         super.onDestroy();
-        ((MapsActivity)context).stopGame(false);
+        ((MapWithGameActivity)context).stopGame(false);
     }
 
     public int[][] fieldTypeGenerator(int rows, int cols){
@@ -263,10 +263,10 @@ public class GameFragment extends Fragment implements Runnable {
                                         final int rowIndex = collectsPointList.get(j).getRow();
                                         final int colIndex = collectsPointList.get(j).getCol();
 
-                                        ((MapsActivity) context).runOnUiThread(new Runnable() {
+                                        ((MapWithGameActivity) context).runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                ((MapsActivity) context).removeMapObjectByIndex(rowIndex, colIndex);
+                                                ((MapWithGameActivity) context).removeMapObjectByIndex(rowIndex, colIndex);
                                             }
                                         });
 
@@ -287,7 +287,7 @@ public class GameFragment extends Fragment implements Runnable {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ((MapsActivity) context).showScore(points, secs_passed);
+                        ((MapWithGameActivity) context).showScore(points, secs_passed);
                     }
                 });
                 // check if the game is lost
@@ -315,7 +315,7 @@ public class GameFragment extends Fragment implements Runnable {
             ((MapsActivity) context).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    ((MapsActivity) context).stopGame(true);
+                    ((MapWithGameActivity) context).stopGame(true);
                 }
             });
         }

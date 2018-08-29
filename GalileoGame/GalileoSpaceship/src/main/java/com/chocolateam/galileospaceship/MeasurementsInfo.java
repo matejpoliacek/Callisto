@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-import com.example.lionelgarcia.galileospaceship.R;
+import com.chocolateam.galileospaceship.R;
 
 /**
  * Created by Lionel Garcia on 25/01/2018.

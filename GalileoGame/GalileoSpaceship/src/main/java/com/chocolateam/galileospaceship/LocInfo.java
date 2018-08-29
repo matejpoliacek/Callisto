@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import com.example.lionelgarcia.galileospaceship.R;
+import com.chocolateam.galileospaceship.R;
 
 /**
  * Created by lgr on 07/01/2018.

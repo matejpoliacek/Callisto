@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import com.example.lionelgarcia.galileospaceship.R;
+import com.chocolateam.galileospaceship.R;
 
 /**
  * Created by Lionel Garcia on 26/01/2018.

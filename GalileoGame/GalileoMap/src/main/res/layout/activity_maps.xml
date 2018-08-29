@@ -42,7 +42,8 @@
         android:onClick="toggleGraphicsDebug"
         android:padding="8dp"
         android:text="Start Graphics Debugging"
-        android:textColor="#ffffff" />
+        android:textColor="#ffffff"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/locationText"
@@ -60,7 +61,7 @@
         android:layout_height="match_parent"
         android:gravity="bottom"
         android:orientation="vertical"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <CheckBox
             android:id="@+id/checkBoxGAL"
@@ -106,10 +107,10 @@
         android:layout_centerHorizontal="true"
         android:layout_margin="0dp"
         android:translationY="2dp"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <ImageButton
-            android:id="@+id/imageButton"
+            android:id="@+id/zoomButton"
             android:layout_width="45dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -161,14 +162,16 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:layout_margin="8dp">
+        android:layout_margin="8dp"
+        android:visibility="gone">
 
     </com.chocolateam.galileomap.GameScore>
 
     <com.chocolateam.galileomap.TutorialView
         android:id="@+id/tutorial"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
     </com.chocolateam.galileomap.TutorialView>
 

@@ -11,8 +11,6 @@ import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 
-import com.example.lionelgarcia.galileospaceship.R;
-
 /**
  * Created by lgr on 21/01/2018.
  */
@@ -37,7 +35,7 @@ public class GConstellationPanel extends RelativeLayout {
 
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        inflater.inflate(R.layout.constellation_pannel2, this, true);
+        inflater.inflate(R.layout.constellation_pannel, this, true);
 
         mView = this.findViewById(R.id.main_layout);
         mOKButton = this.findViewById(R.id.ok_button);

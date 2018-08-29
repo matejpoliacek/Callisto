@@ -17,7 +17,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 
 import com.chocolateam.galileopvt.PvtFragment;
-import com.example.lionelgarcia.galileospaceship.R;
+import com.chocolateam.galileospaceship.R;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +29,7 @@ import static android.content.Context.LOCATION_SERVICE;
  * Created by Lionel Garcia on 25/01/2018.
  */
 
-public class ListViewFragment extends Fragment {
+public class ListViewFragment extends Fragment implements Runnable {
 
     private View mView;
     private RecyclerView mrecyclerView;
@@ -37,6 +37,7 @@ public class ListViewFragment extends Fragment {
     private ImageButton  mconstellationPannelButton;
     private List<Satellite> msatList = new ArrayList<>();
     private SatelliteItemAdapter mAdapter;
+    private LocInfo mLocationInfo;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,6 +48,7 @@ public class ListViewFragment extends Fragment {
         mrecyclerView = mView.findViewById(R.id.recycler_view);
         mconstellationPannel = mView.findViewById(R.id.constellation_panel);
         mconstellationPannelButton = mView.findViewById(R.id.constellation_panel_button);
+        mLocationInfo = mView.findViewById(R.id.location_info);
 
         mconstellationPannelButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -65,9 +67,10 @@ public class ListViewFragment extends Fragment {
         return mView;
     }
 
+
     public void prepareSatellitesData() {
         if (PvtFragment.getNoisySatellites() != null) {
-            msatList = new ArrayList<>();
+            msatList.clear();
             for (GnssMeasurement m : PvtFragment.getNoisySatellites()) {
                 Satellite satellite = new Satellite(m.getSvid(), m.getConstellationType(), (int) (m.getCn0DbHz() * 0.15));
                 msatList.add(satellite);
@@ -75,4 +78,34 @@ public class ListViewFragment extends Fragment {
             mAdapter.notifyDataSetChanged();
         }
     }
+
+    public void run() {
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            prepareSatellitesData();
+        }
+    }
+
+    public void setSatellites(List<Satellite> satellitesList){
+        msatList.clear();
+        msatList = satellitesList;
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public void setLatLong(float latitude, float longitude){
+        mLocationInfo.setLatLong(latitude, longitude);
+    }
+
+    public void setAltitude(float altitude) {
+        mLocationInfo.setAltitude(altitude);
+    }
+
+    public void setSpeed(float speed){
+        mLocationInfo.setSpeed(speed);
+    }
+
+
 }
