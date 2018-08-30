@@ -1,6 +1,7 @@
 package com.chocolateam.galileospaceship;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.chocolateam.galileospaceship.R;
+import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
 import java.util.List;
 
@@ -17,7 +19,7 @@ import java.util.List;
 
 public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdapter.MyViewHolder> {
 
-    private List<Satellite> mSatellites;
+    private List<SatelliteParameters> mSatellites;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         private TextView midView, mconstelationView;
@@ -33,7 +35,11 @@ public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdap
         }
     }
 
-    public SatelliteItemAdapter(List<Satellite> satellites) {
+    public SatelliteItemAdapter(List<SatelliteParameters> satellites) {
+        this.mSatellites = satellites;
+    }
+
+    public void setSatelliteList(List<SatelliteParameters> satellites) {
         this.mSatellites = satellites;
     }
 
@@ -47,11 +53,12 @@ public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdap
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        Satellite satellite = mSatellites.get(position);
-        holder.midView.setText(String.format("%05d", satellite.getMid()));
-        holder.mflagView.setImageResource(getFlagBitmap(satellite.getMoperator()));
-        holder.msignalView.setImageResource(getSignalBitmap(satellite.getMsignal()));
-        holder.mconstelationView.setText(satellite.getConstellationName());
+        System.out.println("Number of sta in the actual fucking view: " + Integer.toString(this.mSatellites.size()));
+        SatelliteParameters satellite = mSatellites.get(position);
+        holder.midView.setText(String.format("%05d", satellite.getSatId()));
+        System.out.println("Signal of sta in the actual fucking view: " + Integer.toString((int) (6 * Math.min(satellite.getSignalStrength()/45, 1))));
+        holder.msignalView.setImageResource(getSignalBitmap((int) (6 * Math.min(satellite.getSignalStrength()/40, 1))));
+        holder.mflagView.setImageResource(getFlagBitmap(satellite.getConstellationType()));
     }
 
     @Override

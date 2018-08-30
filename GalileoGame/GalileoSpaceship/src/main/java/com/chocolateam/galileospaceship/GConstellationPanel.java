@@ -133,4 +133,16 @@ public class GConstellationPanel extends RelativeLayout {
         }
     }
 
+    public String getActive(){
+        if (mGalileoSwitch.isChecked()){
+            return "Galileo";
+        }
+        else if (mGpsSwitch.isChecked()){
+            return "GPS";
+        }
+        else {
+            return "Galileo+GPS";
+        }
+    }
+
 }

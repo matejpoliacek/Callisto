@@ -49,9 +49,9 @@ public class LocInfo extends ConstraintLayout {
         maltitudeView = mView.findViewById(R.id.altitude);
         mlatlongView = mView.findViewById(R.id.latlong);
 
-        setSpeed(12.5f);
-        setLatLong(10.25646f, 25.298415f);
-        setAltitude(221.25f);
+        setSpeed(0f);
+        setLatLong(0f, 0f);
+        setAltitude(0f);
 
     }
 
@@ -64,12 +64,12 @@ public class LocInfo extends ConstraintLayout {
         mSpeedView.setText(String.format("%2.2f", speed) + " m/s");
     }
 
-    public void setLatLong(float latitude, float longitude){
+    public void setLatLong(double latitude, double longitude){
 
         mlatlongView.setText(String.format("%2.7f%n", latitude) + String.format("%2.7f", longitude));
     }
 
-    public void setAltitude(float altitude){
+    public void setAltitude(double altitude){
 
         maltitudeView.setText(String.format("%2.2f", altitude) + " m");
     }

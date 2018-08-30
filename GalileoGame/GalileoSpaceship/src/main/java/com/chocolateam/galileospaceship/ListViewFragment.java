@@ -16,8 +16,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import com.chocolateam.galileopvt.PvtFragment;
 import com.chocolateam.galileospaceship.R;
+import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +35,7 @@ public class ListViewFragment extends Fragment implements Runnable {
     private RecyclerView mrecyclerView;
     private GConstellationPanel mconstellationPannel;
     private ImageButton  mconstellationPannelButton;
-    private List<Satellite> msatList = new ArrayList<>();
+    private List<SatelliteParameters> msatList = new ArrayList<>();
     private SatelliteItemAdapter mAdapter;
     private LocInfo mLocationInfo;
 
@@ -63,20 +63,7 @@ public class ListViewFragment extends Fragment implements Runnable {
         mrecyclerView.setItemAnimator(new DefaultItemAnimator());
         mrecyclerView.setAdapter(mAdapter);
 
-        prepareSatellitesData();
         return mView;
-    }
-
-
-    public void prepareSatellitesData() {
-        if (PvtFragment.getNoisySatellites() != null) {
-            msatList.clear();
-            for (GnssMeasurement m : PvtFragment.getNoisySatellites()) {
-                Satellite satellite = new Satellite(m.getSvid(), m.getConstellationType(), (int) (m.getCn0DbHz() * 0.15));
-                msatList.add(satellite);
-            }
-            mAdapter.notifyDataSetChanged();
-        }
     }
 
     public void run() {
@@ -85,21 +72,21 @@ public class ListViewFragment extends Fragment implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            prepareSatellitesData();
         }
     }
 
-    public void setSatellites(List<Satellite> satellitesList){
-        msatList.clear();
+    public void setSatellites(List<SatelliteParameters> satellitesList){
         msatList = satellitesList;
+        mAdapter.setSatelliteList(satellitesList);
+        System.out.println("Number of sta in the actual fucking view: " + Integer.toString(msatList.size()));
         mAdapter.notifyDataSetChanged();
     }
 
-    public void setLatLong(float latitude, float longitude){
+    public void setLatLong(double latitude, double longitude){
         mLocationInfo.setLatLong(latitude, longitude);
     }
 
-    public void setAltitude(float altitude) {
+    public void setAltitude(double altitude) {
         mLocationInfo.setAltitude(altitude);
     }
 
@@ -107,5 +94,8 @@ public class ListViewFragment extends Fragment implements Runnable {
         mLocationInfo.setSpeed(speed);
     }
 
+    public String getSelectedConstellation(){
+        return mconstellationPannel.getActive();
+    }
 
 }
