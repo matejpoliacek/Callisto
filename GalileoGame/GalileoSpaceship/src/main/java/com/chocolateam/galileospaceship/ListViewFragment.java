@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import com.chocolateam.galileopvt.PvtFragment;
 import com.chocolateam.galileospaceship.R;
 
 import java.util.ArrayList;
@@ -63,20 +62,8 @@ public class ListViewFragment extends Fragment implements Runnable {
         mrecyclerView.setItemAnimator(new DefaultItemAnimator());
         mrecyclerView.setAdapter(mAdapter);
 
-        prepareSatellitesData();
+        //prepareSatellitesData();
         return mView;
-    }
-
-
-    public void prepareSatellitesData() {
-        if (PvtFragment.getNoisySatellites() != null) {
-            msatList.clear();
-            for (GnssMeasurement m : PvtFragment.getNoisySatellites()) {
-                Satellite satellite = new Satellite(m.getSvid(), m.getConstellationType(), (int) (m.getCn0DbHz() * 0.15));
-                msatList.add(satellite);
-            }
-            mAdapter.notifyDataSetChanged();
-        }
     }
 
     public void run() {
@@ -85,7 +72,7 @@ public class ListViewFragment extends Fragment implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            prepareSatellitesData();
+            //prepareSatellitesData();
         }
     }
 
