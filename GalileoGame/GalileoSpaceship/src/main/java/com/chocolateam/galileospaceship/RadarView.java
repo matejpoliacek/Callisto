@@ -13,6 +13,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.chocolateam.galileospaceship.R;
+import com.galfins.gnss_compare.Constellations.SatelliteParameters;
+
+import java.util.List;
 
 /**
  * Created by lgr on 24/01/2018.
@@ -50,9 +53,9 @@ public class RadarView extends RelativeLayout {
         Animation ViewAnimation = AnimationUtils.loadAnimation(mContext, R.anim.rotation_fast);
         mRadarLight.startAnimation(ViewAnimation);
 
-        addPoint(new Satellite(1,1,12), new PointF(30f, 100f));
-        addPoint(new Satellite(34,2,12), new PointF(134f, 80f));
-        addPoint(new Satellite(21,3,12), new PointF(-50f, 100f));
+//        addPoint(new Satellite(1,1,12), new PointF(30f, 100f));
+//        addPoint(new Satellite(34,2,12), new PointF(134f, 80f));
+//        addPoint(new Satellite(21,3,12), new PointF(-50f, 100f));
     }
 
     public RadarView(Context context) {
@@ -65,7 +68,7 @@ public class RadarView extends RelativeLayout {
         return px;
     }
 
-    public void addPoint(Satellite satellite, PointF position){
+    public void addPoint(SatelliteParameters satellite, PointF position){
 
         RadarSatelliteTick satPoint = new RadarSatelliteTick(mContext);
         satPoint.setTick(satellite);
@@ -79,6 +82,18 @@ public class RadarView extends RelativeLayout {
 
         mView.addView(satPoint);
 
+    }
+
+    public void updateSatellites(List<SatelliteParameters> satellites){
+        mView.removeAllViews();
+        for (int i=0; i<satellites.size(); i++){
+            SatelliteParameters satellite = satellites.get(i);
+            Log.d("SAT_POSITION_CHECK", "updateSatellites:" + satellite.getSatellitePosition());
+            // crashing
+//            addPoint(satellite,
+//                    new PointF((float) satellite.getSatellitePosition().getX(),
+//                            (float) satellite.getSatellitePosition().getY()));
+        }
     }
 
     public PointF circToCart(float angle, float R){

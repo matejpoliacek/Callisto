@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.chocolateam.galileospaceship.R;
+import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,13 +75,15 @@ public class SatView extends ConstraintLayout {
 
     private Context mcontext;
     private SatelliteInfoView msatInfoView;
+    private Float predefinedSatviewAngle[];
+    private Float predefinedSatViewAltitude[];
 
     private float mscreenW;
     private float mviewH = 1000;
     private int msatWidth = 120;
     private int msatHeight;
 
-    private List<Satellite> msatList = new ArrayList<>();
+    private List<SatelliteParameters> msatList = new ArrayList<>();
     private List<View> msatViewList = new ArrayList<>();
     private List<sat_position> msatPosList = new ArrayList<>();
 
@@ -100,27 +103,21 @@ public class SatView extends ConstraintLayout {
         int bpwidth = bp.getWidth();
         int bpheight = bp.getHeight();
         msatHeight = (int) (((float) msatWidth/ (float) bpwidth)* (float) bpheight);
+        initSatViewPos();
 
-//        addSatellite(new Satellite(1,12,12), new sat_position(mscreenW/2 - msatWidth/2, 1000, 0));
-
-        float altitude = 500;
-        addSatellite(new Satellite(1,12,12), 40, altitude-80);
-        addSatellite(new Satellite(2,12,12), 15, altitude);
-        addSatellite(new Satellite(3,12,12), 0, altitude);
-        addSatellite(new Satellite(4,12,12), -15, altitude);
-        addSatellite(new Satellite(5,12,12), -30, altitude-80);
-        addSatellite(new Satellite(6,12,12), -17, 350);
-        addSatellite(new Satellite(7,12,12), 8, 420);
-//        addSatellite(new Satellite(1,12,12), new sat_position(100,400, -25));
-//        addSatellite(new Satellite(2,12,12), new sat_position(200,350, -15));
-//        addSatellite(new Satellite(3,12,12), new sat_position(400,320, 0));
-//        addSatellite(new Satellite(3,12,12), new sat_position(600,350, 15));
-//        addSatellite(new Satellite(250,12,12), new sat_position(200,350, -15));
-//        addSatellite(new Satellite(59,12,12), new sat_position(300,400, -10));
-//        addSatellite(new Satellite(78,12,12), new sat_position(400,360, -0));
-
-//        setSatelliteSelected(12);
-//        setSatelliteSelected(78);
+//        addSatelliteAtPosition(new Satellite(1,12,12), 0);
+//        addSatellite(new Satellite(2,12,12), 15, altitude);
+//        addSatellite(new Satellite(3,12,12), 0, altitude);
+//        addSatellite(new Satellite(4,12,12), -15, altitude);
+//        addSatellite(new Satellite(5,12,12), -30, altitude-80);
+//        addSatellite(new Satellite(6,12,12), -17, 350);
+//        addSatellite(new Satellite(7,12,12), 8, 420);
+//        addSatellite(new Satellite(7,12,12), -10, altitude - 100);
+//        addSatellite(new Satellite(7,12,12), 35, altitude - 20);
+//        addSatellite(new Satellite(7,12,12), 33, altitude - 200);
+//        addSatellite(new Satellite(7,12,12), 54, altitude - 88);
+//        addSatellite(new Satellite(7,12,12), 45, altitude - 140);
+//        addSatellite(new Satellite(7,12,12), 24, altitude - 140);
 
         this.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -161,11 +158,11 @@ public class SatView extends ConstraintLayout {
         for(int i=0; i<msatList.size();i++){
             LinearLayout new_satLayout;
 
-            if(msatList.get(i).getMid() == satId) {
-                new_satLayout = createSatLayout(msatPosList.get(i), true, msatList.get(i).getMid());
+            if(msatList.get(i).getSatId() == satId) {
+                new_satLayout = createSatLayout(msatPosList.get(i), true, msatList.get(i).getSatId());
             }
             else {
-                new_satLayout = createSatLayout(msatPosList.get(i), false, msatList.get(i).getMid());
+                new_satLayout = createSatLayout(msatPosList.get(i), false, msatList.get(i).getSatId());
             }
 
             msatInfoView.SweepOut();
@@ -248,13 +245,33 @@ public class SatView extends ConstraintLayout {
         return linLayout;
     }
 
-    public LinearLayout addSatellite(final Satellite satellite, float angle, float altitude_px){
+    // TODO: delete
 
-        sat_position satPosition = new sat_position(circToCart(angle, altitude_px), angle);
+//    public LinearLayout addSatellite(final Satellite satellite, float angle, float altitude_px){
+//
+//        sat_position satPosition = new sat_position(circToCart(angle, altitude_px), angle);
+//
+//        LinearLayout satLayout = createSatLayout(satPosition, false, satellite.getMid());
+//
+//        msatList.add(satellite);
+//        msatPosList.add(satPosition);
+//        msatViewList.add(satLayout);
+//
+//        this.addView(satLayout);
+//
+//        this.invalidate();
+//
+//        return satLayout;
+//
+//    }
 
-        LinearLayout satLayout = createSatLayout(satPosition, false, satellite.getMid());
+    public LinearLayout addSatelliteAtPosition(final SatelliteParameters satellite, int position){
 
-        msatList.add(satellite);
+        sat_position satPosition = new sat_position(circToCart(predefinedSatviewAngle[position],
+                predefinedSatViewAltitude[position]), predefinedSatviewAngle[position]);
+
+        LinearLayout satLayout = createSatLayout(satPosition, false, satellite.getSatId());
+
         msatPosList.add(satPosition);
         msatViewList.add(satLayout);
 
@@ -266,20 +283,52 @@ public class SatView extends ConstraintLayout {
 
     }
 
-    public void addSatellite(Satellite satellite, sat_position satPosition){
+    public void updateSatView(List<SatelliteParameters> satellites){
 
-        LinearLayout satLayout = createSatLayout(satPosition, false, satellite.getMid());
+        msatList = satellites;
 
-        msatList.add(satellite);
-        msatPosList.add(satPosition);
-        msatViewList.add(satLayout);
+        for(int i=0; i<msatViewList.size();i++){
+            msatViewList.get(i).setClickable(false);
+            this.removeView(msatViewList.get(i));
+            this.removeAllViews();
+        }
 
-        this.addView(satLayout);
+        for(int i=0; i < Math.min(satellites.size(), predefinedSatViewAltitude.length) ;i++){
+            addSatelliteAtPosition(satellites.get(i), i);
+        }
+
         this.invalidate();
+        this.refreshDrawableState();
     }
+
+//    public void addSatellite(Satellite satellite, sat_position satPosition){
+//
+//        LinearLayout satLayout = createSatLayout(satPosition, false, satellite.getMid());
+//
+//        msatList.add(satellite);
+//        msatPosList.add(satPosition);
+//        msatViewList.add(satLayout);
+//
+//        this.addView(satLayout);
+//        this.invalidate();
+//    }
 
     public void setSatInfoView(SatelliteInfoView satInfoView){
         msatInfoView = satInfoView;
     }
 
+    private void initSatViewPos() {
+        predefinedSatviewAngle = new Float[]{40f, 15f, 0f,
+                -15f, -30f, -17f,
+                8f, -10f, 35f,
+                33f, 54f, 45f, 24f};
+
+        Float altitude = 500f;
+
+        predefinedSatViewAltitude = new Float[]{altitude - 80f,
+                altitude, altitude, altitude,
+                altitude - 80f, 350f, 420f, altitude - 20f,
+                altitude - 200f, altitude - 88f, altitude - 140f,
+                altitude - 140};
+    }
 }

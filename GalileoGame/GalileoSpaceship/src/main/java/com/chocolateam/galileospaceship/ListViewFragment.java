@@ -42,7 +42,7 @@ public class ListViewFragment extends Fragment implements Runnable {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         mView = inflater.inflate(R.layout.list_view, container, false);
 
         mrecyclerView = mView.findViewById(R.id.recycler_view);
@@ -56,7 +56,6 @@ public class ListViewFragment extends Fragment implements Runnable {
             }
         });
 
-        // Set the
         mAdapter = new SatelliteItemAdapter(msatList);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mrecyclerView.setLayoutManager(mLayoutManager);

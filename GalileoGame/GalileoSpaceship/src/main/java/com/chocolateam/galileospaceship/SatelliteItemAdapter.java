@@ -53,10 +53,8 @@ public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdap
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        System.out.println("Number of sta in the actual fucking view: " + Integer.toString(this.mSatellites.size()));
         SatelliteParameters satellite = mSatellites.get(position);
         holder.midView.setText(String.format("%05d", satellite.getSatId()));
-        System.out.println("Signal of sta in the actual fucking view: " + Integer.toString((int) (6 * Math.min(satellite.getSignalStrength()/45, 1))));
         holder.msignalView.setImageResource(getSignalBitmap((int) (6 * Math.min(satellite.getSignalStrength()/40, 1))));
         holder.mflagView.setImageResource(getFlagBitmap(satellite.getConstellationType()));
     }

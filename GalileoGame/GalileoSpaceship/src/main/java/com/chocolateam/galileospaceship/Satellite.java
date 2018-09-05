@@ -47,7 +47,7 @@ public class Satellite {
         this.mid = mid;
     }
 
-    public String getConstellationName() {
+    public String getConstellationName(int constellation) {
         switch (this.moperator) {
             case 1:
                 return "GPS";

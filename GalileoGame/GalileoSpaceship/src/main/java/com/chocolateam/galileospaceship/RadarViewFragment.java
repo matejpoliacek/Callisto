@@ -7,7 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import com.chocolateam.galileospaceship.R;
+import com.galfins.gnss_compare.Constellations.SatelliteParameters;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Lionel Garcia on 26/01/2018.
@@ -16,19 +19,18 @@ import com.chocolateam.galileospaceship.R;
 public class RadarViewFragment extends Fragment {
 
     View mView;
+    Boolean created = false;
+    RadarView mRadar;
+    MeasurementsInfo mMeasurementsInfo;
     GConstellationPanel mconstellationPannel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+                             Bundle savedInstanceState){
+
         mView = inflater.inflate(R.layout.radar_view, container, false);
-
-//        mView = getView().findViewById(R.id.main_layout);
-
         mconstellationPannel = mView.findViewById(R.id.constellation_panel);
         ImageButton constellationPannelButton = mView.findViewById(R.id.constellation_panel_button);
-
         constellationPannelButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 mconstellationPannel.deploy();
@@ -36,6 +38,29 @@ public class RadarViewFragment extends Fragment {
         });
 
         return mView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState){
+        mRadar = mView.findViewById(R.id.radarview);
+        mMeasurementsInfo = mView.findViewById(R.id.measurements);
+        created = true;
+    }
+
+    public void updateSatellites(List<SatelliteParameters> satellites){
+        mRadar.updateSatellites(satellites);
+    }
+
+    public void setSatCounts(String constellationType, int numberOfSat) {
+        mMeasurementsInfo.setSatCounts(constellationType, numberOfSat);
+    }
+
+    public void setTimeUTC(){
+        mMeasurementsInfo.setTimeUTC();
+    }
+
+    public void setclock(Date initialtime){
+        mMeasurementsInfo.setTimeClock(initialtime);
     }
 }
 

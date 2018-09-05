@@ -10,7 +10,9 @@ import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import com.chocolateam.galileospaceship.R;
+import com.galfins.gnss_compare.Constellations.SatelliteParameters;
+
+import java.util.List;
 
 /**
  * Created by Lionel Garcia on 25/01/2018.
@@ -19,28 +21,32 @@ import com.chocolateam.galileospaceship.R;
 public class SkyViewFragment extends Fragment {
 
     View mView;
+    SatView mSatView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         mView = inflater.inflate(R.layout.sky_view, container, false);
 
-//        mView = getView().findViewById(R.id.main_layout);
-
         SatelliteInfoView satinfoview = mView.findViewById(R.id.satinfoview);
-        SatView satview = mView.findViewById(R.id.satview);
+        mSatView = mView.findViewById(R.id.satview);
         ImageView clouds = mView.findViewById(R.id.clouds);
         FrameLayout earthAndSat = mView.findViewById(R.id.earth_all);
 
         Animation ViewAnimation = AnimationUtils.loadAnimation(getActivity(), R.anim.rotation_slow);
         clouds.startAnimation(ViewAnimation);
 
-//        Animation EarthPoisitionAnimation = AnimationUtils.loadAnimation(getActivity(), R.anim.earth_sat_initial_position);
-//        earthAndSat.startAnimation(EarthPoisitionAnimation);
-
-        satview.setSatInfoView(satinfoview);
+        mSatView.setSatInfoView(satinfoview);
 
         return mView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+    }
+
+    public void updateSatView(List <SatelliteParameters> satellites){
+        mSatView.updateSatView(satellites);
     }
 }

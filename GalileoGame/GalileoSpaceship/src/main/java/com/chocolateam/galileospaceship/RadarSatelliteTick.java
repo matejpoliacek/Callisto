@@ -14,10 +14,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.chocolateam.galileospaceship.R;
+import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
 /**
  * Created by lgr on 24/01/2018.
  */
+
+
 
 public class RadarSatelliteTick extends RelativeLayout {
 
@@ -50,9 +53,28 @@ public class RadarSatelliteTick extends RelativeLayout {
         this(context, null);
     }
 
-    public void setTick(Satellite satellite){
+    public void setTick(SatelliteParameters satellite){
 
-        String prefix = satellite.getConstellationName().substring(0, 2);
+        String constellation;
+
+        switch (satellite.getConstellationType()) {
+            case 1:
+                constellation = "GPS";
+            case 2:
+                constellation = "SBAS";
+            case 3:
+                constellation = "GLONASS";
+            case 4:
+                constellation = "QZSS";
+            case 5:
+                constellation = "BEIDOU";
+            case 6:
+                constellation = "GALILEO";
+            default:
+                constellation = "UNKNOWN";
+        }
+
+        String prefix = constellation.substring(0, 2);
         int tick;
         int label_color;
 
@@ -90,11 +112,9 @@ public class RadarSatelliteTick extends RelativeLayout {
 //                break;
 //        }
 
-        Log.e("operator", Integer.toString(satellite.getMoperator()));
-        setLabel(prefix+satellite.getMid(), label_color);
+        Log.e("operator", Integer.toString(satellite.getConstellationType()));
+        setLabel(prefix+satellite.getSatId(), label_color);
         setTickImage(tick);
-
-
     }
 
     public void setLabel(String label, int color){

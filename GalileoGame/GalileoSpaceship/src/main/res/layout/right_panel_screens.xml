@@ -35,13 +35,13 @@
                 android:layout_height="27dp"></View>
 
             <TextView
-                android:id="@+id/textView1"
+                android:id="@+id/timestamp"
                 android:layout_width="match_parent"
                 android:layout_height="38dp"
                 android:alpha="0.75"
                 android:fontFamily="@font/robotomono_medium"
                 android:gravity="center"
-                android:text="12/05/18  17:45"
+                android:text="00/00/00  00:00"
                 android:textColor="@color/console"
                 android:textSize="12dp" />
 
@@ -50,7 +50,7 @@
                 android:layout_height="21dp"></View>
 
             <TextView
-                android:id="@+id/textView2"
+                android:id="@+id/dop"
                 android:layout_width="match_parent"
                 android:layout_height="51dp"
                 android:alpha="0.75"
@@ -85,7 +85,7 @@
                     android:layout_height="match_parent"></View>
 
                 <TextView
-                    android:id="@+id/textView3"
+                    android:id="@+id/clock"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:alpha="0.75"
@@ -106,24 +106,24 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/textView4"
+                    android:id="@+id/ngalileo"
                     android:layout_width="24dp"
                     android:layout_height="match_parent"
                     android:alpha="0.75"
                     android:fontFamily="@font/robotomono_medium"
                     android:gravity="center"
-                    android:text="10"
+                    android:text="0"
                     android:textColor="@color/console"
                     android:textSize="10dp" />
 
                 <TextView
-                    android:id="@+id/textView5"
+                    android:id="@+id/ngps"
                     android:layout_width="29dp"
                     android:layout_height="match_parent"
                     android:alpha="0.75"
                     android:fontFamily="@font/robotomono_medium"
                     android:gravity="center"
-                    android:text="11"
+                    android:text="0"
                     android:textColor="@color/console"
                     android:textSize="10dp" />
 
@@ -134,7 +134,7 @@
                     android:alpha="0.75"
                     android:fontFamily="@font/robotomono_medium"
                     android:gravity="center"
-                    android:text="2"
+                    android:text="0"
                     android:textColor="@color/console"
                     android:textSize="10dp" />
 
@@ -145,7 +145,7 @@
                     android:alpha="0.75"
                     android:fontFamily="@font/robotomono_medium"
                     android:gravity="center"
-                    android:text="5"
+                    android:text="0"
                     android:textColor="@color/console"
                     android:textSize="10dp" />
 
@@ -156,7 +156,7 @@
                     android:alpha="0.75"
                     android:fontFamily="@font/robotomono_medium"
                     android:gravity="center"
-                    android:text="5"
+                    android:text="0"
                     android:textColor="@color/console"
                     android:textSize="10dp" />
             </LinearLayout>

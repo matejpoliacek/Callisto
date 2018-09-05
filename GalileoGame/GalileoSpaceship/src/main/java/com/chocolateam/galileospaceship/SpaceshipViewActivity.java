@@ -21,7 +21,9 @@ import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 import com.galfins.gnss_compare.StartGNSSFragment;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -35,8 +37,7 @@ public class SpaceshipViewActivity extends AppCompatActivity {
     static final int NUM_PANELS = 3;
     SpacecraftPagerAdapter mAdapter;
     ViewPager mPager;
-
-    private Thread listThread;
+    Date mInitialTime;
 
     static ListViewFragment mListViewFragment;
     static SkyViewFragment mSkyViewFragment;
@@ -49,7 +50,6 @@ public class SpaceshipViewActivity extends AppCompatActivity {
 
             final String calcName = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getName();
             final String currentConstellation = mListViewFragment.getSelectedConstellation();
-            System.out.println("blah blah" + currentConstellation);
 
             System.out.println("Observer tick: " + ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
             System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude());
@@ -57,10 +57,6 @@ public class SpaceshipViewActivity extends AppCompatActivity {
             System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getUsedConstellationSize());
 
             System.out.println(calcName);
-            //TODO: get location
-            //TODO: update map
-
-            //TODO: would it be better to put this in the subclasses, or at least inherit from a generic observer
 
             runOnUiThread(new Runnable() {
 
@@ -68,6 +64,7 @@ public class SpaceshipViewActivity extends AppCompatActivity {
                 public void run() {
 
                     List<SatelliteParameters> satellites;
+                    int numberOfSat;
 
                     switch (currentConstellation + " " + calcName){
                         case "GPS GPS":
@@ -88,10 +85,26 @@ public class SpaceshipViewActivity extends AppCompatActivity {
                             setLatLongIndicator(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude(),
                                     ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
                             setAltitudeIndicator(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticHeight());
+                            mSkyViewFragment.updateSatView(satellites);
+                            if (mRadarViewFragment.created){
+                                mRadarViewFragment.updateSatellites(satellites);
+                            }
+                    }
+
+                    if (mRadarViewFragment.created) {
+                        mRadarViewFragment.setTimeUTC();
+                        mRadarViewFragment.setclock(mInitialTime);
+                        switch (calcName) {
+                            case "GPS":
+                                numberOfSat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getUsedConstellationSize();
+                                mRadarViewFragment.setSatCounts(calcName, numberOfSat);
+                            case "Galileo":
+                                numberOfSat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getUsedConstellationSize();
+                                mRadarViewFragment.setSatCounts(calcName, numberOfSat);
+                        }
                     }
                 }
             });
-
         }
     };
 
@@ -106,17 +119,13 @@ public class SpaceshipViewActivity extends AppCompatActivity {
         mSkyViewFragment = new SkyViewFragment();
         mRadarViewFragment = new RadarViewFragment();
 
-        // Put fragment on thread and run it
-        //listThread = new Thread(mListViewFragment);
-        //listThread.start();
+        mInitialTime = Calendar.getInstance().getTime();
 
         mAdapter = new SpacecraftPagerAdapter(getSupportFragmentManager());
 
         mPager = findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
-//        mPager.setOffscreenPageLimit(2);
 
-//        mPager.setCurrentItem(1);
 
         StartGNSSFragment.gnssInit.addObservers(shipUpdater);
     }
@@ -175,7 +184,4 @@ public class SpaceshipViewActivity extends AppCompatActivity {
         mListViewFragment.setAltitude(altitude);
     }
 
-        // Right pannel - mRadarViewFragment
-
-    // TO DO
 }
