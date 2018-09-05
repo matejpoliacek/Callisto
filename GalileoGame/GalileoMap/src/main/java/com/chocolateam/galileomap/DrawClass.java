@@ -31,12 +31,12 @@ public class DrawClass {
 
     private final int HOLO_BLUE_FILL = Color.argb(0, 51, 181, 229);
     private final int HOLO_BLUE_STROKE = Color.argb(150, 255, 255, 255);
-    private final int RED_FILL = Color.argb(0, 255, 255, 255);
+    private final int RED_FILL = Color.argb(0, 255, 0, 0);
     private final int RED_STROKE = Color.argb(0, 255, 0, 0);
     private final int GREEN_FILL = Color.argb(0, 0, 255, 0);
     private final int GREEN_STROKE = Color.argb(0, 0, 255, 0);
-    private final int WHITE_FILL = Color.argb(125, 255, 255, 255);
-    private final int WHITE_STROKE = Color.argb(175, 255, 255, 255);
+    private final int WHITE_FILL = Color.argb(20, 0, 255, 0);
+    private final int WHITE_STROKE = Color.argb(0, 255, 255, 255);
 
     // one "box" of playing field in metres
     private final double FIELD_SIZE = 10;
@@ -62,8 +62,8 @@ public class DrawClass {
         // Points must be in order
         options.add(upLeft, upRight, downRight, downLeft);
 
-        options.fillColor(HOLO_BLUE_FILL);
-        options.strokeColor(HOLO_BLUE_STROKE);
+        options.fillColor(WHITE_FILL);
+        options.strokeColor(WHITE_STROKE);
         options.strokeWidth(10);
 
         return options;
