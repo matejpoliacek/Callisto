@@ -63,40 +63,6 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <CheckBox
-            android:id="@+id/checkBoxGAL"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:checked="false"
-            android:minResizeHeight="30dp"
-            android:text="Galileo"
-            android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@+id/checkBoxGPS"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <CheckBox
-            android:id="@+id/checkBoxGPS"
-            style="@android:style/Widget.CompoundButton.CheckBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="16dp"
-            android:checked="false"
-            android:duplicateParentState="false"
-            android:minResizeHeight="30dp"
-            android:text="GPS"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
     </LinearLayout>
 
     <com.chocolateam.galileomap.GamePanel
@@ -141,6 +107,16 @@
             app:layout_constraintStart_toStartOf="parent" />
 
     </com.chocolateam.galileomap.GamePanel>
+
+    <com.chocolateam.galileomap.MapPanel
+        android:id="@+id/map_bottom_panel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="0dp"
+        android:translationY="2dp"
+        android:visibility="gone"></com.chocolateam.galileomap.MapPanel>
 
     <ImageButton
         android:id="@+id/menuButton"

@@ -20,6 +20,8 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
     private CheckBox checkBoxGPS;
     private CheckBox checkBoxGAL;
 
+    private MapPanel mapBottomPanel;
+
     private Marker mGPSMarker;
     private Marker mGALMarker;
 
@@ -28,8 +30,11 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
         // run the rest of the onCreate method from superclass
         super.onCreate(savedInstanceState);
 
-       checkBoxGPS = findViewById(R.id.checkBoxGPS);
-       checkBoxGAL = findViewById(R.id.checkBoxGAL);
+        mapBottomPanel = findViewById(R.id.map_bottom_panel);
+        mapBottomPanel.setVisibility(View.VISIBLE);
+
+//       checkBoxGPS = mapBottomPanel.getCheckBoxGPS();
+//       checkBoxGAL = mapBottomPanel.getCheckBoxGAL();
 
         /** Location Manager **/
         mLocationListenerGPS = new LocationListener() {
@@ -87,8 +92,6 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
             }
         };
-
-
 
         checkboxLayout = findViewById(R.id.checkboxLayout);
         checkboxLayout.setVisibility(View.VISIBLE);
