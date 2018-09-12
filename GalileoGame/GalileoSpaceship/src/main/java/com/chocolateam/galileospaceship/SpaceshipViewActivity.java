@@ -39,6 +39,8 @@ public class SpaceshipViewActivity extends AppCompatActivity {
     ViewPager mPager;
     Date mInitialTime;
 
+    private Thread listThread;
+
     static ListViewFragment mListViewFragment;
     static SkyViewFragment mSkyViewFragment;
     static RadarViewFragment mRadarViewFragment;
@@ -183,5 +185,4 @@ public class SpaceshipViewActivity extends AppCompatActivity {
         // Set Altitude indicator (third screen on the Left Spaceship view)
         mListViewFragment.setAltitude(altitude);
     }
-
 }

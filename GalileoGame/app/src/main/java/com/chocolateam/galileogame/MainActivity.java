@@ -3,13 +3,19 @@ package com.chocolateam.galileogame;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -51,6 +57,15 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         findViewById(R.id.spaceshipButton).setAlpha(0.6f);
         findViewById(R.id.MapButton).setEnabled(false);
         findViewById(R.id.MapButton).setAlpha(0.6f);
+
+
+        checkLocationAndMobileDataEnabled();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        startedFragment = new StartGNSSFragment();
+        fragmentTransaction.add(android.R.id.content, startedFragment).commit();
+
     }
 
     @Override
@@ -71,18 +86,26 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
     public void goToGame(View view) {
         Intent intent = new Intent(this, com.chocolateam.galileomap.MapWithGameActivity.class);
         intent.putExtra("location_permit", mLocationPermissionGranted);
-        startActivity(intent);
+        if (checkLocationAndMobileDataEnabled()) {
+            startActivity(intent);
+        }
     }
 
     public void goToMap(View view) {
         Intent intent = new Intent(this, com.chocolateam.galileomap.MapsOnlyActivity.class);
         intent.putExtra("location_permit", mLocationPermissionGranted);
-        startActivity(intent);
+        if (checkLocationAndMobileDataEnabled()){
+            startActivity(intent);
+        }
     }
 
     public void goToSpaceship(View view) {
         Intent intent = new Intent(this, com.chocolateam.galileospaceship.SpaceshipViewActivity.class);
-        startActivity(intent);
+
+        if (checkLocationAndMobileDataEnabled()) {
+            startActivity(intent);
+        }
+
     }
 
     /**
@@ -94,6 +117,9 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
 
     public void goToDesc(View view) {
         Intent intent = new Intent(this, DescriptionActivity.class);
+
+        checkLocationAndMobileDataEnabled();
+
         startActivity(intent);
     }
 
@@ -126,6 +152,58 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         findViewById(R.id.spaceshipButton).setAlpha(1.0f);
         findViewById(R.id.MapButton).setEnabled(true);
         findViewById(R.id.MapButton).setAlpha(1.0f);
+    }
+
+
+    /**
+     * Checks if Mobile data and Location Services are enabled and displays an Alert dialog box
+     * warning the user that they are required.
+     */
+    public boolean checkLocationAndMobileDataEnabled() {
+        final Context context = getApplicationContext();
+        LocationManager lm = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
+        ConnectivityManager cm =
+                (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+        boolean mobileDataEnabled = false;
+        NetworkInfo activeNetwork = null;
+
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {}
+
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch(Exception ex) {}
+        try {
+            activeNetwork = cm.getActiveNetworkInfo();
+        } catch(Exception ex) {}
+
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        if (isConnected) {
+            mobileDataEnabled = activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
+        }
+
+        if(!(gps_enabled && network_enabled && mobileDataEnabled)) {
+            // notify user
+            Log.e("CHECK 1", "Services not enabled ");
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setMessage(context.getResources().getString(R.string.services_not_enabled));
+            dialog.setNeutralButton(context.getString(R.string.Ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    // do Nothing
+                }
+            });
+            dialog.show();
+            return false;
+        }
+        else {
+            Log.e("CHECK 2", "All services enabled ");
+            return true;
+        }
     }
 }
 

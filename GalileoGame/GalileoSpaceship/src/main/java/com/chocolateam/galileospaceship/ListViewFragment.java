@@ -96,5 +96,4 @@ public class ListViewFragment extends Fragment implements Runnable {
     public String getSelectedConstellation(){
         return mconstellationPannel.getActive();
     }
-
 }

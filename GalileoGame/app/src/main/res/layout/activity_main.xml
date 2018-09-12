@@ -68,6 +68,7 @@
 
     <Button
         android:id="@+id/button2"
+        android:onClick="goToDesc"
         android:layout_width="49dp"
         android:layout_height="wrap_content"
         android:text="?"

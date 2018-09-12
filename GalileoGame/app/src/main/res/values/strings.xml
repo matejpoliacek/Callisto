@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">Callisto</string>
+    <string name="gps_network_not_enabled"> The app requires Location services to run. Would you like to enable them now?</string>
+    <string name="open_location_settings">Yes</string>
+    <string name="Cancel">No, stay in the menu.</string>
+    <string name="mobile_data_not_enabled">The app requires Mobile Data to run. Would you like to enable them now?</string>
+    <string name="open_mobile_data_settings">Yes</string>
+    <string name="Ok">Ok</string>
+    <string name="services_not_enabled">The app requires both Mobile Data and Location Services enabled.\n\nPlease enable them before continuing.</string>
+    <string name="about_text">
+        Powered by <a href="https://play.google.com/store/apps/details?id=com.galfins.gnss_compare">GNSS Compare</a>\n\n
+
+        Created with support from the European Space Agency (ESA) as part of the ESA Galileo App Competition. \n\n
+
+        Made by The ChocolaTeam[logo]:\n\n
+
+        Lionel Garcia\n\nCedric Ia\n\nMatej Poliaček\n\nEmilie Udnaes\n\nPeter Vaník\n\n
+
+        Released open source under the [Apache v 2.0 license].\n\n
+
+        [Facebook icon link to page] [Github icon link to code]
+    </string>
 </resources>
