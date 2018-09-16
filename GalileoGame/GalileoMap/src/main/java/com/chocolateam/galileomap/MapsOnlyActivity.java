@@ -31,34 +31,43 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
     LatLng GPSpoint = null;
     LatLng GalileoPoint = null;
+    LatLng GalGPSPoint = null;
 
     private Marker mGPSMarker;
     private Marker mGALMarker;
+    private Marker mGALGPSMarker;
 
     public Observer mapMarkerUpdater = new Observer() {
         @Override
         public void update(Observable o, Object arg) {
-            Log.e("OBSERVER", "-- observer tick");
-            System.out.println("Observer tick: " + ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
-            System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude());
-            System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
+            Log.e("MAP - OBSERVER", "-- observer tick");
+            Log.e("Observer tick: " , ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
 
-            ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().toString();
+            double lat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude();
+            double lng = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude();
+
+            String constName = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName();
+            Log.e("MAP-CONST", constName);
+
+            if (constName.equals("GPS")) {
+                GPSpoint = new LatLng(lat, lng);
+            } else if (constName.equals("Galileo")) {
+                GalileoPoint = new LatLng(lat, lng);
+            } else if (constName.equals("Galileo + GPS")) {
+                GalGPSPoint = new LatLng(lat, lng);
+            }
 
             //TODO: get location
             //TODO: update map
 
             // SET MAP LOCATION, markers and default
             if (checkBoxGPS.isChecked()){
-                // TODO
-                LatLng point = null; // new LatLng(PvtFragment.getUserLatitudeDegreesGPS(), PvtFragment.getUserLongitudeDegreesGPS());
-                LatLng GPSpoint = null;
                 if (mGPSMarker == null) {
-                    mGPSMarker = mMap.addMarker(new MarkerOptions().position(point));
+                    mGPSMarker = mMap.addMarker(new MarkerOptions().position(GPSpoint));
                     mGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                 } else {
                     mGPSMarker.remove();
-                    mGPSMarker = mMap.addMarker(new MarkerOptions().position(point));
+                    mGPSMarker = mMap.addMarker(new MarkerOptions().position(GPSpoint));
                     mGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                 }
             } else if (!checkBoxGPS.isChecked() && mGPSMarker != null) {
@@ -66,15 +75,12 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
             }
 
             if (checkBoxGAL.isChecked()){
-                //TODO
-                LatLng point = null; // new LatLng(PvtFragment.getUserLatitudeDegreesGalileo(),PvtFragment.getUserLongitudeDegreesGalileo());
-
                 if (mGALMarker == null) {
-                    mGALMarker = mMap.addMarker(new MarkerOptions().position(point));
+                    mGALMarker = mMap.addMarker(new MarkerOptions().position(GalileoPoint));
                     mGALMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
                 } else {
                     mGALMarker.remove();
-                    mGALMarker = mMap.addMarker(new MarkerOptions().position(point));
+                    mGALMarker = mMap.addMarker(new MarkerOptions().position(GalileoPoint));
                     mGALMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
                 }
             } else if (!checkBoxGAL.isChecked() && mGALMarker != null) {
@@ -82,8 +88,20 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
             }
 
 
-            //TODO: would it be better to put this in the subclasses, or at least inherit from a generic observer
-        }
+            if (checkBoxGAL.isChecked() && checkBoxGPS.isChecked()){
+                if (mGALGPSMarker == null) {
+                    mGALGPSMarker = mMap.addMarker(new MarkerOptions().position(GalGPSPoint));
+                    mGALGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
+                } else {
+                    mGALGPSMarker.remove();
+                    mGALGPSMarker= mMap.addMarker(new MarkerOptions().position(GalGPSPoint));
+                    mGALGPSMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
+                }
+            } else if ((!checkBoxGAL.isChecked() || !checkBoxGPS.isChecked())&& mGALGPSMarker != null) {
+                mGALGPSMarker.remove();
+            }
+
+            }
     };
 
     @Override
