@@ -58,6 +58,7 @@ public class SpaceshipViewActivity extends AppCompatActivity {
             System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
             System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getUsedConstellationSize());
 
+
             System.out.println(calcName);
 
             runOnUiThread(new Runnable() {
@@ -75,12 +76,16 @@ public class SpaceshipViewActivity extends AppCompatActivity {
                             setLatLongIndicator(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude(),
                                                 ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
                             setAltitudeIndicator(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticHeight());
+
+                            Log.e("SATPOS gps", String.valueOf(satellites.size()));
                         case "Galileo Galileo":
                             satellites = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getSatellites();
                             setSatellitesList(satellites);
                             setLatLongIndicator(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude(),
                                     ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
                             setAltitudeIndicator(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticHeight());
+
+                            Log.e("SATPOS galileo",  String.valueOf(satellites.size()));
                         case "Galileo+GPS Galileo+GPS":
                             satellites = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getSatellites();
                             setSatellitesList(satellites);
@@ -91,7 +96,18 @@ public class SpaceshipViewActivity extends AppCompatActivity {
                             if (mRadarViewFragment.created){
                                 mRadarViewFragment.updateSatellites(satellites);
                             }
+
+                            Log.e("SATPOS galgps",  String.valueOf(satellites.size()));
+
+                            /**
+                            if (satellites.size() > 0) {
+                                Log.e("SATPOS - pos lat", String.valueOf(satellites.get(0).getSatellitePosition().getGeodeticLatitude()));
+                                Log.e("SATPOS - pos long", String.valueOf(satellites.get(0).getSatellitePosition().getGeodeticLongitude()));
+                            } **/
                     }
+
+
+
 
                     if (mRadarViewFragment.created) {
                         mRadarViewFragment.setTimeUTC();
@@ -105,6 +121,17 @@ public class SpaceshipViewActivity extends AppCompatActivity {
                                 mRadarViewFragment.setSatCounts(calcName, numberOfSat);
                         }
                     }
+
+
+                    if (mListViewFragment != null) {
+                        double lat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude();
+                        double lng = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude();
+                        double alt = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticHeight();
+
+                        mListViewFragment.setLatLong(lat, lng);
+                        mListViewFragment.setAltitude(alt);
+                    }
+
                 }
             });
         }

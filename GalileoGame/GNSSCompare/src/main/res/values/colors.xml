@@ -8,5 +8,5 @@
     <color name="galileoBlue">#3F51B5</color>
     <color name="gpsGrey">#607D8B</color>
     <color name="unknownSatelliteRed">#b71c1c</color>
-    <color name="ap_light_gray">#BDBDBD</color>
+    <color name="ap_light_gray">#bdbdbd</color>
 </resources>

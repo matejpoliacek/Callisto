@@ -38,6 +38,7 @@ public class ListViewFragment extends Fragment implements Runnable {
     private List<SatelliteParameters> msatList = new ArrayList<>();
     private SatelliteItemAdapter mAdapter;
     private LocInfo mLocationInfo;
+    public boolean created = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -62,6 +63,8 @@ public class ListViewFragment extends Fragment implements Runnable {
         mrecyclerView.setItemAnimator(new DefaultItemAnimator());
         mrecyclerView.setAdapter(mAdapter);
 
+        created = true;
+
         return mView;
     }
 
@@ -77,7 +80,7 @@ public class ListViewFragment extends Fragment implements Runnable {
     public void setSatellites(List<SatelliteParameters> satellitesList){
         msatList = satellitesList;
         mAdapter.setSatelliteList(satellitesList);
-        System.out.println("Number of sta in the actual fucking view: " + Integer.toString(msatList.size()));
+        System.out.println("Number of sta in the actual view: " + Integer.toString(msatList.size()));
         mAdapter.notifyDataSetChanged();
     }
 

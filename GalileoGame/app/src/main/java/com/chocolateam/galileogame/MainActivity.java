@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         findViewById(R.id.MapButton).setEnabled(false);
         findViewById(R.id.MapButton).setAlpha(0.6f);
 
-
         checkLocationAndMobileDataEnabled();
     }
 
@@ -147,6 +146,8 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         findViewById(R.id.spaceshipButton).setAlpha(1.0f);
         findViewById(R.id.MapButton).setEnabled(true);
         findViewById(R.id.MapButton).setAlpha(1.0f);
+
+        findViewById(R.id.warningText).setVisibility(View.GONE);
     }
 
 
@@ -184,6 +185,9 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         if(!(gps_enabled && network_enabled && mobileDataEnabled)) {
             // notify user
             Log.e("CHECK 1", "Services not enabled ");
+            Log.e("Location:", String.valueOf(gps_enabled));
+            Log.e("Network:", String.valueOf(network_enabled));
+            Log.e("Data:", String.valueOf(mobileDataEnabled));
             AlertDialog.Builder dialog = new AlertDialog.Builder(this);
             dialog.setMessage(context.getResources().getString(R.string.services_not_enabled));
             dialog.setNeutralButton(context.getString(R.string.Ok), new DialogInterface.OnClickListener() {
