@@ -44,6 +44,9 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.Observable;
+import java.util.Observer;
+
 public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
     private ImageButton zoomButton;
@@ -89,6 +92,13 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
     // selected constellation switch
     private String constellation = "ALL";
+
+    public Observer mapGameUpdater = new Observer() {
+        @Override
+        public void update(Observable o, Object arg) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

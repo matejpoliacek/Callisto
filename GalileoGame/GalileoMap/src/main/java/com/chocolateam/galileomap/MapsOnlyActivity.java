@@ -1,6 +1,7 @@
 package com.chocolateam.galileomap;
 
 
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
@@ -39,28 +40,39 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
     public Observer mapMarkerUpdater = new Observer() {
         @Override
-        public void update(Observable o, Object arg) {
+        public void update(final Observable o, Object arg) {
             Log.e("MAP - OBSERVER", "-- observer tick");
             Log.e("Observer tick: " , ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
 
-            double lat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude();
-            double lng = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude();
+            final double lat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude();
+            final double lng = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude();
 
-            String constName = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName();
+            final String constName = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName();
             Log.e("MAP-CONST", constName);
 
             if (constName.equals("GPS")) {
                 GPSpoint = new LatLng(lat, lng);
+                Log.e("MAP-GPSPoint", GPSpoint.toString());
             } else if (constName.equals("Galileo")) {
                 GalileoPoint = new LatLng(lat, lng);
+                Log.e("MAP-GALPoint", GalileoPoint.toString());
             } else if (constName.equals("Galileo + GPS")) {
                 GalGPSPoint = new LatLng(lat, lng);
+                Log.e("MAP-GALGPSPoint", GalGPSPoint.toString());
             }
-
-            //TODO: get location
-            //TODO: update map
-
+            /**
             // SET MAP LOCATION, markers and default
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mGPSMarker = processMarker(checkBoxGPS.isChecked(), mGPSMarker, GPSpoint, BitmapDescriptorFactory.HUE_RED);
+                    mGALMarker = processMarker(checkBoxGAL.isChecked(), mGALMarker, GalileoPoint, BitmapDescriptorFactory.HUE_BLUE);
+                    mGALGPSMarker = processMarker(checkBoxGPS.isChecked(), checkBoxGAL.isChecked(), mGALGPSMarker, GalGPSPoint, BitmapDescriptorFactory.HUE_VIOLET);
+                }
+            });
+            **/
+
+            // replaced by nicer methods -->
             if (checkBoxGPS.isChecked()){
                 if (mGPSMarker == null) {
                     mGPSMarker = mMap.addMarker(new MarkerOptions().position(GPSpoint));
@@ -100,14 +112,16 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
             } else if ((!checkBoxGAL.isChecked() || !checkBoxGPS.isChecked())&& mGALGPSMarker != null) {
                 mGALGPSMarker.remove();
             }
-
-            }
+        }
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // run the rest of the onCreate method from superclass
         super.onCreate(savedInstanceState);
+
+        checkBoxGPS = findViewById(R.id.checkBoxGPS);
+        checkBoxGAL = findViewById(R.id.checkBoxGAL);
 
         mapBottomPanel = findViewById(R.id.map_bottom_panel);
         mapBottomPanel.setVisibility(View.VISIBLE);
@@ -180,5 +194,51 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
     public void backToMenu(View view) {
         finish();
+    }
+
+    /**
+     * Method to add the marker to the map based on both checkboxes
+     *
+     * @param checkbox1Bool boolean value of the first checkbox coming from checkBox.isChecked()
+     * @param checkbox2Bool boolean value of the second checkbox coming from checkBox.isChecked()
+     * @param marker        marker object to be added to the map
+     * @param point         location at which the marker should be added
+     * @param colour        colour of the added marker
+     */
+
+    private Marker processMarker(boolean checkbox1Bool, boolean checkbox2Bool, Marker marker, LatLng point, float colour) {
+        if (checkbox1Bool && checkbox2Bool){
+            if (marker == null) {
+                marker = mMap.addMarker(new MarkerOptions().position(point));
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(colour));
+                Log.e("MAP-MARKER", "First marker");
+                return marker;
+            } else {
+                marker.remove();
+                marker = mMap.addMarker(new MarkerOptions().position(point));
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(colour));
+                Log.e("MAP-MARKER", "New marker");
+                return marker;
+            }
+        } else if ((!checkbox1Bool || !checkbox2Bool)&& marker != null) {
+            marker.remove();
+            Log.e("MAP-MARKER", "Remove marker");
+            return null;
+        } else { // never here
+            Log.e("MAP-MARKER", "Marker error");
+            return null;
+        }
+    }
+
+    /**
+     * * Method to add the marker to the map based on one of the checkboxes
+     *
+     * @param checkbox1Bool boolean value of the checkbox coming from checkBox.isChecked()
+     * @param marker        marker object to be added to the map
+     * @param point         location at which the marker should be added
+     * @param colour        colour of the added marker
+     */
+    private Marker processMarker(boolean checkbox1Bool, Marker marker, LatLng point, float colour) {
+        return processMarker(checkbox1Bool, true, marker, point, colour);
     }
 }

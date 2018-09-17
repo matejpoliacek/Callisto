@@ -81,7 +81,7 @@
         android:layout_height="39dp"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:text="Ensure your location and Internet connection are switched on"
+        android:text="Initialising PVT engine - Ensure your location and Internet connection are switched on"
         android:textAlignment="center"
         android:textColor="@color/ap_light_gray"
         app:layout_constraintBottom_toTopOf="@+id/spaceshipButton"

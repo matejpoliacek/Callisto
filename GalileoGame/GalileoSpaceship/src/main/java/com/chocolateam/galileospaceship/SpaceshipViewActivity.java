@@ -53,10 +53,8 @@ public class SpaceshipViewActivity extends AppCompatActivity {
             final String calcName = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getName();
             final String currentConstellation = mListViewFragment.getSelectedConstellation();
 
-            System.out.println("Observer tick: " + ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
-            System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude());
-            System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
-            System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getUsedConstellationSize());
+            Log.e("SPACESHIP - ConstSize", String.valueOf(((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getUsedConstellationSize()));
+            Log.e("SPACESHIP - ConstName", String.valueOf(((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName()));
 
 
             System.out.println(calcName);
