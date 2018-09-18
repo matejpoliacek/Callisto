@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -21,9 +25,6 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-
-import com.galfins.gnss_compare.CalculationModule;
-import com.galfins.gnss_compare.StartGNSSFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -32,17 +33,17 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-
-
-
-import java.util.Observable;
-import java.util.Observer;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -77,21 +78,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationManager locationManager;
     protected LocationListener mLocationListenerGPS;
     private boolean LocationManagerSuccess = false;
-
-    public Observer mapUpdater = new Observer() {
-        @Override
-        public void update(Observable o, Object arg) {
-            Log.e("OBSERVER", "-- observer tick");
-            System.out.println("Observer tick: " + ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
-            System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude());
-            System.out.println(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
-            //TODO: get location
-            //TODO: update map
-
-            //TODO: would it be better to put this in the subclasses, or at least inherit from a generic observer
-
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,10 +127,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         setLocationSettings();
-
-        //TODO: add observer
-        StartGNSSFragment.gnssInit.addObservers(mapUpdater);
-
     }
 
     private void setLocationSettings() {
@@ -183,7 +165,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        System.out.println("MAP: visited parent onMapReady");
+        Log.e("MAP-super:", "visited parent onMapReady");
         // Use a custom info window adapter to handle multiple lines of text in the
         // info window contents.
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
@@ -221,6 +203,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
+
+        /** Disable marker clicking **/
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                return true;
+            }
+        });
+
+        /** remove my location button **/
+        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+
     }
 
 
@@ -417,4 +411,49 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             System.out.println("Location available");
         }
     }
+
+    /**
+     * Method to add the marker to the map based on both checkboxes
+     *
+     * @param checkbox1Bool     boolean value of the first checkbox coming from checkBox.isChecked()
+     * @param checkbox2Bool     boolean value of the second checkbox coming from checkBox.isChecked()
+     * @param marker            marker object to be added to the map
+     * @param point             location at which the marker should be added
+     * @param markerResource      colour to be used by the marker
+     */
+
+    protected Marker processMarker(boolean checkbox1Bool, boolean checkbox2Bool, Marker marker, LatLng point, int markerResource) {
+        if (checkbox1Bool && checkbox2Bool){
+            if (marker == null) {
+                Log.e("MAP-MARKER", "First marker");
+            } else {
+                marker.remove();
+                Log.e("MAP-MARKER", "New marker");
+            }
+            marker = mMap.addMarker(new MarkerOptions().position(point));
+            marker.setIcon(BitmapDescriptorFactory.fromResource(markerResource));
+          //  marker.setDraggable(false);
+            return marker;
+        } else if ((!checkbox1Bool || !checkbox2Bool)&& marker != null) {
+            marker.remove();
+            Log.e("MAP-MARKER", "Remove marker");
+            return null;
+        } else { // never here
+            Log.e("MAP-MARKER", "Marker error");
+            return null;
+        }
+    }
+
+    /**
+     * * Method to add the marker to the map based on one of the checkboxes
+     *
+     * @param checkbox1Bool     boolean value of the checkbox coming from checkBox.isChecked()
+     * @param marker            marker object to be added to the map
+     * @param point             location at which the marker should be added
+     * @param markerResource    icon to be used by the marker
+     */
+    protected Marker processMarker(boolean checkbox1Bool, Marker marker, LatLng point, int markerResource) {
+        return processMarker(checkbox1Bool, true, marker, point, markerResource);
+    }
+
 }

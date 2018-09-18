@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -42,6 +43,8 @@ public class TutorialView extends LinearLayout {
     public TutorialView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        Log.e("TUTORIAL", "TutorialView constructed");
+
         mContext = context;
 
         mbitmap_on = BitmapFactory.decodeResource(getResources(), R.drawable.game_tutorial_1);
@@ -63,14 +66,6 @@ public class TutorialView extends LinearLayout {
         tutorialLayout = mView.findViewById(R.id.tutorial_layout);
 
         constellationButton = mView.findViewById(R.id.constellationButton);
-
-        constellationButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                constellationSelection.setVisibility(View.GONE);
-                tutorialLayout.setVisibility(VISIBLE);
-                SetState(true);
-            }
-        });
 
         tutorialLayout.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
@@ -138,15 +133,24 @@ public class TutorialView extends LinearLayout {
     }
 
     public String getConst() {
+        Log.e("TUTORIAL-VIEW", "Entered getConst");
         String constellation = "";
         if (gpsButton.isEnabled()) {
             constellation = "GPS";
         } else if (galButton.isEnabled()) {
             constellation = "Galileo";
         } else if (allButton.isEnabled()) {
-            constellation = "ALL";
+            constellation = "Galileo + GPS";
         }
 
+        Log.e("TUTORIAL-VIEW", "Leaving getConst, result: " + constellation);
+
         return constellation;
+    }
+
+    public void hideConstSelect() {
+        constellationSelection.setVisibility(View.GONE);
+        tutorialLayout.setVisibility(VISIBLE);
+        SetState(true);
     }
 }

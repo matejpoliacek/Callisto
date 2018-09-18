@@ -1,39 +1,28 @@
 package com.chocolateam.galileomap;
 
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import com.galfins.gnss_compare.CalculationModule;
+import com.galfins.gnss_compare.StartGNSSFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -41,8 +30,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -91,12 +78,62 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     private boolean bGraphicsDebug = false;
 
     // selected constellation switch
-    private String constellation = "ALL";
+    private String constellation = "none";
+
+    private Marker playerMarker;
+    private Button GameButton;
 
     public Observer mapGameUpdater = new Observer() {
         @Override
-        public void update(Observable o, Object arg) {
+        public void update(final Observable o, Object arg) {
+            Log.e("GAME - OBSERVER", "-- observer tick");
+            Log.e("Observer tick: " , ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
 
+            String obsConstellation = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName();
+
+            Log.e("GAME-CONST", obsConstellation);
+            Log.e("GAME-CONST-SELECTED", constellation);
+
+            if (obsConstellation.equals(constellation)) {
+                final double lat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude();
+                final double lng = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude();
+
+                mLastKnownLocation.setLatitude(lat);
+                mLastKnownLocation.setLongitude(lng);
+                Log.e("GAME-LOCATION", "Location set");
+                int markerStyle = 0;
+
+                // change dot to correspond to the user choice of constellation
+                switch (constellation){
+                    case "GPS":
+                        markerStyle = R.drawable.gps_marker;
+                        break;
+                    case "Galileo":
+                        markerStyle = R.drawable.gal_marker;
+                        break;
+                    case "Galileo + GPS":
+                        markerStyle = R.drawable.galgps_marker;
+                        break;
+                }
+
+                // finalise marker style for UI thread
+                final int finalMarkerStyle = markerStyle;
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        processMarker(true, playerMarker, new LatLng(lat, lng), finalMarkerStyle);
+                        Log.e("GAME-MARKER", "Marker placed");
+                        if (!GameButton.isEnabled()) {
+                            GameButton.setText("GOT IT! PLAY!");
+                            GameButton.setEnabled(true);
+                            GameButton.setBackgroundColor(getResources().getColor(R.color.buttonGreen));
+                            Log.e("GAME-BUTTON", "Button re-enabled");
+                        }
+                        Log.e("GAME-UITHREAD", "Thread finished");
+                    }
+                });
+            }
         }
     };
 
@@ -106,6 +143,8 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         super.onCreate(savedInstanceState);
 
         /** Location Manager **/
+        // TODO: obsolete, replaced by observer
+        /**
         mLocationListenerGPS = new LocationListener() {
             @Override
             public void onLocationChanged(android.location.Location location) {
@@ -155,6 +194,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
             }
         };
+        **/
 
         /** Sensor setup for compass map-turning support **/
         sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -208,6 +248,16 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
         bDebugButton.setVisibility(View.GONE);
         bDebugGraphicsButton.setVisibility(View.GONE);
+
+        StartGNSSFragment.gnssInit.addObservers(mapGameUpdater);
+
+        /** Disable "Got it!" button until we have first fix **/
+        GameButton = findViewById(R.id.GameButton);
+        GameButton.setText("Initialising");
+        GameButton.setEnabled(false);
+        GameButton.setBackgroundColor(getResources().getColor(R.color.gpsGrey));
+
+        constellation = "GPS";
     }
 
     @Override
@@ -215,6 +265,19 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         mMap = googleMap;
         super.onMapReady(mMap);
         mMap.setOnMapClickListener(this);
+
+        /** Remove blue dot location marker (with adequate permission check **/
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        googleMap.setMyLocationEnabled(false);
     }
 
     /**********************/
@@ -271,11 +334,16 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     }
 
     public void startGameViaButton(View view) {
-
-        constellation = tutorialView.getConst();
         tutorialView.setVisibility(View.GONE);
 
         startGame();
+    }
+
+    public void selectConst(View view) {
+       Log.e("GAME-BTN-CONST", "Done button clicked");
+       constellation = tutorialView.getConst();
+       Log.e("GAME-BTN-CONST", "Selected constellation: " + constellation);
+       tutorialView.hideConstSelect();
     }
 
     public void startGame() {
@@ -283,7 +351,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         if (playing == true) {
             stopGame(true);
         } else {
-            Toast.makeText(getApplicationContext(), "Select 2 points to mark playing area", Toast.LENGTH_LONG).show();
+        //  Toast.makeText(getApplicationContext(), "Select 2 points to mark playing area", Toast.LENGTH_LONG).show();
             gameSetup = true;
             firstPoint = true;
             point1 = null;

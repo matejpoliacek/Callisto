@@ -1,9 +1,6 @@
 package com.chocolateam.galileomap;
 
 
-import android.graphics.Color;
-import android.location.Location;
-import android.location.LocationListener;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,11 +10,9 @@ import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.StartGNSSFragment;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -58,15 +53,15 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
                     if (constName.equals("GPS")) {
                         GPSpoint = new LatLng(lat, lng);
                         Log.e("MAP-GPSPoint", GPSpoint.toString());
-                        mGPSMarker = processMarker(checkBoxGPS.isChecked(), mGPSMarker, GPSpoint, BitmapDescriptorFactory.HUE_GREEN);
+                        mGPSMarker = processMarker(checkBoxGPS.isChecked(), mGPSMarker, GPSpoint, R.drawable.gps_marker);
                     } else if (constName.equals("Galileo")) {
                         GalileoPoint = new LatLng(lat, lng);
                         Log.e("MAP-GALPoint", GalileoPoint.toString());
-                        mGALMarker = processMarker(checkBoxGAL.isChecked(), mGALMarker, GalileoPoint, BitmapDescriptorFactory.HUE_ORANGE);
+                        mGALMarker = processMarker(checkBoxGAL.isChecked(), mGALMarker, GalileoPoint, R.drawable.gal_marker);
                     } else if (constName.equals("Galileo + GPS")) {
                         GalGPSPoint = new LatLng(lat, lng);
                         Log.e("MAP-GALGPSPoint", GalGPSPoint.toString());
-                        mGALGPSMarker = processMarker(checkBoxGPS.isChecked(), checkBoxGAL.isChecked(), mGALGPSMarker, GalGPSPoint, BitmapDescriptorFactory.HUE_CYAN);
+                        mGALGPSMarker = processMarker(checkBoxGPS.isChecked(), checkBoxGAL.isChecked(), mGALGPSMarker, GalGPSPoint, R.drawable.galgps_marker);
                     }
                 }
             });
@@ -83,60 +78,32 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
         mapBottomPanel = findViewById(R.id.map_bottom_panel);
         mapBottomPanel.setVisibility(View.VISIBLE);
-        
+
         checkboxLayout = findViewById(R.id.checkboxLayout);
         checkboxLayout.setVisibility(View.VISIBLE);
 
         StartGNSSFragment.gnssInit.addObservers(mapMarkerUpdater);
     }
 
-    public void backToMenu(View view) {
+    @Override
+    protected void onPause() {
+        super.onPause();
         finish();
     }
 
-    /**
-     * Method to add the marker to the map based on both checkboxes
-     *
-     * @param checkbox1Bool boolean value of the first checkbox coming from checkBox.isChecked()
-     * @param checkbox2Bool boolean value of the second checkbox coming from checkBox.isChecked()
-     * @param marker        marker object to be added to the map
-     * @param point         location at which the marker should be added
-     * @param colour        colour of the added marker
-     */
-
-    private Marker processMarker(boolean checkbox1Bool, boolean checkbox2Bool, Marker marker, LatLng point, float colour) {
-        if (checkbox1Bool && checkbox2Bool){
-            if (marker == null) {
-                marker = mMap.addMarker(new MarkerOptions().position(point));
-                marker.setIcon(BitmapDescriptorFactory.defaultMarker(colour));
-                Log.e("MAP-MARKER", "First marker");
-                return marker;
-            } else {
-                marker.remove();
-                marker = mMap.addMarker(new MarkerOptions().position(point));
-                marker.setIcon(BitmapDescriptorFactory.defaultMarker(colour));
-                Log.e("MAP-MARKER", "New marker");
-                return marker;
-            }
-        } else if ((!checkbox1Bool || !checkbox2Bool)&& marker != null) {
-            marker.remove();
-            Log.e("MAP-MARKER", "Remove marker");
-            return null;
-        } else { // never here
-            Log.e("MAP-MARKER", "Marker error");
-            return null;
-        }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        finish();
     }
 
-    /**
-     * * Method to add the marker to the map based on one of the checkboxes
-     *
-     * @param checkbox1Bool boolean value of the checkbox coming from checkBox.isChecked()
-     * @param marker        marker object to be added to the map
-     * @param point         location at which the marker should be added
-     * @param colour        colour of the added marker
-     */
-    private Marker processMarker(boolean checkbox1Bool, Marker marker, LatLng point, float colour) {
-        return processMarker(checkbox1Bool, true, marker, point, colour);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finish();
+    }
+
+    public void backToMenu(View view) {
+        finish();
     }
 }
