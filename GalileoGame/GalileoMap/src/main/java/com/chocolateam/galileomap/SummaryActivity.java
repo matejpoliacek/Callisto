@@ -21,7 +21,7 @@ public class SummaryActivity extends MapsActivity {
         if (won) {
             message.setText("Victory!");
             scoreView.setVisibility(View.VISIBLE);
-            scoreView.setText(getIntent().getExtras().getInt("score"));
+            scoreView.setText(String.valueOf(getIntent().getExtras().getInt("score")));
         } else {
             message.setText("Game Over!");
             scoreView.setVisibility(View.INVISIBLE);

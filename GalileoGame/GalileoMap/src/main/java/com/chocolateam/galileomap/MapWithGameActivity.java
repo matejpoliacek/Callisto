@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.StartGNSSFragment;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -62,6 +63,8 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     private boolean firstPoint = true;
     private LatLng point1 = null;
     private LatLng point2 = null;
+    private Marker pt1Marker;
+    private Marker pt2Marker;
 
     private GraphicalPolygon gp;
 
@@ -83,6 +86,8 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     private Marker playerMarker;
     private Button GameButton;
 
+    protected Location mGameLocation = mLastKnownLocation;
+
     public Observer mapGameUpdater = new Observer() {
         @Override
         public void update(final Observable o, Object arg) {
@@ -94,26 +99,48 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
             Log.e("GAME-CONST", obsConstellation);
             Log.e("GAME-CONST-SELECTED", constellation);
 
+            if (mGameLocation == null) {
+                mGameLocation = mLastKnownLocation;
+            }
+
             if (obsConstellation.equals(constellation)) {
                 final double lat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude();
                 final double lng = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude();
 
-                mLastKnownLocation.setLatitude(lat);
-                mLastKnownLocation.setLongitude(lng);
+                Log.e("GAME-CONST-COMPARE", String.valueOf(lat));
+                Log.e("GAME-CONST-COMPARE", String.valueOf(lng));
+
+                mGameLocation.setLatitude(lat);
+                mGameLocation.setLongitude(lng);
                 Log.e("GAME-LOCATION", "Location set");
+
                 int markerStyle = 0;
 
                 // change dot to correspond to the user choice of constellation
-                switch (constellation){
-                    case "GPS":
-                        markerStyle = R.drawable.gps_marker;
-                        break;
-                    case "Galileo":
-                        markerStyle = R.drawable.gal_marker;
-                        break;
-                    case "Galileo + GPS":
-                        markerStyle = R.drawable.galgps_marker;
-                        break;
+                if (constellation.equals("GPS")) {
+                    markerStyle = R.drawable.gps_marker;
+                } else if (constellation.equals("Galileo")) {
+                    markerStyle = R.drawable.gal_marker;
+                } else if (constellation.equals("Galileo + GPS")) {
+                    markerStyle = R.drawable.galgps_marker;
+                }
+
+                if (playing && game != null) {
+                    game.setPlayerLocation(mGameLocation);
+
+                    /** TODO: Figure out map animation to follow the player
+                    mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(lat,lng)), 2000, new GoogleMap.CancelableCallback() {
+                        @Override
+                        public void onFinish() {
+
+                        }
+
+                        @Override
+                        public void onCancel() {
+
+                        }
+                    });
+                     **/
                 }
 
                 // finalise marker style for UI thread
@@ -122,7 +149,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        processMarker(true, playerMarker, new LatLng(lat, lng), finalMarkerStyle);
+                        playerMarker = processMarker(true, playerMarker, new LatLng(lat, lng), finalMarkerStyle);
                         Log.e("GAME-MARKER", "Marker placed");
                         if (!GameButton.isEnabled()) {
                             GameButton.setText("GOT IT! PLAY!");
@@ -196,6 +223,11 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         };
         **/
 
+        if (playerMarker != null) {
+            playerMarker.remove();
+        }
+        mGameLocation = mLastKnownLocation;
+
         /** Sensor setup for compass map-turning support **/
         sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
         // TODO: is there a better way?
@@ -256,8 +288,6 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         GameButton.setText("Initialising");
         GameButton.setEnabled(false);
         GameButton.setBackgroundColor(getResources().getColor(R.color.gpsGrey));
-
-        constellation = "GPS";
     }
 
     @Override
@@ -306,12 +336,21 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         if (gameSetup) {
             if (firstPoint) {
                 point1 = lastClickedLocation;
+                pt1Marker = mMap.addMarker(new MarkerOptions().position(point));
+                pt1Marker.setIcon(BitmapDescriptorFactory.defaultMarker());
                 firstPoint = false;
             } else {
                 point2 = lastClickedLocation;
+                pt2Marker = mMap.addMarker(new MarkerOptions().position(point));
+                pt2Marker.setIcon(BitmapDescriptorFactory.defaultMarker());
                 // TODO: gameInit prepares the entire playing field even if the game turns out to be invalid
                 // TODO: we should then check before initialising - address when optimising
                 gameInit();
+
+                // remove markers indicating playing area
+                pt1Marker.remove();
+                pt2Marker.remove();
+
                 if (game.isLocationValid() && game.isSizeValid()) {
                     playing();
                 } else {
@@ -325,7 +364,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
             } else {
                 mMarker.setPosition(point);
             }
-            Location newLoc = mLastKnownLocation;
+            Location newLoc = mGameLocation;
             newLoc.setLatitude(point.latitude);
             newLoc.setLongitude(point.longitude);
             game.setPlayerLocation(newLoc);
@@ -367,7 +406,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         gameSetup = false;
 
         // zoom onto the player
-        priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
+        priorityCameraZoom(mMap, new LatLng(mGameLocation.getLatitude(),mGameLocation.getLongitude()), GAME_ZOOM_IN);
 
         //show score
 //        scoreText.setVisibility(View.VISIBLE);
@@ -380,7 +419,8 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         zoomed = true;
 
         // disable map scrolling/zooming
-        mMap.getUiSettings().setScrollGesturesEnabled(false);
+        // TODO: scrolling temporarily enabled until map animation is implemented properly
+        //mMap.getUiSettings().setScrollGesturesEnabled(false);
         mMap.getUiSettings().setZoomGesturesEnabled(false);
         mMap.getUiSettings().setRotateGesturesEnabled(false);
 
@@ -406,7 +446,8 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 //        zoomButton.setEnabled(false);
 
         // enable map scrolling/zooming
-        mMap.getUiSettings().setScrollGesturesEnabled(true);
+        // TODO: scrolling temporarily enabled until map animation is implemented properly
+        //mMap.getUiSettings().setScrollGesturesEnabled(true);
         mMap.getUiSettings().setZoomGesturesEnabled(true);
         mMap.getUiSettings().setRotateGesturesEnabled(true);
 
@@ -445,14 +486,14 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
         game.setContext(MapWithGameActivity.this);
         game.setAreaPoints(point1, point2);
-        game.setPlayerLocation(mLastKnownLocation);
+        game.setPlayerLocation(mGameLocation);
 
         int obstacleRows = draw.getRows();
         int obstacleCols = draw.getCols();
         int[][] playFieldArray = game.fieldTypeGenerator(obstacleRows, obstacleCols);
 
         if (playFieldArray != null) { // playfieldarray will be null if size is too small
-            PolygonOptions[][] obstacleOptions = draw.drawObstacles(playFieldArray, mLastKnownLocation);
+            PolygonOptions[][] obstacleOptions = draw.drawObstacles(playFieldArray, mGameLocation);
             gp = new GraphicalPolygon(obstacleOptions, playFieldArray);
             //gameMapObjects = new Polygon[obstacleRows][obstacleCols];
             gp.populateMap(mMap);
@@ -511,11 +552,11 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     public void toggleZoom(View view) {
         if (zoomed) {
 //            zoomButton.setText("Zoom In");
-            priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_OUT);
+            priorityCameraZoom(mMap, new LatLng(mGameLocation.getLatitude(),mGameLocation.getLongitude()), GAME_ZOOM_OUT);
             zoomed = false;
         } else {
 //            zoomButton.setText("Zoom Out");
-            priorityCameraZoom(mMap, new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()), GAME_ZOOM_IN);
+            priorityCameraZoom(mMap, new LatLng(mGameLocation.getLatitude(),mGameLocation.getLongitude()), GAME_ZOOM_IN);
             zoomed = true;
         }
     }
@@ -563,7 +604,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
             fakeLocation.setLongitude(4.421139);
             fakeLocation.setSpeed(0);
 
-            mLastKnownLocation = fakeLocation;
+            mGameLocation = fakeLocation;
 
             gameInit();
             Log.e("Size valid", String.valueOf(game.isSizeValid()));

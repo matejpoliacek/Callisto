@@ -90,6 +90,11 @@ public class SpaceshipViewActivity extends AppCompatActivity {
                             setLatLongIndicator(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude(),
                                     ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
                             setAltitudeIndicator(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticHeight());
+
+                            if (satellites.size() >= 1) {
+                                Log.e("GALGPS-SPACESHIP", satellites.get(0).getSatellitePosition().toString());
+                            }
+
                             mSkyViewFragment.updateSatView(satellites);
                             if (mRadarViewFragment.created){
                                 mRadarViewFragment.updateSatellites(satellites);

@@ -317,7 +317,16 @@ public class GalileoConstellation extends Constellation {
                         0.0,
                         initialLocation);
 
+                Log.e("GALILEO-CONST", "RNP is not null");
+                Log.e("", "timeRx" + timeRx);
+                Log.e("", "timeRx" + observedSatellite.getPseudorange());
+                Log.e("", "timeRx" + observedSatellite.getSatId());
+
                 if (rnp == null) {
+                    Log.e("GALILEO-CONST", "RNP is null");
+                    Log.e("", "timeRx" + timeRx);
+                    Log.e("", "timeRx" + observedSatellite.getPseudorange());
+                    Log.e("", "timeRx" + observedSatellite.getSatId());
                     break;
                 }
 

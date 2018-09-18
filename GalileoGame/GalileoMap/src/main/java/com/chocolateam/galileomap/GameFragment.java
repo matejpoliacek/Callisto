@@ -318,6 +318,7 @@ public class GameFragment extends Fragment implements Runnable {
                     ((MapWithGameActivity) context).stopGame(true);
                 }
             });
+            ((MapWithGameActivity) context).finish();
         }
     }
 
