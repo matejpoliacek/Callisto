@@ -33,6 +33,8 @@ public class GameFragment extends Fragment implements Runnable {
     private Context context;
     private FragmentActivity parentActivity;
 
+    private String constellation = "";
+
     // game boundaries
     /**
     private LatLng upLeft;
@@ -291,6 +293,7 @@ public class GameFragment extends Fragment implements Runnable {
                     }
                 });
                 // check if the game is lost
+                /** TODO: DISABLED FOR NOW, RE-ENABLE ONCE REDESIGNED
                 if (scoreObj.getTimeSecs() <= 0) {
                     playing = false;
                     won = false;
@@ -299,6 +302,7 @@ public class GameFragment extends Fragment implements Runnable {
                 } else { // if not, apply time penalty
                     scoreObj.applyTimePenalty();
                 }
+                 **/
             }
 
         } catch (InterruptedException e) {
@@ -308,6 +312,7 @@ public class GameFragment extends Fragment implements Runnable {
                 Intent scoreIntent = new Intent(context, SummaryActivity.class);
                 scoreIntent.putExtra("won", won);
                 scoreIntent.putExtra("score", scoreObj.getTimeSecs());
+                scoreIntent.putExtra("constellation", constellation);
                 startActivity(scoreIntent);
             }
 
@@ -343,4 +348,6 @@ public class GameFragment extends Fragment implements Runnable {
     public void setContext(Context context) {
         this.context = context;
     }
+
+    public void setConstellation(String constellation) {this.constellation = constellation;}
 }

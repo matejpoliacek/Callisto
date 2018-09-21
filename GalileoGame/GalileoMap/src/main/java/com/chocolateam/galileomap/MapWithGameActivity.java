@@ -487,6 +487,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         game.setContext(MapWithGameActivity.this);
         game.setAreaPoints(point1, point2);
         game.setPlayerLocation(mGameLocation);
+        game.setConstellation(constellation);
 
         int obstacleRows = draw.getRows();
         int obstacleCols = draw.getCols();
