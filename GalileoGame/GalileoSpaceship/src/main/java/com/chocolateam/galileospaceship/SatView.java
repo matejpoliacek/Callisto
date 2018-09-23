@@ -160,6 +160,7 @@ public class SatView extends ConstraintLayout {
 
             if(msatList.get(i).getSatId() == satId) {
                 new_satLayout = createSatLayout(msatPosList.get(i), true, msatList.get(i).getSatId());
+                msatInfoView.setSat(msatList.get(i));
             }
             else {
                 new_satLayout = createSatLayout(msatPosList.get(i), false, msatList.get(i).getSatId());
