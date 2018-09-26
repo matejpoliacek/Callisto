@@ -135,11 +135,11 @@ public class TutorialView extends LinearLayout {
     public String getConst() {
         Log.e("TUTORIAL-VIEW", "Entered getConst");
         String constellation = "";
-        if (gpsButton.isEnabled()) {
+        if (gpsButton.isChecked()) {
             constellation = "GPS";
-        } else if (galButton.isEnabled()) {
+        } else if (galButton.isChecked()) {
             constellation = "Galileo";
-        } else if (allButton.isEnabled()) {
+        } else if (allButton.isChecked()) {
             constellation = "Galileo + GPS";
         }
 

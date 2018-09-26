@@ -303,6 +303,9 @@ public class GameFragment extends Fragment implements Runnable {
                     scoreObj.applyTimePenalty();
                 }
                  **/
+                // TODO: instead just increment time
+                scoreObj.incrementTime();
+
             }
 
         } catch (InterruptedException e) {

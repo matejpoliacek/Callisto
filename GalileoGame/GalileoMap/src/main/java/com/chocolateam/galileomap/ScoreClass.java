@@ -6,9 +6,9 @@ package com.chocolateam.galileomap;
 
 public class ScoreClass {
 
-    private int timeSecs;
-    private int points;
-    private int initialSecs;
+    private int timeSecs = 0;
+    private int points = 0;
+    private int initialSecs = 0;
     private long lastTime = System.currentTimeMillis();
 
 
@@ -17,7 +17,7 @@ public class ScoreClass {
     private final int COLLECT_TIME_BONUS = 15;
     private final int OBSTALCE_PENALTY_TICK = 10;
     private final int TIME_PENALTY_TICK = 5;
-    private final int INIT_MULTIPLIER = 20;
+    private final int INIT_MULTIPLIER = 0; // set to 0 as currenty we count up instead of down
 
 
     public ScoreClass(int initial) {
@@ -45,13 +45,14 @@ public class ScoreClass {
     }
 
     public void increaseScore() {
-        this.timeSecs += COLLECT_TIME_BONUS;
+       // this.timeSecs += COLLECT_TIME_BONUS;
         this.points += COLLECT_SCORE;
     }
 
     private int secsPassed() {
         int secsPassed = (int)((System.currentTimeMillis() - this.lastTime) / 1000.0);
-        System.out.print("Time: " + secsPassed);
+        System.out.print("Time tick: " + secsPassed);
+        System.out.print("Time total: " + timeSecs);
 
         if (secsPassed > 0) {
             // if one second has passed, set new last time
@@ -61,11 +62,15 @@ public class ScoreClass {
         return secsPassed;
     }
 
+    public void incrementTime() {
+        timeSecs += secsPassed();
+    }
+
     public int getTimeSecs() {
         return timeSecs;
     }
 
-    public String getTimeFormatted() { return (String.valueOf(timeSecs/60) + ":" + String.valueOf(timeSecs%60));}
+    public String getTimeFormatted() { return (String.format("%02d:%02d",timeSecs/60, timeSecs%60));}
 
     public int getPoints(){ return points; }
 }
