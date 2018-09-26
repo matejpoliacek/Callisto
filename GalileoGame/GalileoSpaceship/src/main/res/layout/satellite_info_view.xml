@@ -92,7 +92,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/availability_header"
+                    android:id="@+id/signal_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -103,12 +103,12 @@
                     android:shadowDx="0"
                     android:shadowDy="0"
                     android:shadowRadius="30"
-                    android:text="AVAILABILITY"
+                    android:text="SIGNAL"
                     android:textColor="@color/hologram_blue"
                     android:textSize="10dp" />
 
                 <TextView
-                    android:id="@+id/availability"
+                    android:id="@+id/signal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -121,7 +121,7 @@
                     android:shadowRadius="30"
                     android:text="80%"
                     android:textColor="@color/hologram_blue"
-                    android:textSize="30dp" />
+                    android:textSize="27dp" />
             </LinearLayout>
 
             <View
