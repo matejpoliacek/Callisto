@@ -16,6 +16,7 @@ public class SummaryActivity extends MapsActivity {
 
         TextView resultView = (TextView) findViewById(R.id.resultView);
         TextView scoreView = (TextView) findViewById(R.id.scoreView);
+        TextView timeView = (TextView) findViewById(R.id.timeView);
         TextView constView = (TextView) findViewById(R.id.constText);
 
 
@@ -24,7 +25,9 @@ public class SummaryActivity extends MapsActivity {
             resultView.setText("Victory!");
             scoreView.setVisibility(View.VISIBLE);
             scoreView.setText(String.valueOf(getIntent().getExtras().getInt("score")));
-            constView.setText(getIntent().getExtras().getString("const"));
+            timeView.setText(String.valueOf(getIntent().getExtras().getString("time")));
+            constView.setText(getIntent().getExtras().getString("constellation"));
+
         } else {
             resultView.setText("Game Over!");
             scoreView.setVisibility(View.INVISIBLE);

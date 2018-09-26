@@ -311,7 +311,8 @@ public class GameFragment extends Fragment implements Runnable {
             if (finished) {
                 Intent scoreIntent = new Intent(context, SummaryActivity.class);
                 scoreIntent.putExtra("won", won);
-                scoreIntent.putExtra("score", scoreObj.getTimeSecs());
+                scoreIntent.putExtra("score", scoreObj.getPoints());
+                scoreIntent.putExtra("time", scoreObj.getTimeFormatted());
                 scoreIntent.putExtra("constellation", constellation);
                 startActivity(scoreIntent);
             }

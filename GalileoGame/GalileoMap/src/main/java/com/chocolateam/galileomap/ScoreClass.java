@@ -16,7 +16,7 @@ public class ScoreClass {
     private final int COLLECT_SCORE = 100;
     private final int COLLECT_TIME_BONUS = 15;
     private final int OBSTALCE_PENALTY_TICK = 10;
-    private final int TIME_PENALTY_TICK = 1;
+    private final int TIME_PENALTY_TICK = 5;
     private final int INIT_MULTIPLIER = 20;
 
 
@@ -40,7 +40,7 @@ public class ScoreClass {
         int secDelta = secsPassed();
 
         if (secDelta > 0) {
-            this.timeSecs -= PENALTY * secDelta;
+            this.timeSecs += PENALTY * secDelta;
         }
     }
 
@@ -65,7 +65,7 @@ public class ScoreClass {
         return timeSecs;
     }
 
-    public int getPoints(){
-        return points;
-    }
+    public String getTimeFormatted() { return (String.valueOf(timeSecs/60) + ":" + String.valueOf(timeSecs%60));}
+
+    public int getPoints(){ return points; }
 }

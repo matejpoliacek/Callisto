@@ -52,6 +52,9 @@ public class SatelliteInfoView extends LinearLayout{
                 mView.setVisibility(INVISIBLE);
             }
         });
+
+        mView.clearAnimation();
+        mView.setVisibility(INVISIBLE);
     }
 
     public SatelliteInfoView(Context context) {
