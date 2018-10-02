@@ -237,7 +237,7 @@ public class RinexNavigationGalileo implements NavigationProducer {
                         try {
                             try {
                                 rnp = getFromSUPL(url, initialLocation);
-                            } catch (IndexOutOfBoundsException e){
+                            } catch (IndexOutOfBoundsException | UnsupportedOperationException e){
 //                                try {
 //                                    MainActivity.makeNotification("SUPL client exception...");
 //                                } catch (Exception e1){

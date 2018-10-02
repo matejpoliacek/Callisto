@@ -81,7 +81,12 @@ public class SpaceshipViewActivity extends AppCompatActivity {
                                 Log.e("SATPOS galileo", String.valueOf(satellites.size()));
                             case "Galileo+GPS Galileo+GPS":
                                 if (satellites.size() >= 1) {
-                                    Log.e("GALGPS-SPACESHIP", satellites.get(0).getSatellitePosition().toString());
+                                    if (satellites.get(0).getSatellitePosition() != null){
+                                        Log.e("GALGPS-SPACESHIP", satellites.get(0).getSatellitePosition().toString());
+                                    }
+                                    else {
+                                        Log.e("GALGPS-SPACESHIP", "Satellite positions are null");
+                                    }
                                 }
 
                                 mSkyViewFragment.updateSatView(satellites);
