@@ -9,31 +9,30 @@
 
     <Button
         android:id="@+id/GameButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        app:layout_constraintWidth_percent="0.53"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.06"
 
+        android:layout_marginBottom="8dp"
         android:layout_marginTop="520dp"
-
-        android:width="220dp"
-        android:height="50dp"
         android:background="@color/buttonGreen"
         android:fontFamily="@font/notes_esa_reg"
         android:onClick="goToGame"
         android:text="Game"
         android:textColor="@color/buttonGreenDark"
         android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/spaceshipButton"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/MapButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginBottom="72dp"
         android:layout_marginTop="8dp"
-        android:width="220dp"
-        android:height="50dp"
         android:background="@color/buttonGreen"
         android:fontFamily="@font/notes_esa_reg"
         android:onClick="goToMap"
@@ -41,19 +40,22 @@
         android:textColor="@color/buttonGreenDark"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHeight_percent="0.06"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spaceshipButton" />
+        app:layout_constraintTop_toBottomOf="@+id/spaceshipButton"
+        app:layout_constraintWidth_percent="0.53" />
 
     <Button
         android:id="@+id/spaceshipButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+
+        android:layout_width="0dp"
+        app:layout_constraintWidth_percent="0.53"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.06"
+
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:width="220dp"
-        android:height="50dp"
         android:background="@color/buttonGreen"
         android:fontFamily="@font/notes_esa_reg"
         android:onClick="goToSpaceship"
@@ -68,28 +70,34 @@
 
     <Button
         android:id="@+id/button2"
+        app:layout_constraintHeight_percent="0.05"
+        android:layout_height="0dp"
+        app:layout_constraintWidth_percent="0.10"
+        android:layout_width="0dp"
+        android:layout_marginStart="7dp"
+        android:layout_marginTop="7dp"
         android:onClick="goToDesc"
-        android:layout_width="49dp"
-        android:layout_height="wrap_content"
         android:text="?"
-        tools:layout_editor_absoluteX="7dp"
-        tools:layout_editor_absoluteY="7dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/warningText"
-        android:layout_width="341dp"
-        android:layout_height="39dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
+
         android:text="Initialising PVT engine - Ensure your location and Internet connection are switched on"
         android:textAlignment="center"
         android:textColor="@color/ap_light_gray"
         app:layout_constraintBottom_toTopOf="@+id/spaceshipButton"
-        app:layout_constraintHorizontal_bias="0.511"
+        app:layout_constraintHeight_percent="0.1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.714" /><![CDATA[
+        app:layout_constraintVertical_bias="0.714"
+        app:layout_constraintWidth_percent="0.85" /><![CDATA[
 
 
         app:layout_constraintBottom_toTopOf="@+id/MapButton"
