@@ -18,8 +18,8 @@
         android:layout_height="match_parent"
         android:scaleType="fitXY"
         android:src="@drawable/left_panel"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintVertical_bias="0.978"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintVertical_bias="0.0"
         custom:layout_constraintBottom_toBottomOf="parent"
         custom:layout_constraintEnd_toEndOf="parent"
         custom:layout_constraintStart_toStartOf="parent"
@@ -29,31 +29,14 @@
         android:id="@+id/constellation_panel_button"
         android:layout_width="wrap_content"
         android:layout_height="28dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="8dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:adjustViewBounds="true"
         android:background="#00000000"
         android:scaleType="fitCenter"
         android:src="@drawable/constellation_button_selector"
-        app:layout_constraintBottom_toTopOf="@+id/location_info"
-        app:layout_constraintTop_toTopOf="@+id/constellation_panel"
-        app:layout_constraintVertical_bias="0.548"
-        custom:layout_constraintStart_toStartOf="parent" />
-
-    <com.chocolateam.galileospaceship.LocInfo
-        android:id="@+id/location_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        android:layout_marginTop="148dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-    </com.chocolateam.galileospaceship.LocInfo>
+        app:layout_constraintStart_toStartOf="@+id/guideline_cbutton_left"
+        app:layout_constraintTop_toTopOf="@+id/guideline_cbutton_top" />
 
     <com.chocolateam.galileospaceship.GStickSwitch
         android:id="@+id/GStickSwitch4"
@@ -79,24 +62,79 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="104dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="12dp"
         android:src="@drawable/satellite_list_screen"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/location_info" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
-        android:layout_width="320dp"
-        android:layout_height="153dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="64dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="60dp"
         android:scrollbars="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.285"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/left_cabin"
+        app:layout_constraintEnd_toEndOf="@+id/imageView"
+        app:layout_constraintStart_toStartOf="@+id/imageView"
         app:layout_constraintTop_toTopOf="@+id/imageView">
 
     </android.support.v7.widget.RecyclerView>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_cbutton_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.06" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_cbutton_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.08" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_locinfo_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.15" />
+
+    <com.chocolateam.galileospaceship.LocInfo
+        android:id="@+id/location_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_locinfo_bottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline_locinfo_top">
+
+    </com.chocolateam.galileospaceship.LocInfo>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_locinfo_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.44" />
 
     <ImageView
         android:id="@+id/left_cabin_light"
@@ -106,7 +144,6 @@
         android:layout_marginTop="8dp"
         android:scaleType="fitXY"
         android:src="@drawable/left_cabin_light"
-        app:layout_constraintHorizontal_bias="0.263"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"
         custom:layout_constraintBottom_toBottomOf="parent"
@@ -117,7 +154,13 @@
         android:id="@+id/constellation_panel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+
+    </com.chocolateam.galileospaceship.GConstellationPanel>
 
 </android.support.constraint.ConstraintLayout>
