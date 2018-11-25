@@ -4,18 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.chocolateam.galileogame.MainActivity"
-    android:background="@drawable/menu_background">
+    android:background="@drawable/menu_background"
+    tools:context="com.chocolateam.galileogame.MainActivity">
 
     <Button
         android:id="@+id/GameButton"
         android:layout_width="0dp"
-        app:layout_constraintWidth_percent="0.53"
-        android:layout_height="0dp"
-        app:layout_constraintHeight_percent="0.06"
-
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="520dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:background="@color/buttonGreen"
         android:fontFamily="@font/notes_esa_reg"
         android:onClick="goToGame"
@@ -23,26 +21,31 @@
         android:textColor="@color/buttonGreenDark"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/spaceshipButton"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline_right"
+        app:layout_constraintHeight_percent="0.06"
+        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintStart_toStartOf="@+id/guideline_left"
+        app:layout_constraintTop_toTopOf="@+id/guideline_buttons_top"
+        app:layout_constraintVertical_chainStyle="spread"
+        app:layout_constraintWidth_percent="0.53" />
 
     <Button
         android:id="@+id/MapButton"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="72dp"
-        android:layout_marginTop="8dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:background="@color/buttonGreen"
         android:fontFamily="@font/notes_esa_reg"
         android:onClick="goToMap"
         android:text="Map"
         android:textColor="@color/buttonGreenDark"
         android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_buttons_bottom"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_right"
         app:layout_constraintHeight_percent="0.06"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_left"
         app:layout_constraintTop_toBottomOf="@+id/spaceshipButton"
         app:layout_constraintWidth_percent="0.53" />
 
@@ -50,12 +53,9 @@
         android:id="@+id/spaceshipButton"
 
         android:layout_width="0dp"
-        app:layout_constraintWidth_percent="0.53"
-        android:layout_height="0dp"
-        app:layout_constraintHeight_percent="0.06"
-
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:background="@color/buttonGreen"
         android:fontFamily="@font/notes_esa_reg"
         android:onClick="goToSpaceship"
@@ -63,48 +63,81 @@
         android:textColor="@color/buttonGreenDark"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/MapButton"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_right"
+        app:layout_constraintHeight_percent="0.06"
+        app:layout_constraintStart_toStartOf="@+id/guideline_left"
         app:layout_constraintTop_toBottomOf="@+id/GameButton"
-        app:layout_constraintVertical_bias="0.466" />
+        app:layout_constraintWidth_percent="0.53" />
 
     <Button
         android:id="@+id/button2"
-        app:layout_constraintHeight_percent="0.05"
-        android:layout_height="0dp"
-        app:layout_constraintWidth_percent="0.10"
         android:layout_width="0dp"
-        android:layout_marginStart="7dp"
-        android:layout_marginTop="7dp"
+        android:layout_height="0dp"
         android:onClick="goToDesc"
         android:text="?"
+        app:layout_constraintHeight_percent="0.06"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.10" />
 
     <TextView
         android:id="@+id/warningText"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
-
         android:text="Initialising PVT engine - Ensure your location and Internet connection are switched on"
         android:textAlignment="center"
         android:textColor="@color/ap_light_gray"
-        app:layout_constraintBottom_toTopOf="@+id/spaceshipButton"
-        app:layout_constraintHeight_percent="0.1"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.714"
-        app:layout_constraintWidth_percent="0.85" /><![CDATA[
+        app:layout_constraintBottom_toTopOf="@+id/guideline_buttons_top"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_right"
+        app:layout_constraintHorizontal_bias="0.458"
+        app:layout_constraintStart_toStartOf="@+id/guideline_left"
+        app:layout_constraintTop_toTopOf="@+id/guideline_text_top"
+        app:layout_constraintVertical_bias="0.535" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_buttons_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.57" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.1" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.9" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_text_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.46" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_buttons_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.9" /><![CDATA[
 
 
         app:layout_constraintBottom_toTopOf="@+id/MapButton"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/GameButton" />
-
 
 ]]>
 </android.support.constraint.ConstraintLayout>
