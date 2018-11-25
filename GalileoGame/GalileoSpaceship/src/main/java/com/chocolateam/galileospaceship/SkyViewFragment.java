@@ -1,5 +1,6 @@
 package com.chocolateam.galileospaceship;
 
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -32,7 +33,7 @@ public class SkyViewFragment extends Fragment {
         SatelliteInfoView satinfoview = mView.findViewById(R.id.satinfoview);
         mSatView = mView.findViewById(R.id.satview);
         ImageView clouds = mView.findViewById(R.id.clouds);
-        FrameLayout earthAndSat = mView.findViewById(R.id.earth_all);
+        ConstraintLayout earthAndSat = mView.findViewById(R.id.earth_all);
 
         Animation ViewAnimation = AnimationUtils.loadAnimation(getActivity(), R.anim.rotation_slow);
         clouds.startAnimation(ViewAnimation);
