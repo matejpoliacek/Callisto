@@ -82,18 +82,15 @@
 
     <TextView
         android:id="@+id/warningText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginBottom="8dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
         android:text="Initialising PVT engine - Ensure your location and Internet connection are switched on"
         android:textAlignment="center"
         android:textColor="@color/ap_light_gray"
         app:layout_constraintBottom_toTopOf="@+id/guideline_buttons_top"
         app:layout_constraintEnd_toStartOf="@+id/guideline_right"
-        app:layout_constraintHorizontal_bias="0.458"
         app:layout_constraintStart_toStartOf="@+id/guideline_left"
         app:layout_constraintTop_toTopOf="@+id/guideline_text_top"
         app:layout_constraintVertical_bias="0.535" />
