@@ -26,6 +26,11 @@ import android.view.WindowManager;
 import com.galfins.gnss_compare.GNSSCompareInitFragment;
 import com.galfins.gnss_compare.StartGNSSFragment;
 
+import java.lang.reflect.Method;
+
+import static android.net.ConnectivityManager.TYPE_MOBILE;
+import static android.net.ConnectivityManager.TYPE_WIFI;
+
 public class MainActivity extends AppCompatActivity implements GNSSCompareInitFragment.OnFinishedListener{
 
     private boolean mLocationPermissionGranted = false;
@@ -179,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
 
         boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
         if (isConnected) {
-            mobileDataEnabled = activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
+            mobileDataEnabled = isMobileDataEnabled(context);
         }
 
         if(!(gps_enabled && network_enabled && mobileDataEnabled)) {
@@ -204,5 +209,21 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
             return true;
         }
     }
+
+    public boolean isMobileDataEnabled(Context context) {
+        boolean mobileDataEnabled = false; // Assume disabled
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        try {
+            Class cmClass = Class.forName(cm.getClass().getName());
+            Method method = cmClass.getDeclaredMethod("getMobileDataEnabled");
+            method.setAccessible(true); // Make the method callable
+            // get the setting for "mobile data"
+            mobileDataEnabled = (Boolean)method.invoke(cm);
+        } catch (Exception e) {
+            Log.e("EXCEPTION ", "Mobile data checking error");
+        }
+        return mobileDataEnabled;
+    }
+
 }
 
