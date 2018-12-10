@@ -20,6 +20,13 @@ public class DescriptionActivity extends AppCompatActivity {
         aboutBck.setAlpha(75);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        aboutBck.setAlpha(255);
+        finish();
+    }
+
     public void goBack(View view) {
         aboutBck.setAlpha(255);
         finish();
