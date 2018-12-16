@@ -57,13 +57,13 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         startedFragment = new StartGNSSFragment();
         fragmentTransaction.add(android.R.id.content, startedFragment).commit();
 
-        findViewById(R.id.GameButton).setEnabled(false);
+ /*     findViewById(R.id.GameButton).setEnabled(false);
         findViewById(R.id.GameButton).setAlpha(0.6f);
         findViewById(R.id.spaceshipButton).setEnabled(false);
         findViewById(R.id.spaceshipButton).setAlpha(0.6f);
         findViewById(R.id.MapButton).setEnabled(false);
         findViewById(R.id.MapButton).setAlpha(0.6f);
-
+*/
         checkLocationAndMobileDataEnabled();
     }
 
@@ -82,44 +82,12 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
 
     }
 
-    public void goToGame(View view) {
-        Intent intent = new Intent(this, com.chocolateam.galileomap.MapWithGameActivity.class);
+    public void goToMenu(View view) {
+        Intent intent = new Intent(this, MainMenu.class);
         intent.putExtra("location_permit", mLocationPermissionGranted);
-        if (checkLocationAndMobileDataEnabled()) {
+      //  if (checkLocationAndMobileDataEnabled()) {
             startActivity(intent);
-        }
-    }
-
-    public void goToMap(View view) {
-        Intent intent = new Intent(this, com.chocolateam.galileomap.MapsOnlyActivity.class);
-        intent.putExtra("location_permit", mLocationPermissionGranted);
-        if (checkLocationAndMobileDataEnabled()){
-            startActivity(intent);
-        }
-    }
-
-    public void goToSpaceship(View view) {
-        Intent intent = new Intent(this, com.chocolateam.galileospaceship.SpaceshipViewActivity.class);
-
-        if (checkLocationAndMobileDataEnabled()) {
-            startActivity(intent);
-        }
-
-    }
-
-    /**
-    public void goToPVT(View view) {
-        Intent intent = new Intent(this, PvtActivity.class);
-        startActivity(intent);
-    }
-     **/
-
-    public void goToDesc(View view) {
-        Intent intent = new Intent(this, DescriptionActivity.class);
-
-        checkLocationAndMobileDataEnabled();
-
-        startActivity(intent);
+     //   }
     }
 
     private boolean hasPermissions(Activity activity) {
@@ -145,13 +113,13 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
 
     @Override
     public void onFragmentReady() {
-        findViewById(R.id.GameButton).setEnabled(true);
+ /*       findViewById(R.id.GameButton).setEnabled(true);
         findViewById(R.id.GameButton).setAlpha(1.0f);
         findViewById(R.id.spaceshipButton).setEnabled(true);
         findViewById(R.id.spaceshipButton).setAlpha(1.0f);
         findViewById(R.id.MapButton).setEnabled(true);
         findViewById(R.id.MapButton).setAlpha(1.0f);
-
+*/
         findViewById(R.id.warningText).setVisibility(View.GONE);
     }
 

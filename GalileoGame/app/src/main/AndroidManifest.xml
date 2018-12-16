@@ -16,6 +16,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MainMenu"></activity>
         <activity android:name=".DescriptionActivity"></activity>
     </application>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
