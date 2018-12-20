@@ -2,7 +2,6 @@ package com.chocolateam.galileogame;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -23,18 +22,12 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.GNSSCompareInitFragment;
 import com.galfins.gnss_compare.StartGNSSFragment;
 
 import java.lang.reflect.Method;
-import java.util.Observable;
-import java.util.Observer;
 
-import static android.net.ConnectivityManager.TYPE_MOBILE;
-import static android.net.ConnectivityManager.TYPE_WIFI;
-
-public class MainActivity extends AppCompatActivity implements GNSSCompareInitFragment.OnFinishedListener{
+public class MainMenu extends AppCompatActivity implements GNSSCompareInitFragment.OnFinishedListener{
 
     private boolean mLocationPermissionGranted = false;
     private StartGNSSFragment startedFragment;
@@ -43,52 +36,12 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
     };
     private static final int LOCATION_REQUEST_ID = 1;
 
-    public Observer connCheckUpdater = new Observer() {
-        @Override
-        public void update(final Observable o, Object arg) {
-            Log.e("LANDING - OBSERVER", "-- observer tick");
-            Log.e("Observer tick: " , ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
-
-            String obsConstellation = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName();
-
-            //TODO: Make this more robust via getters - same in TutorialView in map
-            final String GPSConstName = "GPS";
-            final String GalConstName = "Galileo";
-            final String GalGPSConstName = "Galileo + GPS";
-
-            if (obsConstellation.equals(GPSConstName)) {
-
-                String pose = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString();
-
-                Log.e("LANDING POSE", pose);
-
-
-                /**
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        playerMarker = processMarker(true, playerMarker, new LatLng(lat, lng), finalMarkerStyle);
-                        Log.e("GAME-MARKER", "Marker placed");
-                        if (!GameButton.isEnabled()) {
-                            GameButton.setText("GOT IT! PLAY!");
-                            GameButton.setEnabled(true);
-                            GameButton.setBackgroundColor(getResources().getColor(R.color.buttonGreen));
-                            Log.e("GAME-BUTTON", "Button re-enabled");
-                        }
-                        Log.e("GAME-UITHREAD", "Thread finished");
-                    }
-                });
-                 **/
-            }
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_mainmenu);
         requestPermissionAndSetupFragments(this);
 
         while ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
@@ -100,13 +53,13 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         startedFragment = new StartGNSSFragment();
         fragmentTransaction.add(android.R.id.content, startedFragment).commit();
 
- /*     findViewById(R.id.GameButton).setEnabled(false);
+        findViewById(R.id.GameButton).setEnabled(false);
         findViewById(R.id.GameButton).setAlpha(0.6f);
         findViewById(R.id.spaceshipButton).setEnabled(false);
         findViewById(R.id.spaceshipButton).setAlpha(0.6f);
         findViewById(R.id.MapButton).setEnabled(false);
         findViewById(R.id.MapButton).setAlpha(0.6f);
-*/
+
         checkLocationAndMobileDataEnabled();
     }
 
@@ -125,12 +78,44 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
 
     }
 
-    public void goToMenu(View view) {
-        Intent intent = new Intent(this, MainMenu.class);
+    public void goToGame(View view) {
+        Intent intent = new Intent(this, com.chocolateam.galileomap.MapWithGameActivity.class);
         intent.putExtra("location_permit", mLocationPermissionGranted);
-      //  if (checkLocationAndMobileDataEnabled()) {
+        if (checkLocationAndMobileDataEnabled()) {
             startActivity(intent);
-     //   }
+        }
+    }
+
+    public void goToMap(View view) {
+        Intent intent = new Intent(this, com.chocolateam.galileomap.MapsOnlyActivity.class);
+        intent.putExtra("location_permit", mLocationPermissionGranted);
+        if (checkLocationAndMobileDataEnabled()){
+            startActivity(intent);
+        }
+    }
+
+    public void goToSpaceship(View view) {
+        Intent intent = new Intent(this, com.chocolateam.galileospaceship.SpaceshipViewActivity.class);
+
+        if (checkLocationAndMobileDataEnabled()) {
+            startActivity(intent);
+        }
+
+    }
+
+    /**
+    public void goToPVT(View view) {
+        Intent intent = new Intent(this, PvtActivity.class);
+        startActivity(intent);
+    }
+     **/
+
+    public void goToDesc(View view) {
+        Intent intent = new Intent(this, DescriptionActivity.class);
+
+        checkLocationAndMobileDataEnabled();
+
+        startActivity(intent);
     }
 
     private boolean hasPermissions(Activity activity) {
@@ -156,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
 
     @Override
     public void onFragmentReady() {
- /*       findViewById(R.id.GameButton).setEnabled(true);
+        findViewById(R.id.GameButton).setEnabled(true);
         findViewById(R.id.GameButton).setAlpha(1.0f);
         findViewById(R.id.spaceshipButton).setEnabled(true);
         findViewById(R.id.spaceshipButton).setAlpha(1.0f);
@@ -164,10 +149,6 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         findViewById(R.id.MapButton).setAlpha(1.0f);
 
         findViewById(R.id.warningText).setVisibility(View.GONE);
-       */
-
-        StartGNSSFragment.gnssInit.addObservers(connCheckUpdater);
-        Log.e("LANDING - OBSERVER", "-- observer ADDED");
     }
 
 
