@@ -22,10 +22,13 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.GNSSCompareInitFragment;
 import com.galfins.gnss_compare.StartGNSSFragment;
+
+import org.w3c.dom.Text;
 
 import java.lang.reflect.Method;
 import java.util.Observable;
@@ -36,6 +39,9 @@ import static android.net.ConnectivityManager.TYPE_WIFI;
 
 public class MainActivity extends AppCompatActivity implements GNSSCompareInitFragment.OnFinishedListener{
 
+    TextView gpsText;
+    TextView galText;
+
     private boolean mLocationPermissionGranted = false;
     private StartGNSSFragment startedFragment;
     private static final String[] REQUIRED_PERMISSIONS = {
@@ -44,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
     private static final int LOCATION_REQUEST_ID = 1;
 
     public Observer connCheckUpdater = new Observer() {
+
         @Override
         public void update(final Observable o, Object arg) {
             Log.e("LANDING - OBSERVER", "-- observer tick");
@@ -51,34 +58,27 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
 
             String obsConstellation = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName();
 
+
+
             //TODO: Make this more robust via getters - same in TutorialView in map
             final String GPSConstName = "GPS";
             final String GalConstName = "Galileo";
             final String GalGPSConstName = "Galileo + GPS";
 
+            int sats = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getSatellites().size();
+            System.out.println("SATS NO: " + sats);
+            String numSats = String.valueOf(((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getSatellites().size());
+
             if (obsConstellation.equals(GPSConstName)) {
 
-                String pose = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString();
+                gpsText.setText(numSats);
+                Log.e("LANDING POSE GPS", numSats);
 
-                Log.e("LANDING POSE", pose);
+            } else if (obsConstellation.equals(GalConstName)) {
 
+                galText.setText(numSats);
 
-                /**
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        playerMarker = processMarker(true, playerMarker, new LatLng(lat, lng), finalMarkerStyle);
-                        Log.e("GAME-MARKER", "Marker placed");
-                        if (!GameButton.isEnabled()) {
-                            GameButton.setText("GOT IT! PLAY!");
-                            GameButton.setEnabled(true);
-                            GameButton.setBackgroundColor(getResources().getColor(R.color.buttonGreen));
-                            Log.e("GAME-BUTTON", "Button re-enabled");
-                        }
-                        Log.e("GAME-UITHREAD", "Thread finished");
-                    }
-                });
-                 **/
+                Log.e("LANDING POSE GAL", numSats);
             }
         }
     };
@@ -90,6 +90,9 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         requestPermissionAndSetupFragments(this);
+
+        gpsText = (TextView) findViewById(R.id.gpsText);
+        galText = (TextView) findViewById(R.id.galText);
 
         while ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
             requestPermissionAndSetupFragments(this);

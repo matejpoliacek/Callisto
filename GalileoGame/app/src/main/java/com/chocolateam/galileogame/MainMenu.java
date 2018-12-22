@@ -36,6 +36,7 @@ public class MainMenu extends AppCompatActivity implements GNSSCompareInitFragme
     };
     private static final int LOCATION_REQUEST_ID = 1;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,10 +49,11 @@ public class MainMenu extends AppCompatActivity implements GNSSCompareInitFragme
             requestPermissionAndSetupFragments(this);
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
+   /**     FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         startedFragment = new StartGNSSFragment();
         fragmentTransaction.add(android.R.id.content, startedFragment).commit();
+  **/
 
         findViewById(R.id.GameButton).setEnabled(false);
         findViewById(R.id.GameButton).setAlpha(0.6f);

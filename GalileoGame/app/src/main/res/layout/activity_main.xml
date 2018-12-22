@@ -26,7 +26,7 @@
         app:layout_constraintHeight_percent="0.06"
         app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="@+id/guideline_left"
-        app:layout_constraintTop_toTopOf="@+id/guideline_buttons_top"
+        app:layout_constraintTop_toBottomOf="@+id/galText"
         app:layout_constraintVertical_chainStyle="spread"
         app:layout_constraintWidth_percent="0.53" />
 
@@ -42,26 +42,39 @@
         app:layout_constraintWidth_percent="0.10" />
 
     <TextView
-        android:id="@+id/warningText"
+        android:id="@+id/gpsText"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="46dp"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:text="Initialising PVT engine - Ensure your location and Internet connection are switched on"
+        android:text="GPS Info Here"
+        android:textAlignment="center"
+        android:textColor="@color/ap_light_gray"
+        app:layout_constraintBottom_toTopOf="@+id/galText"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_right"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline_left"
+        app:layout_constraintTop_toTopOf="@+id/guideline_text_top" />
+
+    <TextView
+        android:id="@+id/galText"
+        android:layout_width="0dp"
+        android:layout_height="46dp"
+        android:layout_marginBottom="8dp"
+        android:text="Gal Info Here"
         android:textAlignment="center"
         android:textColor="@color/ap_light_gray"
         app:layout_constraintBottom_toTopOf="@+id/guideline_buttons_top"
         app:layout_constraintEnd_toStartOf="@+id/guideline_right"
-        app:layout_constraintStart_toStartOf="@+id/guideline_left"
-        app:layout_constraintTop_toTopOf="@+id/guideline_text_top"
-        app:layout_constraintVertical_bias="0.535" />
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline_left" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline_buttons_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.57" />
+        app:layout_constraintGuide_percent="0.7" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline_left"
