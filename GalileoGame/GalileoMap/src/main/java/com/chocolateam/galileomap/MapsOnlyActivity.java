@@ -33,7 +33,7 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
     private Marker mGPSMarker;
     private Marker mGALMarker;
     private Marker mGALGPSMarker;
-
+/** TODO: replace with service
     public Observer mapMarkerUpdater = new Observer() {
         @Override
         public void update(final Observable o, Object arg) {
@@ -67,7 +67,7 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
             });
         }
     };
-
+**/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // run the rest of the onCreate method from superclass
@@ -81,8 +81,8 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
         checkboxLayout = findViewById(R.id.checkboxLayout);
         checkboxLayout.setVisibility(View.VISIBLE);
-
-        StartGNSSFragment.gnssInit.addObservers(mapMarkerUpdater);
+        // TODO: REPLACE WITH SERVICE
+        //StartGNSSFragment.gnssInit.addObservers(mapMarkerUpdater);
     }
 
     @Override

@@ -87,7 +87,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     private Button GameButton;
 
     protected Location mGameLocation = mLastKnownLocation;
-
+/** TODO: Replace with Service
     public Observer mapGameUpdater = new Observer() {
         @Override
         public void update(final Observable o, Object arg) {
@@ -128,7 +128,8 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
                 if (playing && game != null) {
                     game.setPlayerLocation(mGameLocation);
 
-                    /** TODO: Figure out map animation to follow the player
+                    /* TODO: Figure out map animation to follow the player
+                    // START COMMENT
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(lat,lng)), 2000, new GoogleMap.CancelableCallback() {
                         @Override
                         public void onFinish() {
@@ -140,7 +141,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
                         }
                     });
-                     **/
+                     // END COMMENT
                 }
 
                 // finalise marker style for UI thread
@@ -163,7 +164,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
             }
         }
     };
-
+**/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // run the rest of the onCreate method from superclass
@@ -281,7 +282,8 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         bDebugButton.setVisibility(View.GONE);
         bDebugGraphicsButton.setVisibility(View.GONE);
 
-        StartGNSSFragment.gnssInit.addObservers(mapGameUpdater);
+        // TODO: Replace with service
+        //StartGNSSFragment.gnssInit.addObservers(mapGameUpdater);
 
         /** Disable "Got it!" button until we have first fix **/
         GameButton = findViewById(R.id.GameButton);

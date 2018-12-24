@@ -3,6 +3,7 @@ package com.chocolateam.galileogame;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
     };
     private static final int LOCATION_REQUEST_ID = 1;
 
+    /** TODO: Replace with service
     public Observer connCheckUpdater = new Observer() {
 
         @Override
@@ -82,6 +84,18 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
             }
         }
     };
+     **/
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                Log.e("MAIN:", "Recieved from serivce");
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +116,8 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         startedFragment = new StartGNSSFragment();
         fragmentTransaction.add(android.R.id.content, startedFragment).commit();
+
+
 
  /*     findViewById(R.id.GameButton).setEnabled(false);
         findViewById(R.id.GameButton).setAlpha(0.6f);
@@ -169,8 +185,10 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         findViewById(R.id.warningText).setVisibility(View.GONE);
        */
 
-        StartGNSSFragment.gnssInit.addObservers(connCheckUpdater);
-        Log.e("LANDING - OBSERVER", "-- observer ADDED");
+        // TODO Replace with Service
+        //StartGNSSFragment.gnssInit.addObservers(connCheckUpdater);
+        //Log.e("LANDING - OBSERVER", "-- observer ADDED");
+        registerReceiver(receiver, null);
     }
 
 

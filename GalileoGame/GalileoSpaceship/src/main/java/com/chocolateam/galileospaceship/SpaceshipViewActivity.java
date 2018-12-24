@@ -45,6 +45,7 @@ public class SpaceshipViewActivity extends AppCompatActivity {
     static SkyViewFragment mSkyViewFragment;
     static RadarViewFragment mRadarViewFragment;
 
+    /** TODO: Replace with service
     public Observer shipUpdater = new Observer() {
         @Override
         public void update(final Observable o, Object arg) {
@@ -96,11 +97,11 @@ public class SpaceshipViewActivity extends AppCompatActivity {
 
                                 Log.e("SATPOS galgps", String.valueOf(satellites.size()));
 
-                                /**
-                                 if (satellites.size() > 0) {
-                                 Log.e("SATPOS - pos lat", String.valueOf(satellites.get(0).getSatellitePosition().getGeodeticLatitude()));
-                                 Log.e("SATPOS - pos long", String.valueOf(satellites.get(0).getSatellitePosition().getGeodeticLongitude()));
-                                 } **/
+
+                               //  if (satellites.size() > 0) {
+                               //  Log.e("SATPOS - pos lat", String.valueOf(satellites.get(0).getSatellitePosition().getGeodeticLatitude()));
+                               //  Log.e("SATPOS - pos long", String.valueOf(satellites.get(0).getSatellitePosition().getGeodeticLongitude()));
+                               //  }
                         }
                     }
 
@@ -133,6 +134,7 @@ public class SpaceshipViewActivity extends AppCompatActivity {
             });
         }
     };
+     **/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,8 +154,8 @@ public class SpaceshipViewActivity extends AppCompatActivity {
         mPager = findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
 
-
-        StartGNSSFragment.gnssInit.addObservers(shipUpdater);
+        // TODO: Replace with service
+        //StartGNSSFragment.gnssInit.addObservers(shipUpdater);
     }
 
     public static class SpacecraftPagerAdapter extends FragmentStatePagerAdapter {

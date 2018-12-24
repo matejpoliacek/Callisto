@@ -261,7 +261,7 @@ public class GpsConstellation extends Constellation {
 
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
-                    GNSSCompareInitFragment.makeRnpFailedNotification();
+                    //GNSSCompareInitFragment.makeRnpFailedNotification();
                     continue;
                 }
 
