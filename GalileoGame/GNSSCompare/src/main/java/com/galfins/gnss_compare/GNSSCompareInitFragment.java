@@ -1,68 +1,69 @@
+/*
+ * Copyright 2018 TFI Systems
+
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+
+ * http://www.apache.org/licenses/LICENSE-2.0
+
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
+
 package com.galfins.gnss_compare;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.location.GnssMeasurementsEvent;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
+import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 
+import com.androidplot.util.PixelUtils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Observable;
 import java.util.Observer;
 
-import com.galfins.gnss_compare.Constellations.Constellation;
-import com.galfins.gnss_compare.Constellations.GalileoConstellation;
-import com.galfins.gnss_compare.Constellations.GalileoGpsConstellation;
-import com.galfins.gnss_compare.Constellations.GpsConstellation;
-import com.galfins.gnss_compare.Corrections.Correction;
-import com.galfins.gnss_compare.Corrections.ShapiroCorrection;
-import com.galfins.gnss_compare.Corrections.TropoCorrection;
-import com.galfins.gnss_compare.FileLoggers.FileLogger;
-import com.galfins.gnss_compare.FileLoggers.NmeaFileLogger;
 import com.galfins.gnss_compare.FileLoggers.RawMeasurementsFileLogger;
-import com.galfins.gnss_compare.PvtMethods.DynamicExtendedKalmanFilter;
-import com.galfins.gnss_compare.PvtMethods.PvtMethod;
 
 
 public class GNSSCompareInitFragment extends Fragment {
 
-    /**
-     * Listener to notify parent activity that the fragment is ready
-     */
-
-    OnFinishedListener mCallback;
-
-    public interface OnFinishedListener {
-        public void onFragmentReady();
-    }
-
-    /**
-     * Flag to monitor if notification that fragment is ready was sent
-     */
-    private boolean FragmentReadyNotified = false;
-
-    /**
-     * Tag used for logging to logcat
-     */
-    @SuppressWarnings("unused")
-    private final String TAG = "InitFragment";
+    private final String TAG = "GNSSCompareInitFragment";
 
     /**
      * Tag used to mark module names for savedInstanceStates of the onCreate method.
@@ -99,32 +100,66 @@ public class GNSSCompareInitFragment extends Fragment {
      */
     private LocationManager mLocationManager;
 
-    /**
-     * Object storing created calculation modules
-     */
-    public static CalculationModulesArrayList createdCalculationModules;
-
-    /**
-     * ViewPager object, which allows for scrolling over Fragments
-     */
-    private ViewPager mPager;
 
     /**
      * Raw measurements logger
      */
     public static RawMeasurementsFileLogger rawMeasurementsLogger = new RawMeasurementsFileLogger("rawMeasurements");
 
-    /**
-     * Locally saved state of created calculation modules
-     */
-    private static Bundle savedState;
+    private Observer calculationModuleObserver;
+
+    private GnssCoreService.GnssCoreBinder gnssCoreBinder;
+
+    private boolean mGnssCoreBound = false;
+
+    CalculationModule newModule = null;
+
+    Context applicationContext;
+    Activity activity;
+
+    private class GnssCoreServiceConnector implements ServiceConnection{
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+            if(!mGnssCoreBound) {
+                gnssCoreBinder = (GnssCoreService.GnssCoreBinder) service;
+                mGnssCoreBound = true;
+
+                gnssCoreBinder.addObserver(calculationModuleObserver);
+
+                if(newModule!=null) {
+                    gnssCoreBinder.addModule(newModule);
+                    CreateModulePreference.notifyModuleCreated();
+                    Log.e(TAG,"Module " + newModule.getName() + " created...");
+                    newModule = null;
+                }
+            }
+        }
+
+        public void resetConnection(){
+            if(gnssCoreBinder != null && mGnssCoreBound) {
+                gnssCoreBinder.removeObserver(calculationModuleObserver);
+                mGnssCoreBound = false;
+
+                gnssCoreBinder = null;
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            resetConnection();
+        }
+
+    }
+
+    private ServiceConnection mConnection = new GnssCoreServiceConnector() ;
 
     /**
      * Callback used for receiving phone's location
      */
     LocationCallback locationCallback;
     private static final Object metaDataMutex = new Object();
-
 
     public static Location getLocationFromGoogleServices() {
         synchronized (locationFromGoogleServicesMutex) {
@@ -133,18 +168,10 @@ public class GNSSCompareInitFragment extends Fragment {
     }
 
     /**
-     * Method to synchronize execution of calculations.
-     */
-    public void notifyCalculationObservers() {
-        createdCalculationModules.notifyObservers();
-    }
-
-    /**
      * Callback object assigned to the GNSS measurement callback
      */
     GnssMeasurementsEvent.Callback gnssCallback;
 
-    static View mainView;
 
     private static Location locationFromGoogleServices = null;
 
@@ -157,104 +184,75 @@ public class GNSSCompareInitFragment extends Fragment {
     private static final Object locationFromGoogleServicesMutex = new Object();
 
     /**
-     * Bundle storing manifest's meta data, so that it can be used outside of this fragment
+     * Bundle storing manifest's meta data, so that it can be used outside of GNSSCompareInitFragment
      */
     private static Bundle metaData;
 
     /**
      * Registers GNSS measurement event manager callback.
      */
-    private void registerLocationManagerCallbacks() {
+    private void registerLocationManager() {
+
+        if(applicationContext != null) {
+            mLocationManager = (LocationManager) applicationContext.getSystemService(Activity.LOCATION_SERVICE);
+        } else {
+            Log.e(TAG, "applicationContext null for mLocationManager");
+        }
+
+        if(applicationContext != null) {
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext);
+        } else {
+            Log.e(TAG, "applicationContext null for mFusedLocationClient");
+        }
+
         gnssCallback = new GnssMeasurementsEvent.Callback() {
             @Override
             public void onGnssMeasurementsReceived(GnssMeasurementsEvent eventArgs) {
                 super.onGnssMeasurementsReceived(eventArgs);
 
-                Log.d(TAG, "onGnssMeasurementsReceived: invoked!");
+                Log.d(TAG, "onGnssMeasurementsReceived (GNSSCompareInitFragment): invoked!");
 
-                for (CalculationModule calculationModule : createdCalculationModules)
-                    calculationModule.updateMeasurements(eventArgs);
-
-                notifyCalculationObservers();
-
-                // Notify parent activity that fragment is fully ready on first observer notification
-                if(!FragmentReadyNotified) {
-                    FragmentReadyNotified = true;
-                    Log.e("START-INIT:", "OnFragmentReady Invoked");
-                    ((Activity) mCallback).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mCallback.onFragmentReady();
-                        }
-                    });
-                }
+                if (rawMeasurementsLogger.isStarted())
+                    rawMeasurementsLogger.onGnssMeasurementsReceived(eventArgs);
             }
-
         };
 
-        // todo test this "context" operations
-        Context applicationContext = getContext();
+        final LocationRequest locationRequest = new LocationRequest();
+
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setMaxWaitTime(500);
+        locationRequest.setInterval(1000);
+        locationRequest.setFastestInterval(100);
+
+        locationCallback = new LocationCallback(){
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+
+                final Location lastLocation = locationResult.getLocations().get(locationResult.getLocations().size()-1);
+
+                if(lastLocation != null) {
+                    Log.i(TAG, "locationFromGoogleServices: New location (phone): "
+                            + lastLocation.getLatitude() + ", "
+                            + lastLocation.getLongitude() + ", "
+                            + lastLocation.getAltitude());
+                }
+            }
+        };
 
         if(applicationContext != null) {
             if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     || ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                mFusedLocationClient.requestLocationUpdates(
+                        locationRequest,
+                        locationCallback,
+                        null);
+
                 mLocationManager.registerGnssMeasurementsCallback(
                         gnssCallback);
             }
-        }
-    }
-
-    /**
-     * Class encapsulating generic operations on created CalculationModules.
-     */
-    public class CalculationModulesArrayList extends ArrayList<CalculationModule> {
-
-        @Override
-        public boolean add(final CalculationModule calculationModule) {
-            synchronized (this) {
-                return super.add(calculationModule);
-            }
-        }
-
-        @Override
-        public boolean remove(Object o){
-            synchronized (this) {
-                return super.remove(o);
-            }
-        }
-
-        /**
-         * Start threads associated with added CalculationModules. This is a single execution
-         * of a calculation module's run() method
-         */
-        public void notifyObservers() {
-            Log.d(TAG, "notifyObservers: invoked");
-            synchronized (this) {
-                for (CalculationModule calculationModule : this) {
-                    calculationModule.run(); // notifies observers and sets up proper flags
-                }
-            }
-
-        }
-    }
-
-    public void addObservers(Observer observer){
-        for(CalculationModule calculationModule : createdCalculationModules){
-            calculationModule.addObserver(observer);
-        }
-    }
-
-    /**
-     * Creates initial calculation modules
-     */
-    public void initializeCalculationModules(){
-        if(createdCalculationModules==null) {
-            createdCalculationModules = new CalculationModulesArrayList();
-            if(savedState == null)
-                createInitialCalculationModules();
-            else if (savedState != null){
-                createCalculationModulesFromBundle(savedState);
-            }
+        } else {
+            Log.e(TAG, "applicationContext null for ActivityCompat.checkSelfPermission");
         }
     }
 
@@ -263,44 +261,105 @@ public class GNSSCompareInitFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // todo test this "context" operations
-        Context applicationContext = getContext();
-        if(applicationContext != null) {
-            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext);
+        applicationContext = getContext();
+        activity = getActivity();
+
+        initializeGnssCompareMainActivity();
+
+        if (hasGnssAndLogPermissions()) {
+            registerLocationManager();
+        } else {
+            requestGnssAndLogPermissions();
         }
 
-//        if(savedInstanceState != null)
-//            savedState = savedInstanceState;
+        showInitializationDisclamer();
 
-        Constellation.initialize();
-        Correction.initialize();
-        PvtMethod.initialize();
-        FileLogger.initialize();
+        if(activity != null) {
+            activity.startService(new Intent(activity, GnssCoreService.class));
+        } else {
+            Log.e(TAG, "activity null for startService in onCreate");
+        }
+    }
 
-//        initializePager();
-//        initializeToolbar();
-        initializeCalculationModules();
+    private void initializeGnssCompareMainActivity() {
 
-        registerLocationManagerReference();
-        registerLocationManagerCallbacks();
+        initializeMetaDataHandler();
 
-//        mainView = findViewById(R.id.main_view);
+        calculationModuleObserver = new Observer() {
 
-//        final Snackbar snackbar = Snackbar
-//                .make(mainView,
-//                        "All calculations are initialized with phone's FINE location",
-//                        Snackbar.LENGTH_LONG);
-//
-//        snackbar.setAction("Acknowledge", new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                snackbar.dismiss();
-//            }
-//        });
-//
-//        snackbar.show();
+            class UiThreadRunnable implements Runnable {
 
-        this.setRetainInstance(true);
+                CalculationModulesArrayList calculationModules;
+
+                public void setCalculationModules(CalculationModulesArrayList newCalculationModules){
+                    synchronized (this) {
+                        calculationModules = newCalculationModules;
+                    }
+                }
+
+                @Override
+                public void run() {
+                    synchronized (this) {
+
+                    }
+                }
+            }
+
+            UiThreadRunnable uiThreadRunnable = new UiThreadRunnable();
+
+            @Override
+            public void update(Observable o, Object calculationModules) {
+
+                uiThreadRunnable.setCalculationModules((CalculationModulesArrayList) calculationModules);
+
+                if(activity != null) {
+                    activity.runOnUiThread(uiThreadRunnable);
+                } else {
+                    Log.e(TAG, "activity null for runOnUiThread in initializeGnssCompareMainActivity()");
+                }
+
+            }
+        };
+
+        initializeMetaDataHandler();
+    }
+
+    private void showInitializationDisclamer() {
+        Log.e(TAG,"All calculations are initialized with phone's FINE location");
+    }
+
+    private void initializeMetaDataHandler() {
+        ApplicationInfo ai = null;
+        try {
+            if(activity != null) {
+                ai = activity.getPackageManager().getApplicationInfo(activity.getPackageName(), PackageManager.GET_META_DATA);
+            } else {
+                Log.e(TAG, "activity null for getPackageManager()");
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        if(ai!=null) {
+            synchronized (metaDataMutex) {
+                metaData = ai.metaData;
+            }
+        }
+    }
+
+    public static String getMetaDataString(String key){
+        return metaData.getString(key);
+    }
+
+    public static int getMetaDataInt(String key){
+        return metaData.getInt(key);
+    }
+
+    public static boolean getMetaDataBoolean(String key){
+        return metaData.getBoolean(key);
+    }
+
+    public static float getMetaDataFloat(String key){
+        return metaData.getFloat(key);
     }
 
     @Override
@@ -310,127 +369,6 @@ public class GNSSCompareInitFragment extends Fragment {
         Log.d(TAG, "onStop: invoked");
     }
 
-    /**
-     * Creates new calculation modules, based on data stored in the bundle
-     * TODO - Add flags for status of "Active" and "Log"
-     * @param savedInstanceState bundle describing created calculation modules
-     */
-    private void createCalculationModulesFromBundle(Bundle savedInstanceState) {
-
-        ArrayList<String> modulesNames = savedInstanceState.getStringArrayList(MODULE_NAMES_BUNDLE_TAG);
-
-        for(String name : modulesNames){
-            try {
-                createdCalculationModules.add(CalculationModule.fromConstructorArrayList(savedInstanceState.getStringArrayList(name)));
-            } catch (CalculationModule.NameAlreadyRegisteredException | CalculationModule.NumberOfSeriesExceededLimitException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle bundle) {
-        super.onSaveInstanceState(bundle);
-
-        saveInstanceState(bundle);
-    }
-
-    /**
-     * Parses created calculation module definitions to a bundle. This bundle can later be used with
-     * createCalculationModulesFromBundle to create a new set of calculationModules
-     * @param bundle reference to a Bundle object to which the information is to be stored.
-     */
-    private void saveInstanceState(Bundle bundle){
-        ArrayList<String> modulesNames = new ArrayList<>();
-
-        for (CalculationModule module: createdCalculationModules)
-            modulesNames.add(module.getName());
-
-        bundle.putStringArrayList(MODULE_NAMES_BUNDLE_TAG, modulesNames);
-
-        for (CalculationModule module : createdCalculationModules){
-            ArrayList<String> moduleDescription = module.getConstructorArrayList();
-            bundle.putStringArrayList(module.getName(), moduleDescription);
-        }
-    }
-
-    /**
-     * Creates default, initial calculation modules
-     */
-    private void createInitialCalculationModules(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Looper.prepare();
-                while (true) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    try {
-
-                        List<CalculationModule> initialModules = new ArrayList<>();
-
-                        initialModules.add(new CalculationModule(
-                                "Galileo+GPS",
-                                GalileoGpsConstellation.class,
-                                new ArrayList<Class<? extends Correction>>() {{
-                                    add(ShapiroCorrection.class);
-                                    add(TropoCorrection.class);
-                                }},
-                                DynamicExtendedKalmanFilter.class,
-                                NmeaFileLogger.class));
-
-                        initialModules.add(new CalculationModule(
-                                "GPS",
-                                GpsConstellation.class,
-                                new ArrayList<Class<? extends Correction>>() {{
-                                    add(ShapiroCorrection.class);
-//                                    add(IonoCorrection.class);
-                                    add(TropoCorrection.class);
-                                }},
-                                DynamicExtendedKalmanFilter.class,
-                                NmeaFileLogger.class));
-
-                        initialModules.add(new CalculationModule(
-                                "Galileo",
-                                GalileoConstellation.class,
-                                new ArrayList<Class<? extends Correction>>() {{
-                                    add(ShapiroCorrection.class);
-                                    add(TropoCorrection.class);
-                                }},
-                                DynamicExtendedKalmanFilter.class,
-                                NmeaFileLogger.class));
-
-                        try {
-                            for(CalculationModule module : initialModules)
-                                createdCalculationModules.add(module);
-                        } catch (Exception e){
-                            for(CalculationModule module : initialModules) {
-                                try {
-                                    createdCalculationModules.remove(module);
-                                } catch (Exception e2){
-                                    e2.printStackTrace();
-                                    Log.d(TAG, "run: Removal of initial module failed");
-                                }
-                            }
-                            CalculationModule.clear();
-                        }
-
-                        Log.i(TAG, "run: Calculation modules initialized");
-                        break;
-                    } catch (CalculationModule.NameAlreadyRegisteredException e) {
-                        CalculationModule.clear();
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }).start();
-    }
 
     /**
      * Called when activity is resumed
@@ -440,43 +378,46 @@ public class GNSSCompareInitFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        Log.d(TAG, "onResume: invoked");
-
-        final LocationRequest locationRequest = new LocationRequest();
-
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setMaxWaitTime(500);
-        locationRequest.setInterval(100);
-
-        locationCallback = new LocationCallback(){
+        new Thread(new Runnable() {
             @Override
-            public void onLocationResult(LocationResult locationResult) {
-                //TODO: verify if this chunk gets accessed
-                final Location lastLocation = locationResult.getLocations().get(locationResult.getLocations().size()-1);
-                if(lastLocation != null) {
-                    Log.i(TAG, "locationFromGoogleServices: New location (phone): "
-                            + lastLocation.getLatitude() + ", "
-                            + lastLocation.getLongitude() + ", "
-                            + lastLocation.getAltitude());
-
-                    synchronized (GNSSCompareInitFragment.this) {
-                        for (CalculationModule calculationModule : createdCalculationModules)
-                            calculationModule.updateLocationFromGoogleServices(lastLocation);
-                    }
-                }
+            public void run() {
+                startAndBindGnssCoreService();
             }
-        };
+        }).start();
 
-        // todo test this "context" operations
-        Context applicationContext = getContext();
+        Log.d(TAG, "onResume: invoked");
+    }
 
-        // TODO: check if phone's location is received
-        if(applicationContext != null) {
-            if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    || ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+    public void startAndBindGnssCoreService(){
+        if(!GnssCoreService.isServiceStarted()) {
+            //todo: encapsulate this in GnssCoreService
+            if(activity != null) {
+                activity.startService(new Intent(activity, GnssCoreService.class));
+            } else {
+                Log.e(TAG, "activity null for startService in startAndBindGnssCoreService()");
             }
+
+
+
+            if(!GnssCoreService.waitForServiceStarted()){
+                Log.e(TAG, "Issue starting GNSS Core service...");
+
+                //todo: consider a return here?
+            }
+
         }
+
+        //todo: encapsulate this in GnssCoreService
+
+        if(activity != null) {
+            activity.bindService(
+                    new Intent(activity, GnssCoreService.class),
+                    mConnection,
+                    Context.BIND_AUTO_CREATE);
+        } else {
+            Log.e(TAG, "activity null for bindService in startAndBindGnssCoreService()");
+        }
+
     }
 
     /**
@@ -487,33 +428,55 @@ public class GNSSCompareInitFragment extends Fragment {
     public void onPause() {
         super.onPause();
 
-        mFusedLocationClient.removeLocationUpdates(locationCallback);
+        if(mGnssCoreBound) {
+            if(activity != null) {
+                activity.unbindService(mConnection);
+                ((GnssCoreServiceConnector) mConnection).resetConnection();
+            } else {
+                Log.e(TAG, "activity null for unbindService in onPause()");
+            }
+        }
 
         Log.d(TAG, "onPause: invoked");
     }
 
+    /** UNUSED
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+
+    }
+    **/
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        savedState = new Bundle();
-        saveInstanceState(savedState);
-
-        while(createdCalculationModules.size() > 0) {
-            createdCalculationModules.remove(createdCalculationModules.get(0));
-        }
-
-        createdCalculationModules = null;
-        CalculationModule.clear();
-
         mLocationManager.unregisterGnssMeasurementsCallback(gnssCallback);
+        mFusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
-    /**
-     * Creates a reference to the location manager service
-     */
-    private void registerLocationManagerReference() {
-        mLocationManager = (LocationManager) getContext().getSystemService(Activity.LOCATION_SERVICE);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PREFERENCES_REQUEST && resultCode == activity.RESULT_OK) {
+
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+
+            try {
+                newModule = CalculationModule.createFromDescriptions(
+                        sharedPreferences.getString(CreateModulePreference.KEY_NAME, null),
+                        sharedPreferences.getString(CreateModulePreference.KEY_CONSTELLATION, null),
+                        sharedPreferences.getStringSet(CreateModulePreference.KEY_CORRECTION_MODULES, null),
+                        sharedPreferences.getString(CreateModulePreference.KEY_PVT_METHOD, null),
+                        sharedPreferences.getString(CreateModulePreference.KEY_FILE_LOGGER, null));
+
+            } catch (CalculationModule.NameAlreadyRegisteredException
+                    | CalculationModule.NumberOfSeriesExceededLimitException
+                    | CalculationModule.CalculationSettingsIncompleteException e) {
+            }
+
+        }
     }
 
     @Override
@@ -522,37 +485,31 @@ public class GNSSCompareInitFragment extends Fragment {
         if (requestCode == PERMISSION_REQUEST_CODE) {
             // If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                registerLocationManagerReference();
-                registerLocationManagerCallbacks();
+                registerLocationManager();
             }
         }
     }
 
-    public static void makeNotification(final String note){
-        Snackbar snackbar = Snackbar
-                .make(mainView, note, Snackbar.LENGTH_LONG);
-
-        snackbar.show();
+    /**
+     * Checks if the permission has been granted
+     * @return True of false depending on if permission has been granted
+     */
+    @SuppressLint("ObsoleteSdkInt")
+    private boolean hasGnssAndLogPermissions() {
+        // Permissions granted at install time.
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+                (ContextCompat.checkSelfPermission(activity, GNSS_REQUIRED_PERMISSIONS)
+                            == PackageManager.PERMISSION_GRANTED &&
+                        ContextCompat.checkSelfPermission(activity, LOG_REQUIRED_PERMISSIONS)
+                                == PackageManager.PERMISSION_GRANTED);
     }
 
     /**
-     * Listener callback to notify activity that fragment has finished
+     * Requests permission to access GNSS measurements
      */
-
-    @Override
-    public void onAttach(Context activity) {
-        super.onAttach(activity);
-
-        // This makes sure that the container activity has implemented
-        // the callback interface. If not, it throws an exception
-        try {
-            //parent = activity;
-            mCallback = (OnFinishedListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFinishedListener");
-        }
-
+    private void requestGnssAndLogPermissions() {
+        ActivityCompat.requestPermissions(activity, new String[]{GNSS_REQUIRED_PERMISSIONS, LOG_REQUIRED_PERMISSIONS}, PERMISSION_REQUEST_CODE);
     }
+
 }
 

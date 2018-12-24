@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 TFI Systems
+
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+
+ * http://www.apache.org/licenses/LICENSE-2.0
+
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
+
 package com.galfins.gnss_compare.Constellations;
 
 import android.location.GnssClock;
@@ -11,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.galfins.gnss_compare.Corrections.Correction;
+import com.galfins.gnss_compare.GNSSCompareInitFragment;
 import com.galfins.gogpsextracts.Constants;
 import com.galfins.gogpsextracts.Coordinates;
 import com.galfins.gogpsextracts.NavigationProducer;
@@ -39,21 +56,23 @@ public class GpsConstellation extends Constellation {
     private long FullBiasNanos;
 
     private Coordinates rxPos;
-    private double tRxGPS;
-    private double weekNumberNanos;
+    protected double tRxGPS;
+    protected double weekNumberNanos;
 
     private static final int constellationId = GnssStatus.CONSTELLATION_GPS;
+    private static double MASK_ELEVATION = 20; // degrees
+    private static double MASK_CN0 = 10; // dB-Hz
 
     /**
      * Time of the measurement
      */
     private Time timeRefMsec;
 
-    private int visibleButNotUsed = 0;
+    protected int visibleButNotUsed = 0;
 
     // Condition for the pseudoranges that takes into account a maximum uncertainty for the TOW
     // (as done in gps-measurement-tools MATLAB code)
-    private static final int MAXTOWUNCNS = 50;                                     // [nanoseconds]
+    private static final int MAX_TOW_UNC_NS = 50;                                     // [nanoseconds]
 
     private NavigationProducer rinexNavGps = null;
 
@@ -164,9 +183,9 @@ public class GpsConstellation extends Constellation {
                 int measState = measurement.getState();
 
                 // Bitwise AND to identify the states
-                boolean codeLock = (measState & GnssMeasurement.STATE_CODE_LOCK) > 0;
-                boolean towDecoded = (measState & GnssMeasurement.STATE_TOW_DECODED) > 0;
-                boolean towUncertainty = measurement.getReceivedSvTimeUncertaintyNanos() < MAXTOWUNCNS;
+                boolean codeLock = (measState & GnssMeasurement.STATE_CODE_LOCK) != 0;
+                boolean towDecoded = (measState & GnssMeasurement.STATE_TOW_DECODED) != 0;
+                boolean towUncertainty = measurement.getReceivedSvTimeUncertaintyNanos() < MAX_TOW_UNC_NS;
 
 
                 if (codeLock && towDecoded && towUncertainty && pseudorange < 1e9) {
@@ -179,6 +198,9 @@ public class GpsConstellation extends Constellation {
                     satelliteParameters.setSignalStrength(measurement.getCn0DbHz());
 
                     satelliteParameters.setConstellationType(measurement.getConstellationType());
+
+                    if(measurement.hasCarrierFrequencyHz())
+                        satelliteParameters.setCarrierFrequency(measurement.getCarrierFrequencyHz());
 
                     observedSatellites.add(satelliteParameters);
 
@@ -209,6 +231,9 @@ public class GpsConstellation extends Constellation {
     @Override
     public void calculateSatPosition(Location initialLocation, Coordinates position) {
 
+        // Make a list to hold the satellites that are to be excluded based on elevation/CN0 masking criteria
+        List<SatelliteParameters> excludedSatellites = new ArrayList<>();
+
         synchronized (this) {
 
             rxPos = Coordinates.globalXYZInstance(position.getX(), position.getY(), position.getZ());
@@ -234,8 +259,11 @@ public class GpsConstellation extends Constellation {
                         0.0,
                         initialLocation);
 
-                if (rnp == null)
-                    break;
+                if (rnp == null) {
+                    excludedSatellites.add(observedSatellite);
+                    GNSSCompareInitFragment.makeRnpFailedNotification();
+                    continue;
+                }
 
                 observedSatellite.setSatellitePosition(rnp);
 
@@ -243,6 +271,11 @@ public class GpsConstellation extends Constellation {
                         new TopocentricCoordinates(
                                 rxPos,
                                 observedSatellite.getSatellitePosition()));
+
+                // Add to the exclusion list the satellites that do not pass the masking criteria
+                if(observedSatellite.getRxTopo().getElevation() < MASK_ELEVATION){
+                    excludedSatellites.add(observedSatellite);
+                }
 
                 double accumulatedCorrection = 0;
 
@@ -260,6 +293,9 @@ public class GpsConstellation extends Constellation {
 
                 observedSatellite.setAccumulatedCorrection(accumulatedCorrection);
             }
+
+            // Remove from the list all the satellites that did not pass the masking criteria
+            observedSatellites.removeAll(excludedSatellites);
         }
     }
 

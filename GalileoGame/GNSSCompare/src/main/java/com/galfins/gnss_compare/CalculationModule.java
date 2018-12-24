@@ -1,15 +1,31 @@
+/*
+ * Copyright 2018 TFI Systems
+
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+
+ * http://www.apache.org/licenses/LICENSE-2.0
+
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
+
 package com.galfins.gnss_compare;
 
 import android.location.GnssMeasurementsEvent;
 import android.location.Location;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.util.ArraySet;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.Objects;
 import java.util.Set;
 
 import com.galfins.gnss_compare.Constellations.Constellation;
@@ -23,36 +39,7 @@ import com.galfins.gogpsextracts.Coordinates;
  * Created by Mateusz Krainski on 1/20/2018.
  * This class is for performing all of the calculations and retrieving GNSS data from the chip.
  */
-public class CalculationModule implements Runnable{
-
-    /**
-     * Proper implementation of the CalculationModule observable.
-     * notified when the calculations have been finished. Stores a reference to 'this'
-     */
-    public class CalculationModuleObservable extends Observable{
-
-        public CalculationModuleObservable(){
-
-        }
-
-        /**
-         * Reference to 'this'
-         */
-        private CalculationModule parentReference = CalculationModule.this;
-
-        @Override
-        public void notifyObservers() {
-            setChanged();
-            super.notifyObservers();
-        }
-
-        /**
-         * @return reference to 'this' calculation module
-         */
-        public CalculationModule getParentReference() {
-            return parentReference;
-        }
-    }
+public class CalculationModule{
 
     /**
      * Choose format for logging file
@@ -60,6 +47,18 @@ public class CalculationModule implements Runnable{
     public void setActive(boolean active) {
         this.active = active;
     }
+
+//        returnedValue.add(getName());
+//        returnedValue.add(String.valueOf(active));
+//        returnedValue.add(String.valueOf(logToFile));
+//        returnedValue.add(constellation.getName());
+//        returnedValue.add(pvtMethod.getName());
+//        returnedValue.add(fileLogger.getName());
+//
+//        for(Correction corr : corrections)
+//            returnedValue.add(corr.getName());
+
+
 
     /**
      * @return true if the module is active and performing calculations
@@ -114,7 +113,7 @@ public class CalculationModule implements Runnable{
     /**
      * Color used for data plotting
      */
-    private int DATA_COLOR = Color.GRAY;
+    private int DATA_COLOR;
 
     /**
      * PVT method associated with this calculation module
@@ -124,7 +123,7 @@ public class CalculationModule implements Runnable{
     /**
      * Corrections which are to be applied to received pseudoranges
      */
-    private ArrayList<Correction> corrections = new ArrayList<>();
+    private ArrayList<Correction> corrections;
 
     /**
      * List of registered module ids
@@ -158,11 +157,6 @@ public class CalculationModule implements Runnable{
     };
 
     /**
-     * This flag is set to true after the updated of the pseudoranges, allowing the PVT calculations
-     */
-    private boolean constellationUpdated;
-
-    /**
      * Calculated pose of the receiver
      */
     private Coordinates pose;
@@ -178,12 +172,6 @@ public class CalculationModule implements Runnable{
     private Constellation constellation;
 
     /**
-     * Notifier object, which will notify subsribed Observers about data updates.
-     */
-    private Observable poseUpdatedNotifier;
-
-    /**
-     *
      * @return location as calculated by the phone's location service
      */
     public Location getLocationFromGoogleServices() {
@@ -229,10 +217,13 @@ public class CalculationModule implements Runnable{
      */
     public void setLogToFile(boolean logToFile) {
         this.logToFile = logToFile;
-        if (logToFile)
+        if (logToFile){
             fileLogger.startNewLog();
-        else
+            pvtMethod.startLog(NAME);
+        } else {
             fileLogger.closeLog();
+            pvtMethod.stopLog();
+        }
     }
 
     /**
@@ -308,9 +299,6 @@ public class CalculationModule implements Runnable{
 
         pose = Coordinates.globalGeodInstance(0.000001, 0.000001, 0.000001); // can't be zeros - ECEF conversion crashes
 
-        poseUpdatedNotifier = new CalculationModuleObservable();
-
-        constellationUpdated = false;
         corrections = new ArrayList<>();
         try {
             updateSetup();
@@ -426,30 +414,26 @@ public class CalculationModule implements Runnable{
     }
 
     /**
-     * Set after measurements have been updated, cleared after the update notification has been
-     * sent out
-     */
-    private boolean measurementsUpdated = false;
-
-    /**
      * Performs the update on the GNSS event and all following calculations.
      * @param event GNSS event
      */
     public void updateMeasurements(GnssMeasurementsEvent event){
 
-        constellation.updateMeasurements(event);
+        if (active) {
 
-        if(poseInitialized) {
-            constellation.calculateSatPosition(locationFromGoogleServices, pose);
-            if (constellation.getUsedConstellationSize() != 0) {
-                pose = pvtMethod.calculatePose(constellation);
-                Log.i(TAG, "newPose: " + pose.getGeodeticLatitude() + ", " + pose.getGeodeticLongitude() + ", " + pose.getGeodeticHeight());
-                if (logToFile) {
-                    fileLogger.addNewPose(pose, constellation);
+            constellation.updateMeasurements(event);
+
+            if (poseInitialized) {
+                constellation.calculateSatPosition(locationFromGoogleServices, pose);
+                if (constellation.getUsedConstellationSize() != 0) {
+                    pose = pvtMethod.calculatePose(constellation);
+                    Log.i(TAG, "newPose: " + pose.getGeodeticLatitude() + ", " + pose.getGeodeticLongitude() + ", " + pose.getGeodeticHeight());
+                    if (logToFile) {
+                        fileLogger.addNewPose(pose, constellation);
+                    }
                 }
             }
         }
-        measurementsUpdated = true;
     }
 
     /**
@@ -460,6 +444,7 @@ public class CalculationModule implements Runnable{
     public void updateLocationFromGoogleServices(Location location){
 
         locationFromGoogleServices = location;
+        pvtMethod.logFineLocation(location);
 
         if (!poseInitialized && locationFromGoogleServices != null) {
             pose = Coordinates.globalGeodInstance(
@@ -468,36 +453,6 @@ public class CalculationModule implements Runnable{
                     locationFromGoogleServices.getAltitude());
 
             poseInitialized = true;
-        }
-    }
-
-    /**
-     * @param observer observer, which is to be notified about new data
-     */
-    public void addObserver(Observer observer) {
-        poseUpdatedNotifier.addObserver(observer);
-    }
-
-
-    /**
-     * Removes {@code observer} from the notifier
-     *
-     * @param observer removed entity
-     */
-    public void removeObserver(Observer observer) {
-        poseUpdatedNotifier.deleteObserver(observer);
-    }
-
-    /**
-     * notifies observers about the new data. This is separate, because it's meant to be executed on
-     * UI thread.
-     */
-    @Override
-    public void run() {
-        Log.d(TAG, "run: invoked!");
-        if(measurementsUpdated) {
-            poseUpdatedNotifier.notifyObservers();
-            measurementsUpdated = false;
         }
     }
 
@@ -573,14 +528,10 @@ public class CalculationModule implements Runnable{
 
     /**
      * Checks if the passed setting has been set. Throws exception if not
-     * todo - refactor so that it doesn't use exception
      * @param value vlue of the checked setting
-     * @throws CalculationSettingsIncompleteException when the value has not been set.
      */
-    private static void checkSettingsValid(String value) throws CalculationSettingsIncompleteException {
-        if(value == null){
-            throw new CalculationSettingsIncompleteException("Not all required settings selected!");
-        }
+    private static boolean checkSettingsValid(String value){
+        return value != null;
     }
 
     /**
@@ -603,17 +554,20 @@ public class CalculationModule implements Runnable{
             String pvtMethodClassName,
             String fileLoggerClassName) throws NameAlreadyRegisteredException, NumberOfSeriesExceededLimitException, CalculationSettingsIncompleteException {
 
-        checkSettingsValid(name);
-        checkSettingsValid(constellationClassName);
-        checkSettingsValid(pvtMethodClassName);
-        checkSettingsValid(fileLoggerClassName);
+        if(checkSettingsValid(name) &&
+                checkSettingsValid(constellationClassName) &&
+                checkSettingsValid(pvtMethodClassName) &&
+                checkSettingsValid(fileLoggerClassName)) {
 
-        return new CalculationModule(
-                name,
-                getConstellationClassFromName(constellationClassName),
-                getCorrectionClassesFromNames(correctionClassNames),
-                getPvtMethodClassFromName(pvtMethodClassName),
-                getFileLoggerClassFromName(fileLoggerClassName));
+            return new CalculationModule(
+                    name,
+                    getConstellationClassFromName(constellationClassName),
+                    getCorrectionClassesFromNames(correctionClassNames),
+                    getPvtMethodClassFromName(pvtMethodClassName),
+                    getFileLoggerClassFromName(fileLoggerClassName));
+        } else {
+            throw new CalculationSettingsIncompleteException("Settings not complete!");
+        }
 
     }
 
@@ -651,7 +605,6 @@ public class CalculationModule implements Runnable{
     }
 
     /**
-     *
      * @return an ArrayList which can be later used in fromConstructorArrayList to create a
      * calculation module
      */
@@ -659,6 +612,8 @@ public class CalculationModule implements Runnable{
         ArrayList<String> returnedValue = new ArrayList<>();
 
         returnedValue.add(getName());
+        returnedValue.add(String.valueOf(active));
+        returnedValue.add(String.valueOf(logToFile));
         returnedValue.add(constellation.getName());
         returnedValue.add(pvtMethod.getName());
         returnedValue.add(fileLogger.getName());
@@ -669,8 +624,78 @@ public class CalculationModule implements Runnable{
         return returnedValue;
     }
 
+    private final static String CONSTRUCTOR_BUNDLE_NAME_TAG = "_name";
+    private final static String CONSTRUCTOR_BUNDLE_ACTIVE_TAG = "_active";
+    private final static String CONSTRUCTOR_BUNDLE_LOG_TO_FILE_TAG = "_log_to_file";
+    private final static String CONSTRUCTOR_BUNDLE_CONSTELLATION_TAG = "_constellation";
+    private final static String CONSTRUCTOR_BUNDLE_PVT_METHOD_TAG = "_pvt_method";
+    private final static String CONSTRUCTOR_BUNDLE_FILE_LOGGER_TAG = "_file_logger";
+    private final static String CONSTRUCTOR_BUNDLE_CORRECTIONS_TAG = "_corrections";
+    private final static String CONSTRUCTOR_BUNDLE_SANITY_CHECK = "_sanity_check";
+
     /**
-     *
+     * @return a Bundle which can be later used in fromConstructorBundle to create a
+     * calculation module
+     */
+    public Bundle getConstructorBundle(){
+
+        Bundle returnedBundle = new Bundle();
+        ArrayList<String> correctionsList = new ArrayList<>();
+
+        returnedBundle.putString(CONSTRUCTOR_BUNDLE_NAME_TAG, getName());
+        returnedBundle.putBoolean(CONSTRUCTOR_BUNDLE_ACTIVE_TAG, active);
+        returnedBundle.putBoolean(CONSTRUCTOR_BUNDLE_LOG_TO_FILE_TAG, logToFile);
+        returnedBundle.putString(CONSTRUCTOR_BUNDLE_CONSTELLATION_TAG, constellation.getName());
+        returnedBundle.putString(CONSTRUCTOR_BUNDLE_PVT_METHOD_TAG, pvtMethod.getName());
+        returnedBundle.putString(CONSTRUCTOR_BUNDLE_FILE_LOGGER_TAG, fileLogger.getName());
+
+        for(Correction corr : corrections)
+            correctionsList.add(corr.getName());
+
+        returnedBundle.putStringArrayList(CONSTRUCTOR_BUNDLE_CORRECTIONS_TAG, correctionsList);
+
+        returnedBundle.putBoolean(CONSTRUCTOR_BUNDLE_SANITY_CHECK, true);
+
+        return returnedBundle;
+    }
+
+    /**
+     * @param constructorBundle Bundle generated by getConstructorArrayList
+     * @return new calculation module based on the constructorBundle parameter
+     * @throws NameAlreadyRegisteredException when the name is already registered
+     * @throws NumberOfSeriesExceededLimitException when the number of created modules is exceeded
+     */
+    public static CalculationModule fromConstructorBundle(Bundle constructorBundle)
+            throws NameAlreadyRegisteredException, NumberOfSeriesExceededLimitException {
+
+        if(constructorBundle.getBoolean(CONSTRUCTOR_BUNDLE_SANITY_CHECK, false)) {
+
+            String name = constructorBundle.getString(CONSTRUCTOR_BUNDLE_NAME_TAG);
+            boolean valueOfActive = constructorBundle.getBoolean(CONSTRUCTOR_BUNDLE_ACTIVE_TAG);
+            boolean valueOfLogToFile = constructorBundle.getBoolean(CONSTRUCTOR_BUNDLE_LOG_TO_FILE_TAG);
+            String constellationClassName = constructorBundle.getString(CONSTRUCTOR_BUNDLE_CONSTELLATION_TAG);
+            String pvtMethodClassName = constructorBundle.getString(CONSTRUCTOR_BUNDLE_PVT_METHOD_TAG);
+            String fileLoggerClassName = constructorBundle.getString(CONSTRUCTOR_BUNDLE_FILE_LOGGER_TAG);
+            Set<String> correctionClassNames = new ArraySet<>();
+            correctionClassNames.addAll(Objects.requireNonNull(constructorBundle.getStringArrayList(CONSTRUCTOR_BUNDLE_CORRECTIONS_TAG)));
+
+            CalculationModule createdModule = new CalculationModule(
+                    name,
+                    getConstellationClassFromName(constellationClassName),
+                    getCorrectionClassesFromNames(correctionClassNames),
+                    getPvtMethodClassFromName(pvtMethodClassName),
+                    getFileLoggerClassFromName(fileLoggerClassName));
+
+            createdModule.active = valueOfActive;
+            createdModule.logToFile = valueOfLogToFile;
+
+            return createdModule;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * @param arrayList list generated by getConstructorArrayList
      * @return new calculation module based on the arrayList parameter
      * @throws NameAlreadyRegisteredException when the name is already registered
@@ -678,20 +703,27 @@ public class CalculationModule implements Runnable{
      */
     public static CalculationModule fromConstructorArrayList(ArrayList<String> arrayList) throws NameAlreadyRegisteredException, NumberOfSeriesExceededLimitException {
         String name = arrayList.get(0);
-        String constellationClassName = arrayList.get(1);
-        String pvtMethodClassName = arrayList.get(2);
-        String fileLoggerClassName = arrayList.get(3);
+        boolean valueOfActive = Boolean.parseBoolean(arrayList.get(1));
+        boolean valueOfLogToFile = Boolean.parseBoolean(arrayList.get(2));
+        String constellationClassName = arrayList.get(3);
+        String pvtMethodClassName = arrayList.get(4);
+        String fileLoggerClassName = arrayList.get(5);
         Set<String> correctionClassNames = new ArraySet<>();
 
-        for(int i=4; i<arrayList.size(); i++)
+        for(int i=6; i<arrayList.size(); i++)
             correctionClassNames.add(arrayList.get(i));
 
-        return new CalculationModule(
+        CalculationModule createdModule = new CalculationModule(
                 name,
                 getConstellationClassFromName(constellationClassName),
                 getCorrectionClassesFromNames(correctionClassNames),
                 getPvtMethodClassFromName(pvtMethodClassName),
                 getFileLoggerClassFromName(fileLoggerClassName));
+
+        createdModule.active = valueOfActive;
+        createdModule.logToFile = valueOfLogToFile;
+
+        return createdModule;
     }
 
     /**

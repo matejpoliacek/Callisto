@@ -237,7 +237,7 @@ public class RinexNavigationGalileo implements NavigationProducer {
                         try {
                             try {
                                 rnp = getFromSUPL(url, initialLocation);
-                            } catch (IndexOutOfBoundsException | UnsupportedOperationException e){
+                            } catch (IndexOutOfBoundsException e){
 //                                try {
 //                                    MainActivity.makeNotification("SUPL client exception...");
 //                                } catch (Exception e1){
@@ -301,8 +301,7 @@ public class RinexNavigationGalileo implements NavigationProducer {
         try {
             Log.w(TAG, "getFromSUPL: Getting data using SUPL client..." );
 
-            //SuplRrlpController mSuplController = new SuplRrlpController("supl.google.com",7276); // use this once the google server is operational
-            SuplRrlpController mSuplController = new SuplRrlpController(suplName,7276); // non-SSL
+            SuplRrlpController mSuplController = new SuplRrlpController(suplName,7276);
 
             Pair<Ephemeris.GpsNavMessageProto, GalileoEphemeris.GalNavMessageProto> navMsg;
             navMsg = mSuplController.generateNavMessage((long) (initialLocation.getLatitude()*1e7), (long) (initialLocation.getLongitude()*1e7));
@@ -314,7 +313,11 @@ public class RinexNavigationGalileo implements NavigationProducer {
 
             Log.w(TAG, "getFromSUPL: Received data from SUPL server" );
 
-        } catch (IOException | NullPointerException e) {
+        } catch (IOException |
+                NullPointerException |
+                UnsupportedOperationException |
+                IllegalArgumentException |
+                IndexOutOfBoundsException e) {
             Log.e(TAG, "Exception thrown getting msg from SUPL server", e);
         }
         return rnp;
