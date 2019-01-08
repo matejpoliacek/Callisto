@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
     private GnssCoreService gnssService = null;
     private GnssCoreService.GnssCoreBinder gnssBinder = null;
 
+    private Intent serviceIntent;
+
     //TODO: Replace with service
     public Observer connCheckUpdater = new Observer() {
 
@@ -140,6 +142,8 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         findViewById(R.id.MapButton).setAlpha(0.6f);
 */
         checkLocationAndMobileDataEnabled();
+
+        serviceIntent = new Intent(this, GnssCoreService.class);
     }
 
     @Override
@@ -154,7 +158,6 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
 //            Log.e("uvodny text", String.valueOf(PvtFragment.getUserLatitudeDegrees()));
         }
 
-        Intent serviceIntent = new Intent(this, GnssCoreService.class);
         bindService(serviceIntent, this, Context.BIND_AUTO_CREATE);
     }
 
@@ -210,6 +213,21 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         //Log.e("LANDING - OBSERVER", "-- observer ADDED");
 
         // TODO: do we still need this?
+
+
+        //TODO: check if this works
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                StartGNSSFragment.gnssInit.startAndBindGnssCoreService();
+                Log.d("LANDING", "startAndBindGnssCoreService: invoked");
+            }
+        }).start();
+
+
+        // end TODO
+
+        bindService(serviceIntent, this, Context.BIND_AUTO_CREATE);
     }
 
     /**

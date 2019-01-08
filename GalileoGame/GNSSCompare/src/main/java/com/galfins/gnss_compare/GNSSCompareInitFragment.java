@@ -401,6 +401,7 @@ public class GNSSCompareInitFragment extends Fragment {
             @Override
             public void run() {
                 startAndBindGnssCoreService();
+                Log.d(TAG, "startAndBindGnssCoreService: invoked");
             }
         }).start();
 
