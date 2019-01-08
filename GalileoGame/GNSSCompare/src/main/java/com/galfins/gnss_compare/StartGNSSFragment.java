@@ -20,6 +20,7 @@ public class StartGNSSFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e("START", "Starting GNSSCompare Fragment");
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         gnssInit = new GNSSCompareInitFragment();

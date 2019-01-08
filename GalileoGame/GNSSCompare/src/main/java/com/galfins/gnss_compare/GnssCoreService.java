@@ -149,6 +149,11 @@ public class GnssCoreService extends Service {
         public boolean getServiceStarted(){
             return serviceStarted;
         }
+
+        public GnssCoreService getService() {
+            return GnssCoreService.this;
+        }
+
     }
 
     private IBinder binder = new GnssCoreBinder();

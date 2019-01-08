@@ -4,14 +4,18 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Binder;
 import android.os.Build;
+import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -26,7 +30,9 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.galfins.gnss_compare.CalculationModule;
+import com.galfins.gnss_compare.CalculationModulesArrayList;
 import com.galfins.gnss_compare.GNSSCompareInitFragment;
+import com.galfins.gnss_compare.GnssCoreService;
 import com.galfins.gnss_compare.StartGNSSFragment;
 
 import org.w3c.dom.Text;
@@ -38,7 +44,7 @@ import java.util.Observer;
 import static android.net.ConnectivityManager.TYPE_MOBILE;
 import static android.net.ConnectivityManager.TYPE_WIFI;
 
-public class MainActivity extends AppCompatActivity implements GNSSCompareInitFragment.OnFinishedListener{
+public class MainActivity extends AppCompatActivity implements GNSSCompareInitFragment.OnFinishedListener, ServiceConnection {
 
     TextView gpsText;
     TextView galText;
@@ -50,14 +56,32 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
     };
     private static final int LOCATION_REQUEST_ID = 1;
 
-    /** TODO: Replace with service
+    private GnssCoreService gnssService = null;
+    private GnssCoreService.GnssCoreBinder gnssBinder = null;
+
+    //TODO: Replace with service
     public Observer connCheckUpdater = new Observer() {
 
         @Override
         public void update(final Observable o, Object arg) {
-            Log.e("LANDING - OBSERVER", "-- observer tick");
-            Log.e("Observer tick: " , ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
 
+            Log.e("LANDING - OBSERVER", "-- observer tick");
+
+            CalculationModulesArrayList CMArrayList = gnssBinder.getCalculationModules();
+
+            for(CalculationModule calculationModule : CMArrayList) {
+                Log.e("Observer tick: " , calculationModule.getPose().toString());
+
+                // TODO: replace, testing only
+                gpsText.setText(calculationModule.getConstellation().getUsedConstellationSize() + "");
+
+                for (int i = 0; i < calculationModule.getConstellation().getUsedConstellationSize(); i++) {
+                    //TODO
+                }
+            }
+
+            //Log.e("Observer tick: " , "");
+            /**
             String obsConstellation = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName();
 
 
@@ -82,18 +106,7 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
 
                 Log.e("LANDING POSE GAL", numSats);
             }
-        }
-    };
-     **/
-
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
-            if (bundle != null) {
-                Log.e("MAIN:", "Recieved from serivce");
-            }
+             **/
         }
     };
 
@@ -141,7 +154,14 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
 //            Log.e("uvodny text", String.valueOf(PvtFragment.getUserLatitudeDegrees()));
         }
 
+        Intent serviceIntent = new Intent(this, GnssCoreService.class);
+        bindService(serviceIntent, this, Context.BIND_AUTO_CREATE);
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unbindService(this);
     }
 
     public void goToMenu(View view) {
@@ -188,9 +208,9 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         // TODO Replace with Service
         //StartGNSSFragment.gnssInit.addObservers(connCheckUpdater);
         //Log.e("LANDING - OBSERVER", "-- observer ADDED");
-        registerReceiver(receiver, null);
-    }
 
+        // TODO: do we still need this?
+    }
 
     /**
      * Checks if Mobile data and Location Services are enabled and displays an Alert dialog box
@@ -256,10 +276,29 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
             // get the setting for "mobile data"
             mobileDataEnabled = (Boolean)method.invoke(cm);
         } catch (Exception e) {
-            Log.e("EXCEPTION ", "Mobile data checking error");
+            Log.e("LANDING", "Mobile data checking error");
         }
         return mobileDataEnabled;
     }
 
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        gnssBinder = (GnssCoreService.GnssCoreBinder) binder;
+        gnssService = gnssBinder.getService();
+        Log.e("LANDING ", "GNSS Service Bound");
+
+        gnssBinder.addObserver(connCheckUpdater);
+        Log.e("LANDING", "-- observer ADDED");
+
+        Log.e("LANDING ", "Get modules size: " + gnssBinder.getCalculationModules().size());
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        gnssService = null;
+        gnssBinder = null;
+        Log.e("LANDING ", "GNSS Service Disconnected");
+    }
 }
 

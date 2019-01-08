@@ -210,12 +210,14 @@ public class GNSSCompareInitFragment extends Fragment {
 
         if(applicationContext != null) {
             mLocationManager = (LocationManager) applicationContext.getSystemService(Activity.LOCATION_SERVICE);
+            Log.e(TAG, "mLocationManager instantiated in registerLocationManager");
         } else {
             Log.e(TAG, "applicationContext null for mLocationManager");
         }
 
         if(applicationContext != null) {
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext);
+            Log.e(TAG, "mFusedLocationClient instantiated in registerLocationManager");
         } else {
             Log.e(TAG, "applicationContext null for mFusedLocationClient");
         }
@@ -282,8 +284,10 @@ public class GNSSCompareInitFragment extends Fragment {
         initializeGnssCompareMainActivity();
 
         if (hasGnssAndLogPermissions()) {
+            Log.e(TAG, "Registering location manager in onCreate");
             registerLocationManager();
         } else {
+            Log.e(TAG, "Requesting GNSS and Log permissions in onCreate");
             requestGnssAndLogPermissions();
         }
 
@@ -408,6 +412,7 @@ public class GNSSCompareInitFragment extends Fragment {
             //todo: encapsulate this in GnssCoreService
             if(activity != null) {
                 activity.startService(new Intent(activity, GnssCoreService.class));
+                Log.e(TAG, "startService invoked in startAndBindGnssCoreService()");
             } else {
                 Log.e(TAG, "activity null for startService in startAndBindGnssCoreService()");
             }
