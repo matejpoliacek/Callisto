@@ -2,8 +2,6 @@ package com.chocolateam.galileogame;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Fragment;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,9 +11,10 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -35,14 +34,11 @@ import com.galfins.gnss_compare.GNSSCompareInitFragment;
 import com.galfins.gnss_compare.GnssCoreService;
 import com.galfins.gnss_compare.StartGNSSFragment;
 
-import org.w3c.dom.Text;
 
 import java.lang.reflect.Method;
 import java.util.Observable;
 import java.util.Observer;
 
-import static android.net.ConnectivityManager.TYPE_MOBILE;
-import static android.net.ConnectivityManager.TYPE_WIFI;
 
 public class MainActivity extends AppCompatActivity implements GNSSCompareInitFragment.OnFinishedListener, ServiceConnection {
 
@@ -67,48 +63,49 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         @Override
         public void update(final Observable o, Object arg) {
 
+            //TODO: Can thi be made more robust via getters from GNSSCompare? - same in TutorialView in map
+            final String GPSConstName = "GPS";
+            final String GalConstName = "Galileo";
+            final String GalGPSConstName = "Galileo + GPS";
+
             Log.e("LANDING - OBSERVER", "-- observer tick");
 
             CalculationModulesArrayList CMArrayList = gnssBinder.getCalculationModules();
 
             for(CalculationModule calculationModule : CMArrayList) {
+
+                String obsConst = calculationModule.getConstellation().getName();
+                final String numSats = ("Used: " + calculationModule.getConstellation().getUsedConstellationSize() + " Visible: " + calculationModule.getConstellation().getVisibleConstellationSize());
+
                 Log.e("Observer tick: " , calculationModule.getPose().toString());
+                Log.e("Observer tick const:" , calculationModule.getConstellation().toString());
+                Log.e("Observer tick const name:" , calculationModule.getConstellation().getName());
+                Log.e("Observer tick const size used:" , calculationModule.getConstellation().getUsedConstellationSize()+"");
+                Log.e("Observer tick const size visible:" , calculationModule.getConstellation().getVisibleConstellationSize()+"");
 
-                // TODO: replace, testing only
-                gpsText.setText(calculationModule.getConstellation().getUsedConstellationSize() + "");
+                if (obsConst.equals(GPSConstName)) {
+                    final String gpsString = "GPS " + numSats;
+                    gpsText.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            gpsText.setText(gpsString);
+                        }
+                    });
+                    Log.e("LANDING POSE GPS", gpsString);
 
-                for (int i = 0; i < calculationModule.getConstellation().getUsedConstellationSize(); i++) {
-                    //TODO
+                } else if (obsConst.equals(GalConstName)) {
+                    final String galString = "GAL " + numSats;
+                    galText.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            galText.setText(galString);
+                        }
+                    });
+
+                    Log.e("LANDING POSE GAL", galString);
                 }
+
             }
-
-            //Log.e("Observer tick: " , "");
-            /**
-            String obsConstellation = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName();
-
-
-
-            //TODO: Make this more robust via getters - same in TutorialView in map
-            final String GPSConstName = "GPS";
-            final String GalConstName = "Galileo";
-            final String GalGPSConstName = "Galileo + GPS";
-
-            int sats = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getSatellites().size();
-            System.out.println("SATS NO: " + sats);
-            String numSats = String.valueOf(((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getSatellites().size());
-
-            if (obsConstellation.equals(GPSConstName)) {
-
-                gpsText.setText(numSats);
-                Log.e("LANDING POSE GPS", numSats);
-
-            } else if (obsConstellation.equals(GalConstName)) {
-
-                galText.setText(numSats);
-
-                Log.e("LANDING POSE GAL", numSats);
-            }
-             **/
         }
     };
 
@@ -305,11 +302,6 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         gnssBinder = (GnssCoreService.GnssCoreBinder) binder;
         gnssService = gnssBinder.getService();
         Log.e("LANDING ", "GNSS Service Bound");
-
-        gnssBinder.addObserver(connCheckUpdater);
-        Log.e("LANDING", "-- observer ADDED");
-
-        Log.e("LANDING ", "Get modules size: " + gnssBinder.getCalculationModules().size());
     }
 
     @Override
