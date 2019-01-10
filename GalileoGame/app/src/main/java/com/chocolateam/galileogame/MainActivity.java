@@ -31,7 +31,7 @@ import android.widget.TextView;
 import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.CalculationModulesArrayList;
 import com.galfins.gnss_compare.GNSSCompareInitFragment;
-import com.galfins.gnss_compare.GnssCoreService;
+import com.galfins.gnss_compare.GNSSCoreServiceActivity;
 import com.galfins.gnss_compare.StartGNSSFragment;
 
 
@@ -40,7 +40,9 @@ import java.util.Observable;
 import java.util.Observer;
 
 
-public class MainActivity extends AppCompatActivity implements GNSSCompareInitFragment.OnFinishedListener, ServiceConnection {
+public class MainActivity extends GNSSCoreServiceActivity implements GNSSCompareInitFragment.OnFinishedListener {
+
+    private final String TAG = this.getClass().getSimpleName();
 
     TextView gpsText;
     TextView galText;
@@ -52,23 +54,18 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
     };
     private static final int LOCATION_REQUEST_ID = 1;
 
-    private GnssCoreService gnssService = null;
-    private GnssCoreService.GnssCoreBinder gnssBinder = null;
-
-    private Intent serviceIntent;
-
     //TODO: Replace with service
     public Observer connCheckUpdater = new Observer() {
 
         @Override
         public void update(final Observable o, Object arg) {
 
-            //TODO: Can thi be made more robust via getters from GNSSCompare? - same in TutorialView in map
+            //TODO: Can this be made more robust via getters from GNSSCompare? - same in TutorialView in map
             final String GPSConstName = "GPS";
             final String GalConstName = "Galileo";
             final String GalGPSConstName = "Galileo + GPS";
 
-            Log.e("LANDING - OBSERVER", "-- observer tick");
+            Log.e(TAG, "-- observer tick");
 
             CalculationModulesArrayList CMArrayList = gnssBinder.getCalculationModules();
 
@@ -91,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
                             gpsText.setText(gpsString);
                         }
                     });
-                    Log.e("LANDING POSE GPS", gpsString);
+                    Log.e(TAG, "GPS Pose: " + gpsString);
 
                 } else if (obsConst.equals(GalConstName)) {
                     final String galString = "GAL " + numSats;
@@ -102,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
                         }
                     });
 
-                    Log.e("LANDING POSE GAL", galString);
+                    Log.e("TAG", "GAL Pose: " + galString);
                 }
 
             }
@@ -124,12 +121,11 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
             requestPermissionAndSetupFragments(this);
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
+       /** FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         startedFragment = new StartGNSSFragment();
         fragmentTransaction.add(android.R.id.content, startedFragment).commit();
-
-
+**/
 
  /*     findViewById(R.id.GameButton).setEnabled(false);
         findViewById(R.id.GameButton).setAlpha(0.6f);
@@ -139,8 +135,6 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         findViewById(R.id.MapButton).setAlpha(0.6f);
 */
         checkLocationAndMobileDataEnabled();
-
-        serviceIntent = new Intent(this, GnssCoreService.class);
     }
 
     @Override
@@ -152,16 +146,8 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
             // FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             // PvtFragment pvtFrag = new PvtFragment();
             // fragmentTransaction.add(android.R.id.content, pvtFrag).commit();
-//            Log.e("uvodny text", String.valueOf(PvtFragment.getUserLatitudeDegrees()));
+//            Log.e(TAG, String.valueOf(PvtFragment.getUserLatitudeDegrees()));
         }
-
-        bindService(serviceIntent, this, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unbindService(this);
     }
 
     public void goToMenu(View view) {
@@ -205,26 +191,20 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
         findViewById(R.id.warningText).setVisibility(View.GONE);
        */
 
-        // TODO Replace with Service
-        //StartGNSSFragment.gnssInit.addObservers(connCheckUpdater);
-        //Log.e("LANDING - OBSERVER", "-- observer ADDED");
+        //TODO: check if this start and bind
 
-        // TODO: do we still need this?
-
-
-        //TODO: check if this works
-        new Thread(new Runnable() {
+        /**new Thread(new Runnable() {
             @Override
             public void run() {
                 StartGNSSFragment.gnssInit.startAndBindGnssCoreService();
-                Log.d("LANDING", "startAndBindGnssCoreService: invoked");
+                Log.d(TAG, "startAndBindGnssCoreService: invoked");
             }
         }).start();
+    **/
+        Log.e(TAG, "binder is null: " + (gnssBinder==null));
+        Log.e(TAG, "service is null: " + (gnssService==null));
 
 
-        // end TODO
-
-        bindService(serviceIntent, this, Context.BIND_AUTO_CREATE);
     }
 
     /**
@@ -291,24 +271,16 @@ public class MainActivity extends AppCompatActivity implements GNSSCompareInitFr
             // get the setting for "mobile data"
             mobileDataEnabled = (Boolean)method.invoke(cm);
         } catch (Exception e) {
-            Log.e("LANDING", "Mobile data checking error");
+            Log.e(TAG, "Mobile data checking error");
         }
         return mobileDataEnabled;
     }
 
-
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
-        gnssBinder = (GnssCoreService.GnssCoreBinder) binder;
-        gnssService = gnssBinder.getService();
-        Log.e("LANDING ", "GNSS Service Bound");
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        gnssService = null;
-        gnssBinder = null;
-        Log.e("LANDING ", "GNSS Service Disconnected");
+        super.onServiceConnected(name, binder);
+        gnssBinder.addObserver(connCheckUpdater);
+        Log.e(TAG, "-- observer ADDED");
     }
 }
 

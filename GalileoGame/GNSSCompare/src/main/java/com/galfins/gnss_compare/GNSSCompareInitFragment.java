@@ -536,6 +536,7 @@ public class GNSSCompareInitFragment extends Fragment {
     public void onAttach(Context activity) {
         super.onAttach(activity);
 
+        Log.e(TAG, "onAttach invoked");
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception
         try {
