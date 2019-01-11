@@ -1,6 +1,7 @@
 package com.chocolateam.galileomap;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -8,6 +9,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -19,6 +21,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.galfins.gnss_compare.CalculationModule;
+import com.galfins.gnss_compare.CalculationModulesArrayList;
 import com.galfins.gnss_compare.StartGNSSFragment;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -36,6 +39,8 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
+
+    private final String TAG = this.getClass().getSimpleName();
 
     private ImageButton zoomButton;
     private GameScore inGameScore;
@@ -87,46 +92,56 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     private Button GameButton;
 
     protected Location mGameLocation = mLastKnownLocation;
-/** TODO: Replace with Service
+
     public Observer mapGameUpdater = new Observer() {
         @Override
         public void update(final Observable o, Object arg) {
-            Log.e("GAME - OBSERVER", "-- observer tick");
-            Log.e("Observer tick: " , ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
 
-            String obsConstellation = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName();
+            final String GPSConstName = "GPS";
+            final String GalConstName = "Galileo";
+            final String GalGPSConstName = "Galileo + GPS";
 
-            Log.e("GAME-CONST", obsConstellation);
-            Log.e("GAME-CONST-SELECTED", constellation);
+            CalculationModulesArrayList CMArrayList = gnssBinder.getCalculationModules();
 
-            if (mGameLocation == null) {
-                mGameLocation = mLastKnownLocation;
-            }
+            for (CalculationModule calculationModule : CMArrayList) {
 
-            if (obsConstellation.equals(constellation)) {
-                final double lat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude();
-                final double lng = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude();
+                Log.e(TAG, "-- observer tick");
+                Log.e("Observer tick: ", (calculationModule.getPose().toString()));
 
-                Log.e("GAME-CONST-COMPARE", String.valueOf(lat));
-                Log.e("GAME-CONST-COMPARE", String.valueOf(lng));
+                String obsConstellation = calculationModule.getConstellation().getName();
 
-                mGameLocation.setLatitude(lat);
-                mGameLocation.setLongitude(lng);
-                Log.e("GAME-LOCATION", "Location set");
+                Log.e(TAG,"Constellation name: " + obsConstellation);
+                Log.e(TAG,"Selected constellation: " + constellation);
 
-                int markerStyle = 0;
-
-                // change dot to correspond to the user choice of constellation
-                if (constellation.equals("GPS")) {
-                    markerStyle = R.drawable.gps_marker;
-                } else if (constellation.equals("Galileo")) {
-                    markerStyle = R.drawable.gal_marker;
-                } else if (constellation.equals("Galileo + GPS")) {
-                    markerStyle = R.drawable.galgps_marker;
+                if (mGameLocation == null) {
+                    mGameLocation = mLastKnownLocation;
                 }
 
-                if (playing && game != null) {
-                    game.setPlayerLocation(mGameLocation);
+                if (obsConstellation.equals(constellation)) {
+                    final double lat = calculationModule.getPose().getGeodeticLatitude();
+                    final double lng = calculationModule.getPose().getGeodeticLongitude();
+
+                    Log.e(TAG, "Game latitude: " + String.valueOf(lat));
+                    Log.e(TAG, "Game longitude: " + String.valueOf(lng));
+
+                    mGameLocation.setLatitude(lat);
+                    mGameLocation.setLongitude(lng);
+                    Log.e(TAG, "Location set");
+
+                    int markerStyle = 0;
+
+                    // change dot to correspond to the user choice of constellation
+                    if (constellation.equals(GPSConstName)) {
+                        markerStyle = R.drawable.gps_marker;
+                    } else if (constellation.equals(GalConstName)) {
+                        markerStyle = R.drawable.gal_marker;
+                    } else if (constellation.equals(GalGPSConstName)) {
+                        markerStyle = R.drawable.galgps_marker;
+                    }
+
+
+                    if (playing && game != null) {
+                        game.setPlayerLocation(mGameLocation);
 
                     /* TODO: Figure out map animation to follow the player
                     // START COMMENT
@@ -141,30 +156,31 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
                         }
                     });
-                     // END COMMENT
-                }
-
-                // finalise marker style for UI thread
-                final int finalMarkerStyle = markerStyle;
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        playerMarker = processMarker(true, playerMarker, new LatLng(lat, lng), finalMarkerStyle);
-                        Log.e("GAME-MARKER", "Marker placed");
-                        if (!GameButton.isEnabled()) {
-                            GameButton.setText("GOT IT! PLAY!");
-                            GameButton.setEnabled(true);
-                            GameButton.setBackgroundColor(getResources().getColor(R.color.buttonGreen));
-                            Log.e("GAME-BUTTON", "Button re-enabled");
-                        }
-                        Log.e("GAME-UITHREAD", "Thread finished");
+                     // END COMMENT*/
                     }
-                });
+
+                    // finalise marker style for UI thread
+                    final int finalMarkerStyle = markerStyle;
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            playerMarker = processMarker(true, playerMarker, new LatLng(lat, lng), finalMarkerStyle);
+                            Log.e(TAG, "GAME-MARKER: Marker placed");
+                            if (!GameButton.isEnabled()) {
+                                GameButton.setText("GOT IT! PLAY!");
+                                GameButton.setEnabled(true);
+                                GameButton.setBackgroundColor(getResources().getColor(R.color.buttonGreen));
+                                Log.e(TAG, "GAME-BUTTON: Button re-enabled");
+                            }
+                            Log.e(TAG, "GAME-UITHREAD: Thread finished");
+                        }
+                    });
+                }
             }
         }
     };
-**/
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // run the rest of the onCreate method from superclass
@@ -614,5 +630,12 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
             Log.e("Location valid", String.valueOf(game.isLocationValid()));
             playing();
         }
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        super.onServiceConnected(name, binder);
+        gnssBinder.addObserver(mapGameUpdater);
+        Log.e(TAG, "-- observer ADDED");
     }
 }

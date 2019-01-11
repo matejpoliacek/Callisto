@@ -25,6 +25,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.galfins.gnss_compare.GNSSCoreServiceActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -45,11 +46,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyCallback {
+
+    private final String TAG = this.getClass().getSimpleName();
 
     protected GoogleMap mMap;
 
-    private static final String TAG = MapsActivity.class.getSimpleName();
     private CameraPosition mCameraPosition;
 
 
@@ -165,7 +167,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        Log.e("MAP-super:", "visited parent onMapReady");
+        Log.e(TAG, "visited parent onMapReady");
         // Use a custom info window adapter to handle multiple lines of text in the
         // info window contents.
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
@@ -425,10 +427,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected Marker processMarker(boolean checkbox1Bool, boolean checkbox2Bool, Marker marker, LatLng point, int markerResource) {
         if (checkbox1Bool && checkbox2Bool){
             if (marker == null) {
-                Log.e("MAP-MARKER", "First marker");
+                Log.e(TAG, "First marker");
             } else {
                 marker.remove();
-                Log.e("MAP-MARKER", "New marker");
+                Log.e(TAG, "New marker");
             }
             marker = mMap.addMarker(new MarkerOptions().position(point));
             marker.setIcon(BitmapDescriptorFactory.fromResource(markerResource));
@@ -436,10 +438,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             return marker;
         } else if ((!checkbox1Bool || !checkbox2Bool)&& marker != null) {
             marker.remove();
-            Log.e("MAP-MARKER", "Remove marker");
+            Log.e(TAG, "Remove marker");
             return null;
         } else { // never here
-            Log.e("MAP-MARKER", "Marker error");
+            Log.e(TAG, "Marker error");
             return null;
         }
     }

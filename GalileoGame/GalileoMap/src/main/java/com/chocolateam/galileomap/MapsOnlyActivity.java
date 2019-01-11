@@ -1,12 +1,15 @@
 package com.chocolateam.galileomap;
 
 
+import android.content.ComponentName;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 
 import com.galfins.gnss_compare.CalculationModule;
+import com.galfins.gnss_compare.CalculationModulesArrayList;
 import com.galfins.gnss_compare.StartGNSSFragment;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -18,6 +21,8 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback {
+
+    private final String TAG = this.getClass().getSimpleName();
 
      /** MAP ONLY VARIABLES **/
     private View checkboxLayout;
@@ -33,41 +38,53 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
     private Marker mGPSMarker;
     private Marker mGALMarker;
     private Marker mGALGPSMarker;
-/** TODO: replace with service
+
     public Observer mapMarkerUpdater = new Observer() {
         @Override
         public void update(final Observable o, Object arg) {
-            Log.e("MAP - OBSERVER", "-- observer tick");
-            Log.e("Observer tick: " , ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().toString());
 
-            final double lat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude();
-            final double lng = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude();
+            final String GPSConstName = "GPS";
+            final String GalConstName = "Galileo";
+            final String GalGPSConstName = "Galileo + GPS";
 
-            final String constName = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName();
-            Log.e("MAP-CONST", constName);
+            CalculationModulesArrayList CMArrayList = gnssBinder.getCalculationModules();
 
-            // SET MAP LOCATION, markers and default
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (constName.equals("GPS")) {
-                        GPSpoint = new LatLng(lat, lng);
-                        Log.e("MAP-GPSPoint", GPSpoint.toString());
-                        mGPSMarker = processMarker(checkBoxGPS.isChecked(), mGPSMarker, GPSpoint, R.drawable.gps_marker);
-                    } else if (constName.equals("Galileo")) {
-                        GalileoPoint = new LatLng(lat, lng);
-                        Log.e("MAP-GALPoint", GalileoPoint.toString());
-                        mGALMarker = processMarker(checkBoxGAL.isChecked(), mGALMarker, GalileoPoint, R.drawable.gal_marker);
-                    } else if (constName.equals("Galileo + GPS")) {
-                        GalGPSPoint = new LatLng(lat, lng);
-                        Log.e("MAP-GALGPSPoint", GalGPSPoint.toString());
-                        mGALGPSMarker = processMarker(checkBoxGPS.isChecked(), checkBoxGAL.isChecked(), mGALGPSMarker, GalGPSPoint, R.drawable.galgps_marker);
+            for(CalculationModule calculationModule : CMArrayList) {
+
+                Log.e(TAG, "-- observer tick");
+                Log.e("Observer tick: " , (calculationModule.getPose().toString()));
+
+                final double lat = calculationModule.getPose().getGeodeticLatitude();
+                final double lng = calculationModule.getPose().getGeodeticLongitude();
+
+                final String constName = calculationModule.getConstellation().getName();
+                Log.e(TAG, "Constellation Name: " + constName);
+
+                // SET MAP LOCATION, markers and default
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (constName.equals(GPSConstName)) {
+                            GPSpoint = new LatLng(lat, lng);
+                            Log.e(TAG, "MAP-GPSPoint: " + GPSpoint.toString());
+                            mGPSMarker = processMarker(checkBoxGPS.isChecked(), mGPSMarker, GPSpoint, R.drawable.gps_marker);
+
+                        } else if (constName.equals(GalConstName)) {
+                            GalileoPoint = new LatLng(lat, lng);
+                            Log.e(TAG, "MAP-GALPoint: " + GalileoPoint.toString());
+                            mGALMarker = processMarker(checkBoxGAL.isChecked(), mGALMarker, GalileoPoint, R.drawable.gal_marker);
+
+                        } else if (constName.equals(GalGPSConstName)) {
+                            GalGPSPoint = new LatLng(lat, lng);
+                            Log.e(TAG, "MAP-GALGPSPoint: " + GalGPSPoint.toString());
+                            mGALGPSMarker = processMarker(checkBoxGPS.isChecked(), checkBoxGAL.isChecked(), mGALGPSMarker, GalGPSPoint, R.drawable.galgps_marker);
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     };
-**/
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // run the rest of the onCreate method from superclass
@@ -81,8 +98,6 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
         checkboxLayout = findViewById(R.id.checkboxLayout);
         checkboxLayout.setVisibility(View.VISIBLE);
-        // TODO: REPLACE WITH SERVICE
-        //StartGNSSFragment.gnssInit.addObservers(mapMarkerUpdater);
     }
 
     @Override
@@ -105,5 +120,12 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
     public void backToMenu(View view) {
         finish();
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        super.onServiceConnected(name, binder);
+        gnssBinder.addObserver(mapMarkerUpdater);
+        Log.e(TAG, "-- observer ADDED");
     }
 }

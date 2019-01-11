@@ -53,7 +53,6 @@ public class MainMenu extends AppCompatActivity implements GNSSCompareInitFragme
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         startedFragment = new StartGNSSFragment();
         fragmentTransaction.add(android.R.id.content, startedFragment).commit();
-  **/
 
         findViewById(R.id.GameButton).setEnabled(false);
         findViewById(R.id.GameButton).setAlpha(0.6f);
@@ -63,6 +62,7 @@ public class MainMenu extends AppCompatActivity implements GNSSCompareInitFragme
         findViewById(R.id.MapButton).setAlpha(0.6f);
 
         checkLocationAndMobileDataEnabled();
+    **/
     }
 
     @Override
@@ -143,6 +143,7 @@ public class MainMenu extends AppCompatActivity implements GNSSCompareInitFragme
 
     @Override
     public void onFragmentReady() {
+        /**
         findViewById(R.id.GameButton).setEnabled(true);
         findViewById(R.id.GameButton).setAlpha(1.0f);
         findViewById(R.id.spaceshipButton).setEnabled(true);
@@ -151,6 +152,7 @@ public class MainMenu extends AppCompatActivity implements GNSSCompareInitFragme
         findViewById(R.id.MapButton).setAlpha(1.0f);
 
         findViewById(R.id.warningText).setVisibility(View.GONE);
+         **/
     }
 
 
