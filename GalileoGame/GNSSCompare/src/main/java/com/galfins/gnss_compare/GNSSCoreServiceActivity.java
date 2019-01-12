@@ -48,6 +48,7 @@ public class GNSSCoreServiceActivity extends AppCompatActivity implements Servic
     protected void onPause() {
         super.onPause();
         unbindService(this);
+        Log.e(TAG, "Service unbound in onPause");
     }
 
     @Override

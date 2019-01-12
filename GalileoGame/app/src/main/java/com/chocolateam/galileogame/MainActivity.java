@@ -68,11 +68,11 @@ public class MainActivity extends GNSSCoreServiceActivity implements GNSSCompare
                 String obsConst = calculationModule.getConstellation().getName();
                 final String numSats = ("Used: " + calculationModule.getConstellation().getUsedConstellationSize() + " Visible: " + calculationModule.getConstellation().getVisibleConstellationSize());
 
-                Log.e("Observer tick: " , calculationModule.getPose().toString());
-                Log.e("Observer tick const:" , calculationModule.getConstellation().toString());
-                Log.e("Observer tick const name:" , calculationModule.getConstellation().getName());
-                Log.e("Observer tick const size used:" , calculationModule.getConstellation().getUsedConstellationSize()+"");
-                Log.e("Observer tick const size visible:" , calculationModule.getConstellation().getVisibleConstellationSize()+"");
+                Log.e(TAG,"Observer tick: " + calculationModule.getPose().toString());
+                Log.e(TAG, "Observer tick const:" + calculationModule.getConstellation().toString());
+                Log.e(TAG, "Observer tick const name:" + calculationModule.getConstellation().getName());
+                Log.e(TAG,"Observer tick const size used:" + calculationModule.getConstellation().getUsedConstellationSize()+"");
+                Log.e(TAG, "Observer tick const size visible:" + calculationModule.getConstellation().getVisibleConstellationSize()+"");
 
                 if (obsConst.equals(GPSConstName)) {
                     final String gpsString = "GPS " + numSats;
@@ -93,7 +93,7 @@ public class MainActivity extends GNSSCoreServiceActivity implements GNSSCompare
                         }
                     });
 
-                    Log.e("TAG", "GAL Pose: " + galString);
+                    Log.e(TAG, "GAL Pose: " + galString);
                 }
 
             }

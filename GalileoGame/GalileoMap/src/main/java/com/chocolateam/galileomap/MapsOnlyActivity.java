@@ -52,7 +52,7 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
             for(CalculationModule calculationModule : CMArrayList) {
 
                 Log.e(TAG, "-- observer tick");
-                Log.e("Observer tick: " , (calculationModule.getPose().toString()));
+                Log.e(TAG, "Observer tick: " + (calculationModule.getPose().toString()));
 
                 final double lat = calculationModule.getPose().getGeodeticLatitude();
                 final double lng = calculationModule.getPose().getGeodeticLongitude();
