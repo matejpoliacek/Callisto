@@ -64,16 +64,6 @@ import com.galfins.gnss_compare.FileLoggers.RawMeasurementsFileLogger;
 public class GNSSCompareInitFragment extends Fragment {
 
     /**
-     * Listener to notify parent activity that the fragment is ready
-     */
-
-    OnFinishedListener mCallback;
-
-    public interface OnFinishedListener {
-        public void onFragmentReady();
-    }
-
-    /**
      * Flag to monitor if notification that fragment is ready was sent
      */
     private boolean FragmentReadyNotified = false;
@@ -537,16 +527,6 @@ public class GNSSCompareInitFragment extends Fragment {
         super.onAttach(activity);
 
         Log.e(TAG, "onAttach invoked");
-        // This makes sure that the container activity has implemented
-        // the callback interface. If not, it throws an exception
-        try {
-            //parent = activity;
-            mCallback = (OnFinishedListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFinishedListener");
-        }
-
     }
 
 }

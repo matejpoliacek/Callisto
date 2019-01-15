@@ -6,7 +6,7 @@
     <string name="mobile_data_not_enabled">The app requires Mobile Data to run. Would you like to enable them now?</string>
     <string name="open_mobile_data_settings">Yes</string>
     <string name="Ok">Ok</string>
-    <string name="services_not_enabled">The app requires both Mobile Data and Location Services enabled.\n\nPlease enable them before continuing.</string>
+    <string name="services_not_enabled">The app requires both Mobile Data and Location Services with High Accuracy enabled.\n\nPlease enable them before continuing.</string>
     <string name="about_text">
         Powered by <a href="https://play.google.com/store/apps/details?id=com.galfins.gnss_compare">GNSS Compare</a>\n\n
 

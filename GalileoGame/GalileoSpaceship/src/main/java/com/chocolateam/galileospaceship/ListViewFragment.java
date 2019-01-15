@@ -1,6 +1,8 @@
 package com.chocolateam.galileospaceship;
 
 import android.Manifest;
+import android.content.Context;
+import android.graphics.Point;
 import android.location.GnssMeasurement;
 import android.location.GnssMeasurementsEvent;
 import android.location.LocationManager;
@@ -11,10 +13,13 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import com.chocolateam.galileospaceship.R;
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
@@ -62,6 +67,21 @@ public class ListViewFragment extends Fragment implements Runnable {
         mrecyclerView.setLayoutManager(mLayoutManager);
         mrecyclerView.setItemAnimator(new DefaultItemAnimator());
         mrecyclerView.setAdapter(mAdapter);
+
+        // Resize Imageview with satellite list
+        WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int phoneWidth = size.x;
+        int phoneHeight = size.y;
+
+        ImageView imageView = mView.findViewById(R.id.imageView);
+
+        imageView.getLayoutParams().width = (int)(phoneWidth*0.9); //2960) * imageView.getMeasuredWidth(); //imageView.getLayoutParams().width;
+        imageView.getLayoutParams().height = (int)(phoneHeight*0.55);//1440)* imageView.getMeasuredHeight(); //imageView.getLayoutParams().height;
+        imageView.requestLayout();
+        imageView.invalidate();
 
         created = true;
 

@@ -27,10 +27,9 @@ import com.galfins.gnss_compare.StartGNSSFragment;
 
 import java.lang.reflect.Method;
 
-public class MainMenu extends AppCompatActivity implements GNSSCompareInitFragment.OnFinishedListener{
+public class MainMenu extends AppCompatActivity {
 
     private boolean mLocationPermissionGranted = false;
-    private StartGNSSFragment startedFragment;
     private static final String[] REQUIRED_PERMISSIONS = {
             Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
@@ -49,20 +48,8 @@ public class MainMenu extends AppCompatActivity implements GNSSCompareInitFragme
             requestPermissionAndSetupFragments(this);
         }
 
-   /**     FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        startedFragment = new StartGNSSFragment();
-        fragmentTransaction.add(android.R.id.content, startedFragment).commit();
-
-        findViewById(R.id.GameButton).setEnabled(false);
-        findViewById(R.id.GameButton).setAlpha(0.6f);
-        findViewById(R.id.spaceshipButton).setEnabled(false);
-        findViewById(R.id.spaceshipButton).setAlpha(0.6f);
-        findViewById(R.id.MapButton).setEnabled(false);
-        findViewById(R.id.MapButton).setAlpha(0.6f);
-
         checkLocationAndMobileDataEnabled();
-    **/
+
     }
 
     @Override
@@ -139,20 +126,6 @@ public class MainMenu extends AppCompatActivity implements GNSSCompareInitFragme
         } else {
             ActivityCompat.requestPermissions(activity, REQUIRED_PERMISSIONS, LOCATION_REQUEST_ID);
         }
-    }
-
-    @Override
-    public void onFragmentReady() {
-        /**
-        findViewById(R.id.GameButton).setEnabled(true);
-        findViewById(R.id.GameButton).setAlpha(1.0f);
-        findViewById(R.id.spaceshipButton).setEnabled(true);
-        findViewById(R.id.spaceshipButton).setAlpha(1.0f);
-        findViewById(R.id.MapButton).setEnabled(true);
-        findViewById(R.id.MapButton).setAlpha(1.0f);
-
-        findViewById(R.id.warningText).setVisibility(View.GONE);
-         **/
     }
 
 

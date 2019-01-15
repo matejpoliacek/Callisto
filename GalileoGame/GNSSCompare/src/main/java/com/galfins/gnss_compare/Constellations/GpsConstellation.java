@@ -262,6 +262,7 @@ public class GpsConstellation extends Constellation {
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
                     //GNSSCompareInitFragment.makeRnpFailedNotification();
+                    Log.e(TAG, observedSatellite.getUniqueSatId() + " excluded based on rnp");
                     continue;
                 }
 
@@ -275,6 +276,7 @@ public class GpsConstellation extends Constellation {
                 // Add to the exclusion list the satellites that do not pass the masking criteria
                 if(observedSatellite.getRxTopo().getElevation() < MASK_ELEVATION){
                     excludedSatellites.add(observedSatellite);
+                    Log.e(TAG, observedSatellite.getUniqueSatId() + " excluded based on elevation");
                 }
 
                 double accumulatedCorrection = 0;

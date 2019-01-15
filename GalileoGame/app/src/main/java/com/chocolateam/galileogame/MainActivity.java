@@ -24,17 +24,19 @@ import android.widget.TextView;
 
 import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.CalculationModulesArrayList;
+import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 import com.galfins.gnss_compare.GNSSCompareInitFragment;
 import com.galfins.gnss_compare.GNSSCoreServiceActivity;
 import com.galfins.gnss_compare.StartGNSSFragment;
 
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 
-public class MainActivity extends GNSSCoreServiceActivity implements GNSSCompareInitFragment.OnFinishedListener {
+public class MainActivity extends GNSSCoreServiceActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -173,34 +175,6 @@ public class MainActivity extends GNSSCoreServiceActivity implements GNSSCompare
         }
     }
 
-    @Override
-    public void onFragmentReady() {
- /*       findViewById(R.id.GameButton).setEnabled(true);
-        findViewById(R.id.GameButton).setAlpha(1.0f);
-        findViewById(R.id.spaceshipButton).setEnabled(true);
-        findViewById(R.id.spaceshipButton).setAlpha(1.0f);
-        findViewById(R.id.MapButton).setEnabled(true);
-        findViewById(R.id.MapButton).setAlpha(1.0f);
-
-        findViewById(R.id.warningText).setVisibility(View.GONE);
-       */
-
-        //TODO: check if this start and bind
-
-        /**new Thread(new Runnable() {
-            @Override
-            public void run() {
-                StartGNSSFragment.gnssInit.startAndBindGnssCoreService();
-                Log.d(TAG, "startAndBindGnssCoreService: invoked");
-            }
-        }).start();
-    **/
-        Log.e(TAG, "binder is null: " + (gnssBinder==null));
-        Log.e(TAG, "service is null: " + (gnssService==null));
-
-
-    }
-
     /**
      * Checks if Mobile data and Location Services are enabled and displays an Alert dialog box
      * warning the user that they are required.
@@ -275,6 +249,12 @@ public class MainActivity extends GNSSCoreServiceActivity implements GNSSCompare
         super.onServiceConnected(name, binder);
         gnssBinder.addObserver(connCheckUpdater);
         Log.e(TAG, "-- observer ADDED");
+    }
+
+    @Override
+    protected void onPause() {
+        gnssBinder.removeObserver(connCheckUpdater);
+        super.onPause();
     }
 }
 

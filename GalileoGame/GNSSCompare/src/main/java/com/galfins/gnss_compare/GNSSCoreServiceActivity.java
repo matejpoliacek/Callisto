@@ -13,7 +13,7 @@ import android.util.Log;
  * Created by Matej on 10/01/2019.
  */
 
-public class GNSSCoreServiceActivity extends AppCompatActivity implements ServiceConnection, GNSSCompareInitFragment.OnFinishedListener {
+public class GNSSCoreServiceActivity extends AppCompatActivity implements ServiceConnection {
 
     OnBoundListener mCallback;
 
@@ -42,6 +42,7 @@ public class GNSSCoreServiceActivity extends AppCompatActivity implements Servic
     protected void onResume() {
         super.onResume();
         bindService(serviceIntent, this, Context.BIND_AUTO_CREATE);
+        Log.e(TAG, "Service bound in onResume");
     }
 
     @Override
@@ -63,10 +64,5 @@ public class GNSSCoreServiceActivity extends AppCompatActivity implements Servic
         gnssService = null;
         gnssBinder = null;
         Log.e(TAG, "GNSS Service Disconnected");
-    }
-
-    @Override
-    public void onFragmentReady() {
-        Log.e(TAG, "onFragReady invoked");
     }
 }
