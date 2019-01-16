@@ -24,10 +24,7 @@ import android.widget.TextView;
 
 import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.CalculationModulesArrayList;
-import com.galfins.gnss_compare.Constellations.SatelliteParameters;
-import com.galfins.gnss_compare.GNSSCompareInitFragment;
 import com.galfins.gnss_compare.GNSSCoreServiceActivity;
-import com.galfins.gnss_compare.StartGNSSFragment;
 
 
 import java.lang.reflect.Method;
@@ -55,11 +52,6 @@ public class MainActivity extends GNSSCoreServiceActivity {
 
         @Override
         public void update(final Observable o, Object arg) {
-
-            //TODO: Can this be made more robust via getters from GNSSCompare? - same in TutorialView in map
-            final String GPSConstName = "GPS";
-            final String GalConstName = "Galileo";
-            final String GalGPSConstName = "Galileo + GPS";
 
             Log.e(TAG, "-- observer tick");
 
@@ -253,7 +245,10 @@ public class MainActivity extends GNSSCoreServiceActivity {
 
     @Override
     protected void onPause() {
-        gnssBinder.removeObserver(connCheckUpdater);
+        if (gnssBinder != null) {
+            gnssBinder.removeObserver(connCheckUpdater);
+            Log.e(TAG, "-- observer REMOVED");
+        }
         super.onPause();
     }
 }

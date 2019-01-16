@@ -1,9 +1,11 @@
 package com.chocolateam.galileospaceship;
 
 
+import android.content.ComponentName;
 import android.location.GnssMeasurement;
 import android.location.GnssMeasurementsEvent;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -17,8 +19,9 @@ import android.view.WindowManager;
 
 import com.chocolateam.galileospaceship.R;
 import com.galfins.gnss_compare.CalculationModule;
+import com.galfins.gnss_compare.CalculationModulesArrayList;
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
-import com.galfins.gnss_compare.StartGNSSFragment;
+import com.galfins.gnss_compare.GNSSCoreServiceActivity;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,7 +35,9 @@ import java.util.Observer;
  * Created by Lionel Garcia on 25/01/2018.
  */
 
-public class SpaceshipViewActivity extends AppCompatActivity {
+public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
+
+    private final String TAG = this.getClass().getSimpleName();
 
     static final int NUM_PANELS = 3;
     SpacecraftPagerAdapter mAdapter;
@@ -45,96 +50,97 @@ public class SpaceshipViewActivity extends AppCompatActivity {
     static SkyViewFragment mSkyViewFragment;
     static RadarViewFragment mRadarViewFragment;
 
-    /** TODO: Replace with service
     public Observer shipUpdater = new Observer() {
         @Override
         public void update(final Observable o, Object arg) {
-            Log.e("OBSERVER - SPACESHIP", "-- observer tick");
 
-            final String calcName = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getName();
-            final String currentConstellation = mListViewFragment.getSelectedConstellation();
+            Log.e(TAG, "-- observer tick");
 
-            Log.e("SPACESHIP - ConstSize", String.valueOf(((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getUsedConstellationSize()));
-            Log.e("SPACESHIP - ConstName", String.valueOf(((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getName()));
+            CalculationModulesArrayList CMArrayList = gnssBinder.getCalculationModules();
+
+            for (final CalculationModule calculationModule : CMArrayList) {
+
+                final String calcName = calculationModule.getName();
+                final String currentConstellation = mListViewFragment.getSelectedConstellation();
+
+                Log.e(TAG, "ConstSize: " + calculationModule.getConstellation().getVisibleConstellationSize());
+                Log.e(TAG, "ConstName: " + calculationModule.getConstellation().getName());
 
 
-            System.out.println(calcName);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
 
-            runOnUiThread(new Runnable() {
+                        List<SatelliteParameters> satellites;
+                        int numberOfSat;
+                        satellites = calculationModule.getConstellation().getSatellites();
+                        Log.e(TAG, "Satellite list not empty?" + String.valueOf(!satellites.isEmpty()));
 
-                @Override
-                public void run() {
+                        if (!satellites.isEmpty()) {
+                            setSatellitesList(satellites);
+                            setLatLongIndicator(calculationModule.getPose().getGeodeticLatitude(),
+                                    calculationModule.getPose().getGeodeticLongitude());
+                            setAltitudeIndicator(calculationModule.getPose().getGeodeticHeight());
 
-                    List<SatelliteParameters> satellites;
-                    int numberOfSat;
-                    satellites = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getSatellites();
-
-                    if (!satellites.isEmpty()) {
-                        setSatellitesList(satellites);
-                        setLatLongIndicator(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude(),
-                                ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude());
-                        setAltitudeIndicator(((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticHeight());
-
-                        switch (currentConstellation + " " + calcName) {
-                            case "GPS GPS":
-                                Log.e("SATPOS gps", String.valueOf(satellites.size()));
-                            case "Galileo Galileo":
-                                Log.e("SATPOS galileo", String.valueOf(satellites.size()));
-                            case "Galileo+GPS Galileo+GPS":
-                                if (satellites.size() >= 1) {
-                                    if (satellites.get(0).getSatellitePosition() != null){
-                                        Log.e("GALGPS-SPACESHIP", satellites.get(0).getSatellitePosition().toString());
+                            Log.e(TAG, "Switch string: " + currentConstellation + " " + calcName);
+                            switch (currentConstellation + " " + calcName) {
+                                case "GPS GPS":
+                                    Log.e(TAG, "SATPOS gps: " + String.valueOf(satellites.size()));
+                                case "Galileo Galileo":
+                                    Log.e(TAG, "SATPOS galileo: " + String.valueOf(satellites.size()));
+                                case "Galileo+GPS Galileo+GPS":
+                                    if (satellites.size() >= 1) {
+                                        if (satellites.get(0).getSatellitePosition() != null) {
+                                            Log.e(TAG, "GALGPS-SPACESHIP: " + satellites.get(0).getSatellitePosition().toString());
+                                        } else {
+                                            Log.e(TAG, "GALGPS-SPACESHIP: Satellite positions are null");
+                                        }
                                     }
-                                    else {
-                                        Log.e("GALGPS-SPACESHIP", "Satellite positions are null");
+
+                                    mSkyViewFragment.updateSatView(satellites);
+                                    if (mRadarViewFragment.created) {
+                                        mRadarViewFragment.updateSatellites(satellites);
                                     }
-                                }
 
-                                mSkyViewFragment.updateSatView(satellites);
-                                if (mRadarViewFragment.created) {
-                                    mRadarViewFragment.updateSatellites(satellites);
-                                }
-
-                                Log.e("SATPOS galgps", String.valueOf(satellites.size()));
+                                    Log.e(TAG, "SATPOS galgp: " + String.valueOf(satellites.size()));
 
 
-                               //  if (satellites.size() > 0) {
-                               //  Log.e("SATPOS - pos lat", String.valueOf(satellites.get(0).getSatellitePosition().getGeodeticLatitude()));
-                               //  Log.e("SATPOS - pos long", String.valueOf(satellites.get(0).getSatellitePosition().getGeodeticLongitude()));
-                               //  }
+                                    //  if (satellites.size() > 0) {
+                                    //  Log.e("SATPOS - pos lat", String.valueOf(satellites.get(0).getSatellitePosition().getGeodeticLatitude()));
+                                    //  Log.e("SATPOS - pos long", String.valueOf(satellites.get(0).getSatellitePosition().getGeodeticLongitude()));
+                                    //  }
+                            }
                         }
-                    }
 
 
-
-                    if (mRadarViewFragment.created) {
-                        mRadarViewFragment.setTimeUTC();
-                        mRadarViewFragment.setclock(mInitialTime);
-                        switch (calcName) {
-                            case "GPS":
-                                numberOfSat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getUsedConstellationSize();
-                                mRadarViewFragment.setSatCounts(calcName, numberOfSat);
-                            case "Galileo":
-                                numberOfSat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getConstellation().getUsedConstellationSize();
-                                mRadarViewFragment.setSatCounts(calcName, numberOfSat);
+                        if (mRadarViewFragment.created) {
+                            mRadarViewFragment.setTimeUTC();
+                            mRadarViewFragment.setclock(mInitialTime);
+                            switch (calcName) {
+                                case "GPS":
+                                    numberOfSat = calculationModule.getConstellation().getUsedConstellationSize();
+                                    mRadarViewFragment.setSatCounts(calcName, numberOfSat);
+                                case "Galileo":
+                                    numberOfSat = calculationModule.getConstellation().getUsedConstellationSize();
+                                    mRadarViewFragment.setSatCounts(calcName, numberOfSat);
+                            }
                         }
+
+
+                        if (mListViewFragment != null) {
+                            double lat = calculationModule.getPose().getGeodeticLatitude();
+                            double lng = calculationModule.getPose().getGeodeticLongitude();
+                            double alt = calculationModule.getPose().getGeodeticHeight();
+
+                            mListViewFragment.setLatLong(lat, lng);
+                            mListViewFragment.setAltitude(alt);
+                        }
+
                     }
-
-
-                    if (mListViewFragment != null) {
-                        double lat = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLatitude();
-                        double lng = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticLongitude();
-                        double alt = ((CalculationModule.CalculationModuleObservable) o).getParentReference().getPose().getGeodeticHeight();
-
-                        mListViewFragment.setLatLong(lat, lng);
-                        mListViewFragment.setAltitude(alt);
-                    }
-
-                }
-            });
+                });
+            }
         }
     };
-     **/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,5 +216,21 @@ public class SpaceshipViewActivity extends AppCompatActivity {
     public void setAltitudeIndicator(double altitude){
         // Set Altitude indicator (third screen on the Left Spaceship view)
         mListViewFragment.setAltitude(altitude);
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        super.onServiceConnected(name, binder);
+        gnssBinder.addObserver(shipUpdater);
+        Log.e(TAG, "-- observer ADDED");
+    }
+
+    @Override
+    protected void onPause() {
+        if (gnssBinder != null) {
+            gnssBinder.removeObserver(shipUpdater);
+            Log.e(TAG, "-- observer REMOVED");
+        }
+        super.onPause();
     }
 }

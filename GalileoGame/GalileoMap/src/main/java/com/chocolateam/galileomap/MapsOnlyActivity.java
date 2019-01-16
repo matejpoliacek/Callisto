@@ -10,10 +10,7 @@ import android.widget.CheckBox;
 
 import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.CalculationModulesArrayList;
-import com.galfins.gnss_compare.StartGNSSFragment;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
@@ -42,10 +39,6 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
     public Observer mapMarkerUpdater = new Observer() {
         @Override
         public void update(final Observable o, Object arg) {
-
-            final String GPSConstName = "GPS";
-            final String GalConstName = "Galileo";
-            final String GalGPSConstName = "Galileo + GPS";
 
             CalculationModulesArrayList CMArrayList = gnssBinder.getCalculationModules();
 
@@ -102,6 +95,10 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
     @Override
     protected void onPause() {
+        if (gnssBinder != null) {
+            gnssBinder.removeObserver(mapMarkerUpdater);
+            Log.e(TAG, "-- observer REMOVED");
+        }
         super.onPause();
         finish();
     }

@@ -15,11 +15,9 @@ import android.util.Log;
 
 public class GNSSCoreServiceActivity extends AppCompatActivity implements ServiceConnection {
 
-    OnBoundListener mCallback;
-
-    public interface OnBoundListener {
-        public void onFragmentReady();
-    }
+    final protected String GPSConstName = "GPS L1";
+    final protected String GalConstName = "Galileo";
+    final protected String GalGPSConstName = "Galileo + GPS";
 
     private final String TAG = this.getClass().getSimpleName();
 

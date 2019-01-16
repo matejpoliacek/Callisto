@@ -59,7 +59,7 @@ public class RadarView extends RelativeLayout {
 //        addPoint(new Satellite(1,1,12), new PointF(30f, 100f));
 //        addPoint(new Satellite(34,2,12), new PointF(134f, 80f));
 //        addPoint(new Satellite(21,3,12), new PointF(-50f, 100f));
-
+/**
         // Resize Radar images
         WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
@@ -93,7 +93,7 @@ public class RadarView extends RelativeLayout {
         layoutArea.getLayoutParams().height = (int)(phoneHeight*0.55);//1440)* imageView.getMeasuredHeight(); //imageView.getLayoutParams().height;
         layoutArea.requestLayout();
         layoutArea.invalidate();
-
+**/
 
     }
 

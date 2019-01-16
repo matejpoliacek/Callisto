@@ -22,7 +22,6 @@ import android.widget.Toast;
 
 import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.CalculationModulesArrayList;
-import com.galfins.gnss_compare.StartGNSSFragment;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -96,10 +95,6 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     public Observer mapGameUpdater = new Observer() {
         @Override
         public void update(final Observable o, Object arg) {
-
-            final String GPSConstName = "GPS";
-            final String GalConstName = "Galileo";
-            final String GalGPSConstName = "Galileo + GPS";
 
             CalculationModulesArrayList CMArrayList = gnssBinder.getCalculationModules();
 
@@ -637,5 +632,14 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         super.onServiceConnected(name, binder);
         gnssBinder.addObserver(mapGameUpdater);
         Log.e(TAG, "-- observer ADDED");
+    }
+
+    @Override
+    protected void onPause() {
+        if (gnssBinder != null) {
+            gnssBinder.removeObserver(mapGameUpdater);
+            Log.e(TAG, "-- observer REMOVED");
+        }
+        super.onPause();
     }
 }

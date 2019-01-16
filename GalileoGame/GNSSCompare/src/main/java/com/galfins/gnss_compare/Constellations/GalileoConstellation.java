@@ -21,13 +21,14 @@ import android.location.GnssMeasurement;
 import android.location.GnssMeasurementsEvent;
 import android.location.GnssStatus;
 import android.location.Location;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.galfins.gnss_compare.Corrections.Correction;
-import com.galfins.gnss_compare.GNSSCompareInitFragment;
+import com.galfins.gnss_compare.GnssCoreService;
 import com.galfins.gogpsextracts.Constants;
 import com.galfins.gogpsextracts.Coordinates;
 import com.galfins.gogpsextracts.NavigationProducer;
@@ -188,10 +189,7 @@ public class GalileoConstellation extends Constellation {
                 int measState = measurement.getState();
 
                 // Bitwise AND to identify the states
-                boolean towKnown = false;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    towKnown = (measState & GnssMeasurement.STATE_TOW_KNOWN) != 0;
-                }
+                boolean towKnown = (measState & GnssMeasurement.STATE_TOW_KNOWN) != 0;
                 boolean towDecoded = (measState & GnssMeasurement.STATE_TOW_DECODED) != 0;
                 boolean codeLock = (measState & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) != 0;
 
@@ -361,7 +359,7 @@ public class GalileoConstellation extends Constellation {
 
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
-                    //GNSSCompareInitFragment.makeRnpFailedNotification();
+                    Log.e(TAG, "Faled getting ephemeris data!");
                     continue;
                 }
 

@@ -1,19 +1,3 @@
-/*
- * Copyright 2018 TFI Systems
-
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
-
- * http://www.apache.org/licenses/LICENSE-2.0
-
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an "AS IS"
- * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions
- * and limitations under the License.
- */
-
 package com.galfins.gnss_compare.Constellations;
 
 import android.location.GnssClock;
@@ -21,13 +5,14 @@ import android.location.GnssMeasurement;
 import android.location.GnssMeasurementsEvent;
 import android.location.GnssStatus;
 import android.location.Location;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.galfins.gnss_compare.Corrections.Correction;
-import com.galfins.gnss_compare.GNSSCompareInitFragment;
+import com.galfins.gnss_compare.GnssCoreService;
 import com.galfins.gogpsextracts.Constants;
 import com.galfins.gogpsextracts.Coordinates;
 import com.galfins.gogpsextracts.NavigationProducer;
@@ -49,8 +34,10 @@ import com.galfins.gogpsextracts.TopocentricCoordinates;
 public class GpsConstellation extends Constellation {
 
     private final static char satType = 'G';
-    private static final String NAME = "GPS";
+    private static final String NAME = "GPS L1";
     private static final String TAG = "GpsConstellation";
+    private static double L1_FREQUENCY = 1.57542e9;
+    private static double FREQUENCY_MATCH_RANGE = 0.1e9;
 
     private boolean fullBiasNanosInitialized = false;
     private long FullBiasNanos;
@@ -58,6 +45,14 @@ public class GpsConstellation extends Constellation {
     private Coordinates rxPos;
     protected double tRxGPS;
     protected double weekNumberNanos;
+
+    public double getWeekNumber(){
+        return weekNumberNanos;
+    }
+
+    public double gettRxGPS(){
+        return tRxGPS;
+    }
 
     private static final int constellationId = GnssStatus.CONSTELLATION_GPS;
     private static double MASK_ELEVATION = 20; // degrees
@@ -72,7 +67,7 @@ public class GpsConstellation extends Constellation {
 
     // Condition for the pseudoranges that takes into account a maximum uncertainty for the TOW
     // (as done in gps-measurement-tools MATLAB code)
-    private static final int MAX_TOW_UNC_NS = 50;                                     // [nanoseconds]
+    private static final int MAXTOWUNCNS = 50;                                     // [nanoseconds]
 
     private NavigationProducer rinexNavGps = null;
 
@@ -119,6 +114,10 @@ public class GpsConstellation extends Constellation {
         }
     }
 
+    public static boolean approximateEqual(double a, double b, double eps){
+        return Math.abs(a-b)<eps;
+    }
+
     @Override
     public void updateMeasurements(GnssMeasurementsEvent event) {
 
@@ -143,6 +142,22 @@ public class GpsConstellation extends Constellation {
 
                 if (measurement.getConstellationType() != constellationId)
                     continue;
+
+                if(! (!measurement.hasCarrierFrequencyHz() || approximateEqual(measurement.getCarrierFrequencyHz(), L1_FREQUENCY, FREQUENCY_MATCH_RANGE)) )
+                    continue;
+
+//                if(measurement.getSvid() == 2 || measurement.getSvid() == 4
+//                        || measurement.getSvid() == 5 || measurement.getSvid() == 7
+//                        || measurement.getSvid() == 11 || measurement.getSvid() == 12
+//                        || measurement.getSvid() == 13 || measurement.getSvid() == 14
+//                        || measurement.getSvid() == 15 || measurement.getSvid() == 16
+//                        || measurement.getSvid() == 17 || measurement.getSvid() == 18
+//                        || measurement.getSvid() == 19 || measurement.getSvid() == 20
+//                        || measurement.getSvid() == 21 || measurement.getSvid() == 22
+//                        || measurement.getSvid() == 23 || measurement.getSvid() == 28
+//                        || measurement.getSvid() == 29 || measurement.getSvid() == 31) //todo: hardcoded exlusion of a faulty satellite (SUPL not working)
+//                    continue;
+
 
                 long ReceivedSvTimeNanos = measurement.getReceivedSvTimeNanos();
                 double TimeOffsetNanos = measurement.getTimeOffsetNanos();
@@ -185,15 +200,16 @@ public class GpsConstellation extends Constellation {
                 // Bitwise AND to identify the states
                 boolean codeLock = (measState & GnssMeasurement.STATE_CODE_LOCK) != 0;
                 boolean towDecoded = (measState & GnssMeasurement.STATE_TOW_DECODED) != 0;
-                boolean towUncertainty = measurement.getReceivedSvTimeUncertaintyNanos() < MAX_TOW_UNC_NS;
+                boolean towKnown      = (measState & GnssMeasurement.STATE_TOW_KNOWN) != 0;
+                boolean towUncertainty = measurement.getReceivedSvTimeUncertaintyNanos() < MAXTOWUNCNS;
 
 
-                if (codeLock && towDecoded && towUncertainty && pseudorange < 1e9) {
+                if (codeLock && (towDecoded || towKnown)  && pseudorange < 1e9) { // && towUncertainty
                     SatelliteParameters satelliteParameters = new SatelliteParameters(
                             measurement.getSvid(),
                             new Pseudorange(pseudorange, 0.0));
 
-                    satelliteParameters.setUniqueSatId("G" + satelliteParameters.getSatId());
+                    satelliteParameters.setUniqueSatId("G" + satelliteParameters.getSatId() + "_L1");
 
                     satelliteParameters.setSignalStrength(measurement.getCn0DbHz());
 
@@ -261,8 +277,7 @@ public class GpsConstellation extends Constellation {
 
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
-                    //GNSSCompareInitFragment.makeRnpFailedNotification();
-                    Log.e(TAG, observedSatellite.getUniqueSatId() + " excluded based on rnp");
+                    Log.e(TAG, "Faled getting ephemeris data!");
                     continue;
                 }
 
@@ -276,7 +291,6 @@ public class GpsConstellation extends Constellation {
                 // Add to the exclusion list the satellites that do not pass the masking criteria
                 if(observedSatellite.getRxTopo().getElevation() < MASK_ELEVATION){
                     excludedSatellites.add(observedSatellite);
-                    Log.e(TAG, observedSatellite.getUniqueSatId() + " excluded based on elevation");
                 }
 
                 double accumulatedCorrection = 0;

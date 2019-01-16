@@ -122,7 +122,7 @@ public class GnssCoreService extends Service {
         }
     };
 
-    private final String TAG = this.getClass().getSimpleName();
+    private static final String TAG = GnssCoreService.class.getSimpleName();
 
     public class GnssCoreBinder extends Binder{
 
@@ -153,7 +153,6 @@ public class GnssCoreService extends Service {
         public GnssCoreService getService() {
             return GnssCoreService.this;
         }
-
     }
 
     private IBinder binder = new GnssCoreBinder();

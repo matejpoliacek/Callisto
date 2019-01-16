@@ -22,9 +22,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.galfins.gnss_compare.GNSSCompareInitFragment;
-import com.galfins.gnss_compare.StartGNSSFragment;
-
 import java.lang.reflect.Method;
 
 public class MainMenu extends AppCompatActivity {
