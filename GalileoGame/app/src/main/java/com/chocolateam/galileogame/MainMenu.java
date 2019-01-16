@@ -98,9 +98,6 @@ public class MainMenu extends AppCompatActivity {
 
     public void goToDesc(View view) {
         Intent intent = new Intent(this, DescriptionActivity.class);
-
-        checkLocationAndMobileDataEnabled();
-
         startActivity(intent);
     }
 

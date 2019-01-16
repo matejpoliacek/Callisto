@@ -146,6 +146,11 @@ public class MainActivity extends GNSSCoreServiceActivity {
      //   }
     }
 
+    public void goToDesc(View view) {
+        Intent intent = new Intent(this, DescriptionActivity.class);
+        startActivity(intent);
+    }
+
     private boolean hasPermissions(Activity activity) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             // Permissions granted at install time.

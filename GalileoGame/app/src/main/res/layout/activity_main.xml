@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/menu_background"
+    android:background="@drawable/landing_backgroud"
     tools:context="com.chocolateam.galileogame.MainActivity">
 
     <Button
@@ -27,6 +27,7 @@
         app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="@+id/guideline_left"
         app:layout_constraintTop_toBottomOf="@+id/galText"
+        app:layout_constraintVertical_bias="0.705"
         app:layout_constraintVertical_chainStyle="spread"
         app:layout_constraintWidth_percent="0.53" />
 
@@ -41,6 +42,14 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_percent="0.10" />
 
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/score_screen"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="40dp" />
+
     <TextView
         android:id="@+id/gpsText"
         android:layout_width="0dp"
@@ -48,7 +57,7 @@
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
         android:text="GPS Info Here"
-        android:textAlignment="center"
+        android:textAlignment="@+id/guideline_left"
         android:textColor="@color/ap_light_gray"
         app:layout_constraintBottom_toTopOf="@+id/galText"
         app:layout_constraintEnd_toStartOf="@+id/guideline_right"
@@ -60,13 +69,13 @@
         android:id="@+id/galText"
         android:layout_width="0dp"
         android:layout_height="46dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="220dp"
         android:text="Gal Info Here"
-        android:textAlignment="center"
+        android:textAlignment="@+id/guideline_left"
         android:textColor="@color/ap_light_gray"
         app:layout_constraintBottom_toTopOf="@+id/guideline_buttons_top"
         app:layout_constraintEnd_toStartOf="@+id/guideline_right"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline_left" />
 
     <android.support.constraint.Guideline
@@ -95,7 +104,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.46" />
+        app:layout_constraintGuide_percent="0.25" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_text_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.22" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline_buttons_bottom"
@@ -105,10 +121,13 @@
         app:layout_constraintGuide_percent="0.9" /><![CDATA[
 
 
+
+
         app:layout_constraintBottom_toTopOf="@+id/MapButton"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/GameButton" />
+
 
 ]]>
 </android.support.constraint.ConstraintLayout>
