@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.CheckBox;
 
 import com.galfins.gnss_compare.CalculationModule;
@@ -25,6 +26,10 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
     private View checkboxLayout;
     private CheckBox checkBoxGPS;
     private CheckBox checkBoxGAL;
+
+    private View GPSLegend;
+    private View GALLegend;
+
 
     private MapPanel mapBottomPanel;
 
@@ -86,11 +91,23 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
         checkBoxGPS = findViewById(R.id.checkBoxGPS);
         checkBoxGAL = findViewById(R.id.checkBoxGAL);
 
+        GPSLegend = findViewById(R.id.GPSLegend);
+        GALLegend = findViewById(R.id.GALLegend);
+
         mapBottomPanel = findViewById(R.id.map_bottom_panel);
         mapBottomPanel.setVisibility(View.VISIBLE);
 
         checkboxLayout = findViewById(R.id.checkboxLayout);
         checkboxLayout.setVisibility(View.VISIBLE);
+
+        if (locationFuncLevel < LOCATION_FULL_FUNC) {
+            checkBoxGAL.setVisibility(View.GONE);
+            GALLegend.setVisibility(View.GONE);
+            if (locationFuncLevel < LOCATION_GPS_ONLY) {
+                checkBoxGPS.setVisibility(View.GONE);
+                GPSLegend.setVisibility(View.GONE);
+            }
+        }
     }
 
     @Override

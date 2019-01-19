@@ -50,6 +50,8 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
 
     private final String TAG = this.getClass().getSimpleName();
 
+    protected int locationFuncLevel = 0;
+
     protected GoogleMap mMap;
 
     private CameraPosition mCameraPosition;
@@ -94,6 +96,8 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
         if (mLocationPermissionGranted == false) {
             mLocationPermissionGranted = getIntent().getExtras().getBoolean("location_permit");
         }
+
+        locationFuncLevel = getIntent().getExtras().getInt("location_functionality");
 
         // Remove the top option bar
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);

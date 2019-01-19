@@ -281,6 +281,9 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
         tutorialView = findViewById(R.id.tutorial);
         tutorialView.setGame(this);
+        if (locationFuncLevel < LOCATION_FULL_FUNC) {
+            skipConstSelection();
+        }
 
         inGameScore.setVisibility(View.VISIBLE);
         gameBottomPanel.setVisibility(View.VISIBLE);
@@ -387,15 +390,14 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
     public void startGameViaButton(View view) {
         tutorialView.setVisibility(View.GONE);
-
         startGame();
     }
 
     public void selectConst(View view) {
-       Log.e("GAME-BTN-CONST", "Done button clicked");
-       constellation = tutorialView.getConst();
-       Log.e("GAME-BTN-CONST", "Selected constellation: " + constellation);
-       tutorialView.hideConstSelect();
+        Log.e(TAG, "GAME-BTN-CONST: Done button clicked");
+        constellation = tutorialView.getConst();
+        Log.e(TAG, "GAME-BTN-CONST: Selected constellation: " + constellation);
+        tutorialView.hideConstSelect();
     }
 
     public void startGame() {
@@ -641,5 +643,20 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
             Log.e(TAG, "-- observer REMOVED");
         }
         super.onPause();
+    }
+
+    private void skipConstSelection() {
+        if (locationFuncLevel == LOCATION_DEFAULT_NAV) {
+            //TODO:test
+            constellation = "Native";
+            Log.e(TAG, "SkipConstSelection: Selected constellation: " + constellation + ", using native.");
+        } else if (locationFuncLevel == LOCATION_GPS_ONLY) {
+            constellation = GPSConstName;
+            Log.e(TAG, "SkipConstSelection: Selected constellation: " + constellation + ", forced due to GPSOnly.");
+        } else {
+            // Never here
+            Log.e(TAG, "SkipConstSelection: Error");
+        }
+        tutorialView.hideConstSelect();
     }
 }

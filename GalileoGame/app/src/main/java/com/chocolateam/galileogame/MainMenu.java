@@ -32,6 +32,7 @@ public class MainMenu extends AppCompatActivity {
     };
     private static final int LOCATION_REQUEST_ID = 1;
 
+    private int locationFuncLevel = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +41,8 @@ public class MainMenu extends AppCompatActivity {
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_mainmenu);
         requestPermissionAndSetupFragments(this);
+
+        locationFuncLevel = getIntent().getExtras().getInt("location_functionality");
 
         while ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
             requestPermissionAndSetupFragments(this);
@@ -67,6 +70,7 @@ public class MainMenu extends AppCompatActivity {
     public void goToGame(View view) {
         Intent intent = new Intent(this, com.chocolateam.galileomap.MapWithGameActivity.class);
         intent.putExtra("location_permit", mLocationPermissionGranted);
+        intent.putExtra("location_functionality", locationFuncLevel);
         if (checkLocationAndMobileDataEnabled()) {
             startActivity(intent);
         }
@@ -75,6 +79,7 @@ public class MainMenu extends AppCompatActivity {
     public void goToMap(View view) {
         Intent intent = new Intent(this, com.chocolateam.galileomap.MapsOnlyActivity.class);
         intent.putExtra("location_permit", mLocationPermissionGranted);
+        intent.putExtra("location_functionality", locationFuncLevel);
         if (checkLocationAndMobileDataEnabled()){
             startActivity(intent);
         }
@@ -82,7 +87,7 @@ public class MainMenu extends AppCompatActivity {
 
     public void goToSpaceship(View view) {
         Intent intent = new Intent(this, com.chocolateam.galileospaceship.SpaceshipViewActivity.class);
-
+        intent.putExtra("location_functionality", locationFuncLevel);
         if (checkLocationAndMobileDataEnabled()) {
             startActivity(intent);
         }
@@ -191,6 +196,5 @@ public class MainMenu extends AppCompatActivity {
         }
         return mobileDataEnabled;
     }
-
 }
 

@@ -27,6 +27,7 @@
         tools:layout_editor_absoluteX="4dp">
 
         <View
+            android:id="@+id/GPSLegend"
             android:layout_width="70dp"
             android:layout_height="match_parent" />
 
@@ -45,7 +46,7 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <View
-            android:id="@+id/view"
+            android:id="@+id/GALLegend"
             android:layout_width="63dp"
             android:layout_height="54dp" />
 

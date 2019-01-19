@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.galfins.gnss_compare.CalculationModule;
@@ -28,7 +29,6 @@ import com.galfins.gnss_compare.GNSSCoreServiceActivity;
 
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -37,8 +37,12 @@ public class MainActivity extends GNSSCoreServiceActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    TextView gpsText;
-    TextView galText;
+    private int locationFuncLevel = 0;
+
+    private TextView gpsText;
+    private TextView galText;
+    private TextView navInfoText;
+    private Button confirmButton;
 
     private boolean mLocationPermissionGranted = false;
     //private StartGNSSFragment startedFragment;
@@ -69,27 +73,55 @@ public class MainActivity extends GNSSCoreServiceActivity {
                 Log.e(TAG, "Observer tick const size visible:" + calculationModule.getConstellation().getVisibleConstellationSize()+"");
 
                 if (obsConst.equals(GPSConstName)) {
+
                     final String gpsString = "GPS " + numSats;
+
                     gpsText.post(new Runnable() {
                         @Override
                         public void run() {
                             gpsText.setText(gpsString);
                         }
                     });
+
+                    // If not yet done, replace the informing text
+                    // with the appropriate string for visible GPS sats
+                    navInfoText.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (locationFuncLevel < LOCATION_GPS_ONLY) {
+                                navInfoText.setText(R.string.gps_sats);
+                            }
+                        }
+                    });
+
                     Log.e(TAG, "GPS Pose: " + gpsString);
 
+                    if (locationFuncLevel < LOCATION_GPS_ONLY) {
+                        confirmButton.setText("USE GPS ONLY");
+                    }
+
+                    if (calculationModule.getConstellation().getVisibleConstellationSize() > 0) {
+                        locationFuncLevel = LOCATION_GPS_ONLY;
+                    }
                 } else if (obsConst.equals(GalConstName)) {
+
                     final String galString = "GAL " + numSats;
+
                     galText.post(new Runnable() {
                         @Override
                         public void run() {
                             galText.setText(galString);
                         }
                     });
-
                     Log.e(TAG, "GAL Pose: " + galString);
-                }
 
+                    // If we see a Galileo sat, it is safe to assume the phone offers
+                    // raw measurement support for GPS and Galileo - therefore go straight to menu
+                    if (calculationModule.getConstellation().getVisibleConstellationSize() > 0) {
+                        locationFuncLevel = LOCATION_FULL_FUNC;
+                        goToMenuFunction();
+                    }
+                }
             }
         }
     };
@@ -102,8 +134,10 @@ public class MainActivity extends GNSSCoreServiceActivity {
         setContentView(R.layout.activity_main);
         requestPermissionAndSetupFragments(this);
 
-        gpsText = (TextView) findViewById(R.id.gpsText);
-        galText = (TextView) findViewById(R.id.galText);
+        gpsText = findViewById(R.id.gpsText);
+        galText = findViewById(R.id.galText);
+        navInfoText = findViewById(R.id.navInfoText);
+        confirmButton = findViewById(R.id.confirmButton);
 
         while ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
             requestPermissionAndSetupFragments(this);
@@ -139,11 +173,17 @@ public class MainActivity extends GNSSCoreServiceActivity {
     }
 
     public void goToMenu(View view) {
+        if (checkLocationAndMobileDataEnabled()) {
+            goToMenuFunction();
+        }
+    }
+
+    public void goToMenuFunction() {
         Intent intent = new Intent(this, MainMenu.class);
         intent.putExtra("location_permit", mLocationPermissionGranted);
-      //  if (checkLocationAndMobileDataEnabled()) {
-            startActivity(intent);
-     //   }
+        intent.putExtra("location_functionality", locationFuncLevel);
+        startActivity(intent);
+        finish();
     }
 
     public void goToDesc(View view) {
@@ -256,5 +296,7 @@ public class MainActivity extends GNSSCoreServiceActivity {
         }
         super.onPause();
     }
+
+
 }
 

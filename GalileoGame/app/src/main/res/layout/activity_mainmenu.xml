@@ -8,7 +8,7 @@
     tools:context="com.chocolateam.galileogame.MainMenu">
 
     <Button
-        android:id="@+id/GameButton"
+        android:id="@+id/confirmButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -66,7 +66,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline_right"
         app:layout_constraintHeight_percent="0.06"
         app:layout_constraintStart_toStartOf="@+id/guideline_left"
-        app:layout_constraintTop_toBottomOf="@+id/GameButton"
+        app:layout_constraintTop_toBottomOf="@+id/confirmButton"
         app:layout_constraintWidth_percent="0.53" />
 
     <Button

@@ -13,11 +13,15 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.galfins.gnss_compare.GNSSCoreServiceActivity;
+
 /**
  * Created by lgr on 20/01/2018.
  */
 
 public class TutorialView extends LinearLayout {
+
+    private final String TAG = this.getClass().getSimpleName();
 
     private Boolean mswitched;
     private ImageView mbutton;
@@ -43,7 +47,7 @@ public class TutorialView extends LinearLayout {
     public TutorialView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        Log.e("TUTORIAL", "TutorialView constructed");
+        Log.e(TAG, "TutorialView constructed");
 
         mContext = context;
 
@@ -133,17 +137,17 @@ public class TutorialView extends LinearLayout {
     }
 
     public String getConst() {
-        Log.e("TUTORIAL-VIEW", "Entered getConst");
+        Log.e(TAG, "Entered getConst");
         String constellation = "";
         if (gpsButton.isChecked()) {
-            constellation = "GPS";
+            constellation = GNSSCoreServiceActivity.GPSConstName;
         } else if (galButton.isChecked()) {
-            constellation = "Galileo";
+            constellation = GNSSCoreServiceActivity.GalConstName;
         } else if (allButton.isChecked()) {
-            constellation = "Galileo + GPS";
+            constellation = GNSSCoreServiceActivity.GalGPSConstName;
         }
 
-        Log.e("TUTORIAL-VIEW", "Leaving getConst, result: " + constellation);
+        Log.e(TAG, "Leaving getConst, result: " + constellation);
 
         return constellation;
     }
