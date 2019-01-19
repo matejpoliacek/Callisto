@@ -300,7 +300,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         //StartGNSSFragment.gnssInit.addObservers(mapGameUpdater);
 
         /** Disable "Got it!" button until we have first fix **/
-        GameButton = findViewById(R.id.GameButton);
+        GameButton = findViewById(R.id.confirmButton);
         GameButton.setText("Initialising");
         GameButton.setEnabled(false);
         GameButton.setBackgroundColor(getResources().getColor(R.color.gpsGrey));

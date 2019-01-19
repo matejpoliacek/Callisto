@@ -12,10 +12,10 @@
     <string name="no_sats">
         The app requires both Mobile Data and Location Services with High Accuracy enabled.\n\n
         Try to improve your signal by being in an open area.\n\n
-        If no satellites are shown, it is possible you phone does not support access to raw satellite signal.\n\n
+        If no satellites are shown, it is possible your phone does not support access to raw satellite signal.\n\n
         You can still use the app using native Android Location service.</string>
     <string name="gps_sats">
-        If no Galileo satellites are shown, it is possible you phone hardware does not support Galileo navigation.\n\n
+        If no Galileo satellites are shown, it is possible your phone hardware does not support Galileo navigation.\n\n
         You can still use the app wih GPS only.</string>
     <string name="about_text">
         Powered by <a href="https://play.google.com/store/apps/details?id=com.galfins.gnss_compare">GNSS Compare</a>\n\n

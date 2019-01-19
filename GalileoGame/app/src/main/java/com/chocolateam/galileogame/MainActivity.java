@@ -94,15 +94,20 @@ public class MainActivity extends GNSSCoreServiceActivity {
                         }
                     });
 
-                    Log.e(TAG, "GPS Pose: " + gpsString);
-
+                    final int gpsVisible = calculationModule.getConstellation().getVisibleConstellationSize();
                     if (locationFuncLevel < LOCATION_GPS_ONLY) {
-                        confirmButton.setText("USE GPS ONLY");
+                        confirmButton.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (gpsVisible > 0) {
+                                    locationFuncLevel = LOCATION_GPS_ONLY;
+                                    Log.e(TAG, "LocationFuncLevel set to GPS only: " + locationFuncLevel);
+                                }
+                                confirmButton.setText("USE GPS ONLY");
+                            }
+                        });
                     }
 
-                    if (calculationModule.getConstellation().getVisibleConstellationSize() > 0) {
-                        locationFuncLevel = LOCATION_GPS_ONLY;
-                    }
                 } else if (obsConst.equals(GalConstName)) {
 
                     final String galString = "GAL " + numSats;

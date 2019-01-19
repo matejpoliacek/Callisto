@@ -26,6 +26,8 @@ import java.lang.reflect.Method;
 
 public class MainMenu extends AppCompatActivity {
 
+    private final String TAG = this.getClass().getSimpleName();
+
     private boolean mLocationPermissionGranted = false;
     private static final String[] REQUIRED_PERMISSIONS = {
             Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -43,6 +45,8 @@ public class MainMenu extends AppCompatActivity {
         requestPermissionAndSetupFragments(this);
 
         locationFuncLevel = getIntent().getExtras().getInt("location_functionality");
+
+        Log.e(TAG, "Location functionality: " + locationFuncLevel);
 
         while ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
             requestPermissionAndSetupFragments(this);

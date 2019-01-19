@@ -2,12 +2,14 @@ package com.chocolateam.galileomap;
 
 
 import android.content.ComponentName;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 
 import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.CalculationModulesArrayList;
@@ -15,6 +17,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
+import java.lang.reflect.Type;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -27,8 +30,8 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
     private CheckBox checkBoxGPS;
     private CheckBox checkBoxGAL;
 
-    private View GPSLegend;
-    private View GALLegend;
+    private ImageView GPSLegend;
+    private ImageView GALLegend;
 
 
     private MapPanel mapBottomPanel;
@@ -101,11 +104,13 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
         checkboxLayout.setVisibility(View.VISIBLE);
 
         if (locationFuncLevel < LOCATION_FULL_FUNC) {
-            checkBoxGAL.setVisibility(View.GONE);
-            GALLegend.setVisibility(View.GONE);
+            checkBoxGAL.setEnabled(false);
+            checkBoxGAL.setAlpha(0.5f);
+
             if (locationFuncLevel < LOCATION_GPS_ONLY) {
-                checkBoxGPS.setVisibility(View.GONE);
-                GPSLegend.setVisibility(View.GONE);
+                checkBoxGPS.setEnabled(false);
+                checkBoxGPS.setAlpha(0.5f);;
+
             }
         }
     }
