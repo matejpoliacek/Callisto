@@ -25,54 +25,40 @@ import java.util.List;
  * Created by Sebastian Ciuban on 8/10/2018.
  */
 
-public class GalileoConstellation extends Constellation{
+public class GalileoE5aConstellation extends Constellation {
     private final static char satType = 'E';
-    //    protected static final String NAME = "Galileo<sub><small><small>E1</small></small></sub>";
-    protected static final String NAME = "Galileo E1";
-    private static final String TAG = "GalileoE1Constellation";
+    private static final String NAME = "Galileo E5a";
+    private static final String TAG = "GalileoE5aConstellation";
     private static int constellationId = GnssStatus.CONSTELLATION_GALILEO;
-    private static double E1a_FREQUENCY = 1.57542e9;
+    private static double E5a_FREQUENCY = 1.17645e9;
     private static double FREQUENCY_MATCH_RANGE = 0.1e9;
     private static double MASK_ELEVATION = 15; // degrees
     private static double MASK_CN0 = 10; // dB-Hz
-
 
     private boolean fullBiasNanosInitialized = false;
     private long FullBiasNanos;
 
     private Coordinates rxPos;
 
-    protected double tRxGalileoTOW;
-    protected double weekNumber;
-
-    public double getWeekNumber(){
-        return weekNumber;
-    }
-
-    public double gettRxGalileoTOW(){
-        return tRxGalileoTOW;
-    }
+    private double tRxGalileoTOW;
+    private double weekNumber;
 
     /**
      * Time of the measurement
      */
     private Time timeRefMsec;
 
-    protected int visibleButNotUsed = 0;
+    private int visibleButNotUsed = 0;
 
     private static final int MAXTOWUNCNS = 50;                                     // [nanoseconds]
 
 
     /**
-     * List holding used satellites
+     * List holding observed satellites
      */
-    protected List<SatelliteParameters> observedSatellites = new ArrayList<>();
+    private List<SatelliteParameters> observedSatellites = new ArrayList<>();
 
-    /**
-     * List holding unused satellites
-     */
     protected List<SatelliteParameters> unusedSatellites = new ArrayList<>();
-
 
 //    private long timeRx;
 
@@ -83,7 +69,7 @@ public class GalileoConstellation extends Constellation{
      */
     private ArrayList<Correction> corrections = new ArrayList<>();
 
-    public GalileoConstellation() {
+    public GalileoE5aConstellation(){
         // URL template from where the Galileo ephemerides should be downloaded
         //String GNSS_BEV_GALILEO_RINEX = "ftp://gnss.bev.gv.at/pub/nrt/${ddd}/${yy}/bute${ddd}s.${yy}l.Z";
         String IGS_GALILEO_RINEX = "ftp://igs.bkg.bund.de/IGS/BRDC/${yyyy}/${ddd}/BRDC00WRD_R_${yyyy}${ddd}0000_01D_EN.rnx.gz";
@@ -91,12 +77,12 @@ public class GalileoConstellation extends Constellation{
 
 
         // Declare a RinexNavigation type object
-        if (rinexNavGalileo == null)
+        if(rinexNavGalileo == null)
             rinexNavGalileo = new RinexNavigationGalileo(IGS_GALILEO_RINEX);
     }
 
-    public static boolean approximateEqual(double a, double b, double eps) {
-        return Math.abs(a - b) < eps;
+    public static boolean approximateEqual(double a, double b, double eps){
+        return Math.abs(a-b)<eps;
     }
 
     @Override
@@ -119,27 +105,28 @@ public class GalileoConstellation extends Constellation{
     }
 
     @Override
-    public void updateMeasurements(GnssMeasurementsEvent event) {
+    public void updateMeasurements(GnssMeasurementsEvent event){
         synchronized (this) {
-
             visibleButNotUsed = 0;
             observedSatellites.clear();
             unusedSatellites.clear();
+            GnssClock gnssClock       = event.getClock();
+            long TimeNanos            = gnssClock.getTimeNanos();
+            timeRefMsec               = new Time(System.currentTimeMillis());
+            double BiasNanos          = gnssClock.getBiasNanos();
+            String strFullBiasNanos   = Long.toString(gnssClock.getFullBiasNanos());
+            long dayFullBias          = Long.valueOf(strFullBiasNanos.substring(0,11));
+            long podFullBiasNanos     = (long) -1.0 * Long.valueOf(strFullBiasNanos.substring(11,20));
 
-            GnssClock gnssClock = event.getClock();
-            long TimeNanos = gnssClock.getTimeNanos();
-            timeRefMsec = new Time(System.currentTimeMillis());
-            double BiasNanos = gnssClock.getBiasNanos();
-            String strFullBiasNanos = Long.toString(gnssClock.getFullBiasNanos());
-            long dayFullBias = Long.valueOf(strFullBiasNanos.substring(0, 11));
-            long podFullBiasNanos = (long) -1.0 * Long.valueOf(strFullBiasNanos.substring(11, 20));
+            double tRx, tTx, modDayFullBias, PrSeconds, pseudorangeE5a, galileoTime;
 
-            double tRx, tTx, modDayFullBias, PrSeconds, pseudorangeE1, galileoTime;
-            // Use only the first instance of the FullBiasNanos (as done in gps-measurement-tools)
+//            // Use only the first instance of the FullBiasNanos (as done in gps-measurement-tools)
             if (!fullBiasNanosInitialized) {
                 FullBiasNanos = gnssClock.getFullBiasNanos();
                 fullBiasNanosInitialized = true;
             }
+
+
 
             // Start computing the pseudoranges using the raw data from the phone's GNSS receiver
             for (GnssMeasurement measurement : event.getMeasurements()) {
@@ -147,8 +134,11 @@ public class GalileoConstellation extends Constellation{
                 if (measurement.getConstellationType() != constellationId)
                     continue;
 
-                if (! ( !measurement.hasCarrierFrequencyHz()
-                        || approximateEqual(measurement.getCarrierFrequencyHz(), E1a_FREQUENCY, FREQUENCY_MATCH_RANGE)))
+                if(measurement.getSvid() == 27 || measurement.getSvid() == 25) //todo: hardcoded exlusion of a faulty satellite (SUPL not working)
+                    continue;
+
+                if(!(measurement.hasCarrierFrequencyHz()
+                        && approximateEqual(measurement.getCarrierFrequencyHz(), E5a_FREQUENCY, FREQUENCY_MATCH_RANGE)))
                     continue;
 
 
@@ -156,15 +146,15 @@ public class GalileoConstellation extends Constellation{
                 double TimeOffsetNanos = measurement.getTimeOffsetNanos();
 
                 // Compute the reception time in nanoseconds (this method is needed for later processing, is not a duplicate)
-                galileoTime = TimeNanos - (FullBiasNanos + BiasNanos);
-                tRxGalileoTOW = galileoTime % Constants.NUMBER_NANO_SECONDS_PER_WEEK;
+                galileoTime             = TimeNanos - (FullBiasNanos + BiasNanos);
+                tRxGalileoTOW           = galileoTime % Constants.NUMBER_NANO_SECONDS_PER_WEEK;
 
                 // Compute the time of reception in seconds
-                tRx = 1e-9 * (TimeNanos - (podFullBiasNanos + BiasNanos));
+                tRx                     = 1e-9 * (TimeNanos - (podFullBiasNanos + BiasNanos));
 
                 // Compute the weeknumber
-                weekNumber = Math.floor(-dayFullBias / Constants.WEEKSEC);
-                modDayFullBias = (dayFullBias + weekNumber * Constants.WEEKSEC);
+                weekNumber              = Math.floor(-dayFullBias / Constants.WEEKSEC);
+                modDayFullBias          = (dayFullBias + weekNumber * Constants.WEEKSEC);
 
                 // Compute the time of signal transmission
                 tTx = 1e-9 * (ReceivedSvTimeNanos + TimeOffsetNanos);
@@ -177,48 +167,62 @@ public class GalileoConstellation extends Constellation{
                 int measState = measurement.getState();
 
                 // Bitwise AND to identify the states
-                boolean towKnown = false;
+                boolean towKnown        = false;
+                boolean towKnownValid   = false;
+
+                // this is just a security measure, so that the code will not be crashing
+                // if someone uses it on a lower API phone.
+                // No phones with dual frequency will fail this condition
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    towKnown = (measState & GnssMeasurement.STATE_TOW_KNOWN) != 0;
+                    towKnown = (measState & GnssMeasurement.STATE_TOW_KNOWN) > 0;
+                    towKnownValid = true;
                 }
 
-                boolean towDecoded = (measState & GnssMeasurement.STATE_TOW_DECODED) != 0;
+                boolean towDecoded      = (measState & GnssMeasurement.STATE_TOW_DECODED) > 0;
 
-                boolean codeLockE1BC = (measState & GnssMeasurement.STATE_GAL_E1BC_CODE_LOCK) != 0;
-                boolean codeLockE1C = (measState & GnssMeasurement.STATE_GAL_E1C_2ND_CODE_LOCK) != 0;
-                boolean msecAmbiguity = (measState & GnssMeasurement.STATE_MSEC_AMBIGUOUS) != 0;
+                boolean codeLockE5a = (measState & GnssMeasurement.STATE_CODE_LOCK) > 0;
+                boolean msecAmbiguity = (measState & GnssMeasurement.STATE_MSEC_AMBIGUOUS) > 0;
 
-                // Solve for the 100 millisecond ambiguity
-                if (towDecoded && towKnown && (codeLockE1BC && codeLockE1C)) {
+                if (towKnownValid) {
+                    // Solve for the 100 millisecond ambiguity
+                    if (towDecoded && towKnown)
+                        PrSeconds = PrSeconds % Constants.HUNDREDSMILLI;
 
-                    PrSeconds = PrSeconds % Constants.HUNDREDSMILLI;
-
+                    // Solve for the 1 millisecond ambiguity
+                    if (!towDecoded && !towKnown && msecAmbiguity)
+                        PrSeconds = Math.floor(PrSeconds / 1e-3) * 1e-3 + PrSeconds % Constants.ONEMILLI;
                 }
 
                 // Compute the pseudorange in meters
-                pseudorangeE1 = PrSeconds * Constants.SPEED_OF_LIGHT;
+                pseudorangeE5a = PrSeconds * Constants.SPEED_OF_LIGHT;
+
 
                 // Variables for debugging
                 int svID = measurement.getSvid();
+                boolean condition = false;
+                if (towKnownValid)
+                    condition = towDecoded || msecAmbiguity ||towKnown;
+                else
+                    condition = towDecoded;
 
-                if (towDecoded || towKnown || (codeLockE1BC && codeLockE1C) && pseudorangeE1 < 3e7 ) {
+                if ( condition ) {
 
                     SatelliteParameters satelliteParameters = new SatelliteParameters(
                             measurement.getSvid(),
-                            new Pseudorange(pseudorangeE1, 0.0));
+                            new Pseudorange(pseudorangeE5a, 0.0));
 
-//                    satelliteParameters.setUniqueSatId("E" + satelliteParameters.getSatId() + "<sub><small><small>E1</small></small></sub>");
-                    satelliteParameters.setUniqueSatId("E" + satelliteParameters.getSatId() + "_E1");
+//                    satelliteParameters.setUniqueSatId("E" + satelliteParameters.getSatId() + "<sub>E5a</sub>");
+                    satelliteParameters.setUniqueSatId("E" + satelliteParameters.getSatId() + "_E5a");
 
                     satelliteParameters.setSignalStrength(measurement.getCn0DbHz());
 
                     satelliteParameters.setConstellationType(measurement.getConstellationType());
 
-                    if (measurement.hasCarrierFrequencyHz())
+                    if(measurement.hasCarrierFrequencyHz())
                         satelliteParameters.setCarrierFrequency(measurement.getCarrierFrequencyHz());
 
                     observedSatellites.add(satelliteParameters);
-                    Log.d(TAG, "updateConstellations(" + measurement.getSvid() + "): " + weekNumber + ", " + tRxGalileoTOW + ", " + pseudorangeE1);
+                    Log.d(TAG, "updateConstellations(" + measurement.getSvid() + "): " + weekNumber + ", " + tRxGalileoTOW + ", " + pseudorangeE5a);
                     Log.d(TAG, "updateConstellations: Passed with measurement state: " + measState);
 
 
@@ -227,7 +231,7 @@ public class GalileoConstellation extends Constellation{
                             measurement.getSvid(),
                             null
                     );
-                    satelliteParameters.setUniqueSatId("E" + satelliteParameters.getSatId() + "_E1");
+                    satelliteParameters.setUniqueSatId("E" + satelliteParameters.getSatId() + "_E5a");
                     satelliteParameters.setSignalStrength(measurement.getCn0DbHz());
                     satelliteParameters.setConstellationType(measurement.getConstellationType());
                     if (measurement.hasCarrierFrequencyHz())
@@ -284,7 +288,7 @@ public class GalileoConstellation extends Constellation{
 
     @Override
     public List<SatelliteParameters> getUnusedSatellites() {
-        return unusedSatellites;
+        return null;
     }
 
     @Override
@@ -345,7 +349,7 @@ public class GalileoConstellation extends Constellation{
 
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
-                    Log.e(TAG,"Faled getting ephemeris data!");
+                    Log.e(TAG, "Faled getting ephemeris data!");
                     continue;
                 }
 
@@ -364,14 +368,11 @@ public class GalileoConstellation extends Constellation{
                                 rxPos,
                                 observedSatellite.getSatellitePosition()));
 
-
                 // Add to the exclusion list the satellites that do not pass the masking criteria
                 if(observedSatellite.getRxTopo().getElevation() < MASK_ELEVATION){
                     excludedSatellites.add(observedSatellite);
-                    continue;
                 }
 
-                // Initialize the variable to hold the results of the entire pseudorange correction models
                 double accumulatedCorrection = 0;
 
                 /** Compute the accumulated corrections for the pseudorange measurements
@@ -409,11 +410,9 @@ public class GalileoConstellation extends Constellation{
     }
 
 
-
-
     public static void registerClass() {
         register(
                 NAME,
-                GalileoConstellation.class);
+                GalileoE5aConstellation.class);
     }
 }
