@@ -67,21 +67,31 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                 Log.e(TAG, "ConstName: " + calculationModule.getConstellation().getName());
 
 
+                final List<SatelliteParameters> satellites;
+                final List<SatelliteParameters> satellitesVisibleOnly;
+
+                final List<SatelliteParameters> satellitesAll;
+
+                satellites = calculationModule.getConstellation().getSatellites();
+                satellitesVisibleOnly = calculationModule.getConstellation().getUnusedSatellites();
+                Log.e(TAG, "Satellite list not empty? Used: " + String.valueOf(!satellites.isEmpty()) + " Unused but visible: " + String.valueOf(!satellitesVisibleOnly.isEmpty()));
+
+                satellitesAll = calculationModule.getConstellation().getSatellites();
+                satellitesAll.addAll(satellitesVisibleOnly);
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
 
-                        List<SatelliteParameters> satellites;
-                        int numberOfSat;
-                        satellites = calculationModule.getConstellation().getSatellites();
-                        Log.e(TAG, "Satellite list not empty?" + String.valueOf(!satellites.isEmpty()));
+
 
                         if (!satellites.isEmpty()) {
+                            /**
                             setSatellitesList(satellites);
                             setLatLongIndicator(calculationModule.getPose().getGeodeticLatitude(),
                                     calculationModule.getPose().getGeodeticLongitude());
                             setAltitudeIndicator(calculationModule.getPose().getGeodeticHeight());
-
+                            **/
                             Log.e(TAG, "Switch string: " + currentConstellation + " " + calcName);
                             switch (currentConstellation + " " + calcName) {
                                 case "GPS GPS":
@@ -97,12 +107,12 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                                         }
                                     }
 
-                                    mSkyViewFragment.updateSatView(satellites);
+                                    mSkyViewFragment.updateSatView(satellitesAll);
                                     if (mRadarViewFragment.created) {
-                                        mRadarViewFragment.updateSatellites(satellites);
+                                        mRadarViewFragment.updateSatellites(satellitesAll);
                                     }
 
-                                    Log.e(TAG, "SATPOS galgp: " + String.valueOf(satellites.size()));
+                                    Log.e(TAG, "SATPOS galgp: " + String.valueOf(satellitesAll.size()));
 
 
                                     //  if (satellites.size() > 0) {
@@ -112,6 +122,7 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                             }
                         }
 
+                        int numberOfSat;
 
                         if (mRadarViewFragment.created) {
                             mRadarViewFragment.setTimeUTC();
@@ -135,7 +146,6 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                             mListViewFragment.setLatLong(lat, lng);
                             mListViewFragment.setAltitude(alt);
                         }
-
                     }
                 });
             }
