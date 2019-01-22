@@ -16,7 +16,7 @@ import android.util.Log;
 public class GNSSCoreServiceActivity extends AppCompatActivity implements ServiceConnection {
 
     final public static String GPSConstName = "GPS L1";
-    final public static String GalConstName = "Galileo";
+    final public static String GalConstName = "Galileo E1";
     final public static String GalGPSConstName = "Galileo + GPS";
 
     final protected int LOCATION_DEFAULT_NAV = 0;

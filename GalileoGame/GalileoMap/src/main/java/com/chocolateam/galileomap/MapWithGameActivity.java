@@ -8,6 +8,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
@@ -162,12 +163,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
                         public void run() {
                             playerMarker = processMarker(true, playerMarker, new LatLng(lat, lng), finalMarkerStyle);
                             Log.e(TAG, "GAME-MARKER: Marker placed");
-                            if (!GameButton.isEnabled()) {
-                                GameButton.setText("GOT IT! PLAY!");
-                                GameButton.setEnabled(true);
-                                GameButton.setBackgroundColor(getResources().getColor(R.color.buttonGreen));
-                                Log.e(TAG, "GAME-BUTTON: Button re-enabled");
-                            }
+                            enableGameButton();
                             Log.e(TAG, "GAME-UITHREAD: Thread finished");
                         }
                     });
@@ -181,64 +177,86 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         // run the rest of the onCreate method from superclass
         super.onCreate(savedInstanceState);
 
+        if (sensor != null) {
+            sensorService.registerListener(mySensorEventListener, sensor,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        /** Widgets **/
+        // draw class
+        draw = new DrawClass();
+
+        zoomButton = (ImageButton) findViewById(R.id.zoomButton);
+//        zoomButton.setVisibility(View.INVISIBLE);
+//        zoomButton.setEnabled(false);
+
+        inGameScore = findViewById(R.id.in_game_score);
+        gameBottomPanel = findViewById(R.id.game_bottom_panel);
+
+        tutorialView = findViewById(R.id.tutorial);
+        tutorialView.setGame(this);
+
+        /** Disable "Got it!" button until we have first fix **/
+        GameButton = findViewById(R.id.confirmButton);
+        GameButton.setText("Initialising");
+        GameButton.setEnabled(false);
+        GameButton.setBackgroundColor(getResources().getColor(R.color.gpsGrey));
+
+        inGameScore.setVisibility(View.VISIBLE);
+        gameBottomPanel.setVisibility(View.VISIBLE);
+        tutorialView.setVisibility(View.VISIBLE);
+
+
+
+        /** Game debugging buttons **/
+        Button bDebugButton = findViewById(R.id.debugButton);
+        Button bDebugGraphicsButton = findViewById(R.id.debugGraphicsButton);
+
+        bDebugButton.setVisibility(View.GONE);
+        bDebugGraphicsButton.setVisibility(View.GONE);
+
         /** Location Manager **/
-        // TODO: obsolete, replaced by observer
-        /**
-        mLocationListenerGPS = new LocationListener() {
-            @Override
-            public void onLocationChanged(android.location.Location location) {
-                //We're playing the game, set the location to the selected source
-                LatLng point;
-                switch (constellation) {
-                    case "ALL":
-                        mLastKnownLocation = location;
-                        break;
-                    case "GPS":
-                        //TODO
-                        point = null; //new LatLng(PvtFragment.getUserLatitudeDegreesGPS(), PvtFragment.getUserLongitudeDegreesGPS());
-                        mLastKnownLocation.setLatitude(point.latitude);
-                        mLastKnownLocation.setLongitude(point.longitude);
-                        location.setLatitude(point.latitude);
-                        location.setLongitude(point.longitude);
-                        break;
-                    case "GAL":
-                        //TODO
-                        point = null; //new LatLng(PvtFragment.getUserLatitudeDegreesGalileo(), PvtFragment.getUserLongitudeDegreesGalileo());
-                        mLastKnownLocation.setLatitude(point.latitude);
-                        mLastKnownLocation.setLongitude(point.longitude);
-                        location.setLatitude(point.latitude);
-                        location.setLongitude(point.longitude);
-                        break;
+        // Used when service is unavailable, i.e. raw measurements are not supported
+        if (locationFuncLevel == 0) {
+            mLocationListenerGPS = new LocationListener() {
+                @Override
+                public void onLocationChanged(android.location.Location location) {
+                    //We're playing the game, set the location to the selected source
+                    LatLng point;
+                    mLastKnownLocation = location;
+
+                    if (mLastKnownLocation != null) {
+                        enableGameButton();
+                        mGameLocation = mLastKnownLocation;
+                    }
+
+                    // TODO: the whole if wrapper with bDebug can be removed when debugging is concluded
+                    if (playing && game != null && !bDebug) {
+                        game.setPlayerLocation(location);
+                    }
                 }
 
-                // TODO: the whole if wrapper with bDebug can be removed when debugging is concluded
-                if (playing && game != null && !bDebug) {
-                    game.setPlayerLocation(location);
+
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {
+
                 }
-            }
 
+                @Override
+                public void onProviderEnabled(String provider) {
 
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
+                }
 
-            }
+                @Override
+                public void onProviderDisabled(String provider) {
 
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-
-            }
-        };
-        **/
+                }
+            };
+        }
 
         if (playerMarker != null) {
             playerMarker.remove();
         }
-        mGameLocation = mLastKnownLocation;
 
         /** Sensor setup for compass map-turning support **/
         sensorService = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -263,47 +281,9 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
         };
 
-        if (sensor != null) {
-            sensorService.registerListener(mySensorEventListener, sensor,
-                    SensorManager.SENSOR_DELAY_NORMAL);
-        }
-
-        /** Widgets **/
-        // draw class
-        draw = new DrawClass();
-
-        zoomButton = (ImageButton) findViewById(R.id.zoomButton);
-//        zoomButton.setVisibility(View.INVISIBLE);
-//        zoomButton.setEnabled(false);
-
-        inGameScore = findViewById(R.id.in_game_score);
-        gameBottomPanel = findViewById(R.id.game_bottom_panel);
-
-        tutorialView = findViewById(R.id.tutorial);
-        tutorialView.setGame(this);
         if (locationFuncLevel < LOCATION_FULL_FUNC) {
             skipConstSelection();
         }
-
-        inGameScore.setVisibility(View.VISIBLE);
-        gameBottomPanel.setVisibility(View.VISIBLE);
-        tutorialView.setVisibility(View.VISIBLE);
-
-        /** Game debugging buttons **/
-        Button bDebugButton = findViewById(R.id.debugButton);
-        Button bDebugGraphicsButton = findViewById(R.id.debugGraphicsButton);
-
-        bDebugButton.setVisibility(View.GONE);
-        bDebugGraphicsButton.setVisibility(View.GONE);
-
-        // TODO: Replace with service
-        //StartGNSSFragment.gnssInit.addObservers(mapGameUpdater);
-
-        /** Disable "Got it!" button until we have first fix **/
-        GameButton = findViewById(R.id.confirmButton);
-        GameButton.setText("Initialising");
-        GameButton.setEnabled(false);
-        GameButton.setBackgroundColor(getResources().getColor(R.color.gpsGrey));
     }
 
     @Override
@@ -323,7 +303,10 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        googleMap.setMyLocationEnabled(false);
+
+        if (locationFuncLevel > LOCATION_DEFAULT_NAV) {
+            googleMap.setMyLocationEnabled(false);
+        }
     }
 
     /**********************/
@@ -658,5 +641,14 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
             Log.e(TAG, "SkipConstSelection: Error");
         }
         tutorialView.hideConstSelect();
+    }
+
+    private void enableGameButton() {
+        if (!GameButton.isEnabled()) {
+            GameButton.setText("GOT IT! PLAY!");
+            GameButton.setEnabled(true);
+            GameButton.setBackgroundColor(getResources().getColor(R.color.buttonGreen));
+            Log.e(TAG, "GAME-BUTTON: Button re-enabled");
+        }
     }
 }
