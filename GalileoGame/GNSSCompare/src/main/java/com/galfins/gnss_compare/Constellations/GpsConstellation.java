@@ -92,12 +92,15 @@ public class GpsConstellation extends Constellation {
         // Declare a RinexNavigation type object
         if(rinexNavGps == null)
             rinexNavGps = new RinexNavigationGps(BKG_HOURLY_SUPER_SEVER);
+
+        Log.e(TAG, "RinexNavGPS: " + (rinexNavGps == null));
     }
 
     @Override
     public void addCorrections(ArrayList<Correction> corrections) {
         synchronized (this) {
             this.corrections = corrections;
+            Log.e(TAG, "Corrections added");
         }
     }
 
@@ -121,7 +124,7 @@ public class GpsConstellation extends Constellation {
 
     @Override
     public void updateMeasurements(GnssMeasurementsEvent event) {
-
+        Log.e(TAG, "Attempt updating Measurements");
         synchronized (this) {
             visibleButNotUsed = 0;
             observedSatellites.clear();
@@ -145,10 +148,11 @@ public class GpsConstellation extends Constellation {
                 if (measurement.getConstellationType() != constellationId)
                     continue;
 
-                if(! (!measurement.hasCarrierFrequencyHz() || approximateEqual(measurement.getCarrierFrequencyHz(), L1_FREQUENCY, FREQUENCY_MATCH_RANGE)) )
-                    continue;
+                if (measurement.hasCarrierFrequencyHz())
+                    if (!approximateEqual(measurement.getCarrierFrequencyHz(), L1_FREQUENCY, FREQUENCY_MATCH_RANGE))
+                        continue;
 
-                // todo: hardcoded exlusion of a faulty satellite (SUPL not working)
+                // excluding satellites which don't have the L5 component
 //                if(measurement.getSvid() == 2 || measurement.getSvid() == 4
 //                        || measurement.getSvid() == 5 || measurement.getSvid() == 7
 //                        || measurement.getSvid() == 11 || measurement.getSvid() == 12
@@ -207,7 +211,7 @@ public class GpsConstellation extends Constellation {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                     towKnown = (measState & GnssMeasurement.STATE_TOW_KNOWN) != 0;
                 }
-                boolean towUncertainty = measurement.getReceivedSvTimeUncertaintyNanos() <  MAXTOWUNCNS;
+//                boolean towUncertainty = measurement.getReceivedSvTimeUncertaintyNanos() <  MAXTOWUNCNS;
 
 
                 if (codeLock && (towDecoded || towKnown)  && pseudorange < 1e9) { // && towUncertainty
@@ -297,7 +301,7 @@ public class GpsConstellation extends Constellation {
 
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
-                    Log.e(TAG,"Faled getting ephemeris data!");
+                    Log.e(TAG, "Faled getting ephemeris data!");
                     continue;
                 }
 
