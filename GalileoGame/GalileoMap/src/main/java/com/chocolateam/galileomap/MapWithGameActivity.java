@@ -216,7 +216,10 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         bDebugGraphicsButton.setVisibility(View.GONE);
 
         /** Location Manager **/
+        // TODO this should be extracted to the mLocationCallback
+        // TODO: i.e. remove locationListener
         // Used when service is unavailable, i.e. raw measurements are not supported
+        /**
         if (locationFuncLevel == 0) {
             mLocationListenerGPS = new LocationListener() {
                 @Override
@@ -253,7 +256,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
                 }
             };
         }
-
+**/
         if (playerMarker != null) {
             playerMarker.remove();
         }
@@ -291,6 +294,8 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         mMap = googleMap;
         super.onMapReady(mMap);
         mMap.setOnMapClickListener(this);
+
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
 
         /** Remove blue dot location marker (with adequate permission check **/
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

@@ -9,8 +9,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -78,10 +76,6 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
 
-    /** Location manager **/
-    private LocationManager locationManager;
-    protected LocationListener mLocationListenerGPS;
-    private boolean LocationManagerSuccess = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,36 +108,6 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        /** Location Manager **/
-        //TODO: Check if this gets properly updated in the subclasses (ideally by checking if the MapOnly markers work as intended)
-        mLocationListenerGPS = new LocationListener() {
-            @Override
-            public void onLocationChanged(android.location.Location location) {}
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-            @Override
-            public void onProviderEnabled(String provider) {}
-
-            @Override
-            public void onProviderDisabled(String provider) {}
-        };
-
-        locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        setLocationSettings();
-    }
-
-    private void setLocationSettings() {
-        try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, mLocationListenerGPS);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListenerGPS);
-            isLocationEnabled();
-            LocationManagerSuccess = true;
-        } catch (SecurityException e) {
-            // do nothing
-        }
     }
 
     /**
@@ -245,36 +209,21 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
                             // Set the map's camera position to the current location of the device.
                             if (mLastKnownLocation == null) {
                                 mLastKnownLocation = task.getResult();
-                                try {
-                                    if (mLastKnownLocation == null) {
-                                        Thread.sleep(3000);
-                                        mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-                                        if (mLastKnownLocation == null) {
-                                            Thread.sleep(3000);
-                                            mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-                                            if (mLastKnownLocation == null) {
-                                                // if we can't get location, advise user
-                                                findViewById(R.id.locationText).setVisibility(View.GONE);
-                                                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
-                                                alertDialog.setTitle("Can't Locate You");
-                                                alertDialog.setMessage("The signal is not good enough to determine your location - if you're indoors, try going outside. " +
-                                                        "Have a look at the signal and satellite availability by accessing the spaceship from the main menu.");
-                                                alertDialog.setPositiveButton("Return to menu", new DialogInterface.OnClickListener() {
-                                                    public void onClick(DialogInterface dialog, int which) {
-                                                        (MapsActivity.this).finish();
-                                                    }
-                                                });
-
-                                                AlertDialog alert = alertDialog.create();
-                                                alert.show();
-                                                passed = false;
-                                            }
+                                // Check if mLastKnownLocation was retrieved succesfully. if we can't get location, advise user
+                                if (mLastKnownLocation == null) {
+                                    findViewById(R.id.locationText).setVisibility(View.GONE);
+                                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
+                                    alertDialog.setTitle("Can't Locate You");
+                                    alertDialog.setMessage("The signal is not good enough to determine your location - if you're indoors, try going outside. " +
+                                            "Have a look at the signal and satellite availability by accessing the spaceship from the main menu.");
+                                    alertDialog.setPositiveButton("Return to menu", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            (MapsActivity.this).finish();
                                         }
-                                    }
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
+                                    });
+
+                                    AlertDialog alert = alertDialog.create();
+                                    alert.show();
                                     passed = false;
                                 }
                             }
@@ -322,11 +271,6 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-
-            // If locationManager settings weren't successfully set, try again now, with permission
-            if (!LocationManagerSuccess) {
-                setLocationSettings();
-            }
         }
     }
 
@@ -355,6 +299,7 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
      */
+    // TODO: we probably don't need this
     private void updateLocationUI() {
         if (mMap == null) {
             return;
@@ -390,33 +335,37 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
     @Override
     protected void onResume() {
         super.onResume();
-        isLocationEnabled();
+        // TODO: replace with a listener to continually check if location was disabled
+        //isLocationEnabled();
     }
 
+    // TODO: replace with a listener to continually check if location was disabled
+    /**
     private void isLocationEnabled() {
         System.out.println("Checking Location availability");
         if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-        AlertDialog.Builder alertDialog=new AlertDialog.Builder(getApplicationContext());
-        alertDialog.setTitle("Enable Location");
-        alertDialog.setMessage("Your locations setting is not enabled. Please enabled it in settings menu.");
-        alertDialog.setPositiveButton("Location Settings", new DialogInterface.OnClickListener(){
-            public void onClick(DialogInterface dialog, int which){
-                Intent intent=new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-            }
-        });
-        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
-            public void onClick(DialogInterface dialog, int which){
-                dialog.cancel();
-            }
-        });
-        AlertDialog alert=alertDialog.create();
-        alert.show();
+            AlertDialog.Builder alertDialog=new AlertDialog.Builder(getApplicationContext());
+            alertDialog.setTitle("Enable Location");
+            alertDialog.setMessage("Your locations setting is not enabled. Please enabled it in settings menu.");
+            alertDialog.setPositiveButton("Location Settings", new DialogInterface.OnClickListener(){
+                public void onClick(DialogInterface dialog, int which){
+                    Intent intent=new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                }
+            });
+            alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+                public void onClick(DialogInterface dialog, int which){
+                    dialog.cancel();
+                }
+            });
+            AlertDialog alert=alertDialog.create();
+            alert.show();
         }
         else {
             System.out.println("Location available");
         }
     }
+     **/
 
     /**
      * Method to add the marker to the map based on both checkboxes
