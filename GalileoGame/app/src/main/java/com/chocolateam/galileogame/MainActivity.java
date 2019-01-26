@@ -289,6 +289,9 @@ public class MainActivity extends GNSSCoreServiceActivity {
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
         super.onServiceConnected(name, binder);
+        if(gnssService.waitForServiceStarted()) {
+            Log.e(TAG, "Service started succesfully");
+        }
         gnssBinder.addObserver(connCheckUpdater);
         Log.e(TAG, "-- observer ADDED");
     }

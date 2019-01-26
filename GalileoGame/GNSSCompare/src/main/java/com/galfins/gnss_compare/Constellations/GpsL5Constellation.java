@@ -9,7 +9,6 @@ import android.support.design.widget.Snackbar;
 import android.util.Log;
 
 import com.galfins.gnss_compare.Corrections.Correction;
-import com.galfins.gnss_compare.GnssCoreService;
 import com.galfins.gogpsextracts.Constants;
 import com.galfins.gogpsextracts.Coordinates;
 import com.galfins.gogpsextracts.NavigationProducer;
@@ -266,7 +265,7 @@ public class GpsL5Constellation extends Constellation {
 
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
-                    Log.e(TAG,"Failed getting ephemeris data!");
+                    Log.e(TAG, "Failed getting ephemeris data!");
                     continue;
                 }
 

@@ -92,15 +92,12 @@ public class GpsConstellation extends Constellation {
         // Declare a RinexNavigation type object
         if(rinexNavGps == null)
             rinexNavGps = new RinexNavigationGps(BKG_HOURLY_SUPER_SEVER);
-
-        Log.e(TAG, "RinexNavGPS: " + (rinexNavGps == null));
     }
 
     @Override
     public void addCorrections(ArrayList<Correction> corrections) {
         synchronized (this) {
             this.corrections = corrections;
-            Log.e(TAG, "Corrections added");
         }
     }
 
@@ -124,7 +121,7 @@ public class GpsConstellation extends Constellation {
 
     @Override
     public void updateMeasurements(GnssMeasurementsEvent event) {
-        Log.e(TAG, "Attempt updating Measurements");
+
         synchronized (this) {
             visibleButNotUsed = 0;
             observedSatellites.clear();
@@ -301,7 +298,7 @@ public class GpsConstellation extends Constellation {
 
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
-                    Log.e(TAG, "Faled getting ephemeris data!");
+                    Log.e(TAG, "Failed getting ephemeris data!");
                     continue;
                 }
 

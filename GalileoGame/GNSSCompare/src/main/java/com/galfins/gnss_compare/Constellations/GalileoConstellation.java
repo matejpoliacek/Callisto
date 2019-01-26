@@ -345,7 +345,7 @@ public class GalileoConstellation extends Constellation{
 
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
-                    Log.e(TAG, "Failed getting ephemeris data!");
+                    Log.e(TAG,"Failed getting ephemeris data!");
                     continue;
                 }
 
