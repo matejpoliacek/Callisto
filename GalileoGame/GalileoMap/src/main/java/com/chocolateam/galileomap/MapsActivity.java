@@ -1,5 +1,6 @@
 package com.chocolateam.galileomap;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -54,16 +55,15 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
 
     private CameraPosition mCameraPosition;
 
-
     // The entry point to the Fused Location Provider.
-    private FusedLocationProviderClient mFusedLocationProviderClient;
+    protected FusedLocationProviderClient mFusedLocationProviderClient;
 
     // A default location (Sydney, Australia) and default zoom to use when location permission is
     // not granted.
-    private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
-    private static final int DEFAULT_ZOOM = 15;
-    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    private boolean mLocationPermissionGranted;
+    protected final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
+    protected static final int DEFAULT_ZOOM = 15;
+    protected static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    protected boolean mLocationPermissionGranted;
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
@@ -73,8 +73,8 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
 
-    private LocationRequest mLocationRequest;
-    private LocationCallback mLocationCallback;
+    protected LocationRequest mLocationRequest;
+    protected LocationCallback mLocationCallback;
 
 
     @Override
@@ -191,7 +191,7 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
     /**
      * Gets the current location of the device, and positions the map's camera.
      */
-   private void getDeviceLocation() {
+    private void getDeviceLocation() {
         /*
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
@@ -212,18 +212,7 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
                                 // Check if mLastKnownLocation was retrieved succesfully. if we can't get location, advise user
                                 if (mLastKnownLocation == null) {
                                     findViewById(R.id.locationText).setVisibility(View.GONE);
-                                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
-                                    alertDialog.setTitle("Can't Locate You");
-                                    alertDialog.setMessage("The signal is not good enough to determine your location - if you're indoors, try going outside. " +
-                                            "Have a look at the signal and satellite availability by accessing the spaceship from the main menu.");
-                                    alertDialog.setPositiveButton("Return to menu", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            (MapsActivity.this).finish();
-                                        }
-                                    });
-
-                                    AlertDialog alert = alertDialog.create();
-                                    alert.show();
+                                    locationFailedAlert();
                                     passed = false;
                                 }
                             }
@@ -324,7 +313,6 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
     /*********************/
 
     // TODO: test if we need any of the following 3 methods
-
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(50);
@@ -335,8 +323,12 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
     @Override
     protected void onResume() {
         super.onResume();
-        // TODO: replace with a listener to continually check if location was disabled
-        //isLocationEnabled();
+        // TODO: add  a listener to continually check if location was disabled
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     // TODO: replace with a listener to continually check if location was disabled
@@ -411,4 +403,19 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
         return processMarker(checkbox1Bool, true, marker, point, markerResource);
     }
 
+
+    protected void locationFailedAlert() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
+        alertDialog.setTitle("Can't Locate You");
+        alertDialog.setMessage("The signal is not good enough to determine your location - if you're indoors, try going outside. " +
+                "Have a look at the signal and satellite availability by accessing the spaceship from the main menu.");
+        alertDialog.setPositiveButton("Return to menu", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                (MapsActivity.this).finish();
+            }
+        });
+
+        AlertDialog alert = alertDialog.create();
+        alert.show();
+    }
 }

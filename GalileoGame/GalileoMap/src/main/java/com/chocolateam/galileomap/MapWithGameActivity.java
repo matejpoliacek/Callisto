@@ -8,7 +8,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
@@ -23,6 +22,9 @@ import android.widget.Toast;
 
 import com.galfins.gnss_compare.CalculationModule;
 import com.galfins.gnss_compare.CalculationModulesArrayList;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -34,6 +36,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.location.LocationListener;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -91,7 +94,11 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     private Marker playerMarker;
     private Button GameButton;
 
+    private boolean locationUpdatesStarted = false;
+
     protected Location mGameLocation = mLastKnownLocation;
+
+    protected int locationAvailabilityCounter = 0;
 
     public Observer mapGameUpdater = new Observer() {
         @Override
@@ -206,8 +213,6 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         gameBottomPanel.setVisibility(View.VISIBLE);
         tutorialView.setVisibility(View.VISIBLE);
 
-
-
         /** Game debugging buttons **/
         Button bDebugButton = findViewById(R.id.debugButton);
         Button bDebugGraphicsButton = findViewById(R.id.debugGraphicsButton);
@@ -215,48 +220,6 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         bDebugButton.setVisibility(View.GONE);
         bDebugGraphicsButton.setVisibility(View.GONE);
 
-        /** Location Manager **/
-        // TODO this should be extracted to the mLocationCallback
-        // TODO: i.e. remove locationListener
-        // Used when service is unavailable, i.e. raw measurements are not supported
-        /**
-        if (locationFuncLevel == 0) {
-            mLocationListenerGPS = new LocationListener() {
-                @Override
-                public void onLocationChanged(android.location.Location location) {
-                    //We're playing the game, set the location to the selected source
-                    LatLng point;
-                    mLastKnownLocation = location;
-
-                    if (mLastKnownLocation != null) {
-                        enableGameButton();
-                        mGameLocation = mLastKnownLocation;
-                    }
-
-                    // TODO: the whole if wrapper with bDebug can be removed when debugging is concluded
-                    if (playing && game != null && !bDebug) {
-                        game.setPlayerLocation(location);
-                    }
-                }
-
-
-                @Override
-                public void onStatusChanged(String provider, int status, Bundle extras) {
-
-                }
-
-                @Override
-                public void onProviderEnabled(String provider) {
-
-                }
-
-                @Override
-                public void onProviderDisabled(String provider) {
-
-                }
-            };
-        }
-**/
         if (playerMarker != null) {
             playerMarker.remove();
         }
@@ -312,6 +275,111 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         if (locationFuncLevel > LOCATION_DEFAULT_NAV) {
             googleMap.setMyLocationEnabled(false);
         }
+
+        // Used when service is unavailable, i.e. raw measurements are not supported
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                Log.e(TAG, "onLocationResult called");
+
+                if (locationResult == null) {
+                    locationAvailabilityCounter++;
+                    if(locationAvailabilityCounter > 10) {
+                        Log.e(TAG, "onLocationResult location failed after locactionAvailabilityCounter " + locationAvailabilityCounter);
+                        locationFailedAlert();
+                    }
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    Log.e(TAG, "onLocationResult - non null location returned: " + location.toString());
+                    mLastKnownLocation = location;
+
+                    if (!GameButton.isEnabled()) {
+                        enableGameButton();
+                    }
+
+                    if (mLastKnownLocation != null) {
+                        mGameLocation = mLastKnownLocation;
+                    }
+
+                    if (playing && game != null && !bDebug) { // debug boolean was used to set location by clicking to debug game without moving
+                        game.setPlayerLocation(location);
+                    }
+
+                    locationAvailabilityCounter = 0;
+                }
+            }
+
+            @Override
+            public void onLocationAvailability(LocationAvailability locationAvailability) {
+                Log.e(TAG, "onLocationAvailability called: " + locationAvailability.isLocationAvailable());
+
+                if (!locationAvailability.isLocationAvailable()) {
+                    locationAvailabilityCounter++;
+                    if (locationAvailabilityCounter > 10) {
+                        Log.e(TAG, "onLocationAvailability location failed after locactionAvailabilityCounter " + locationAvailabilityCounter);
+                        locationFailedAlert();
+                    }
+                } else {
+                    locationAvailabilityCounter = 0;
+                }
+            }
+        };
+
+        if (!locationUpdatesStarted) {
+            startLocationUpdates();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!locationUpdatesStarted && (mLocationCallback != null)) {
+            startLocationUpdates();
+        }
+        // TODO: add  a listener to continually check if location was disabled
+    }
+
+    @Override
+    protected void onPause() {
+        if (gnssBinder != null) {
+            gnssBinder.removeObserver(mapGameUpdater);
+            Log.e(TAG, "-- observer REMOVED");
+        }
+        super.onPause();
+        if (locationUpdatesStarted) {
+            stopLocationUpdates();
+        }
+
+    }
+
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
+        locationUpdatesStarted = true;
+        Log.e(TAG, "startLocationUpdates invoked");
+    }
+
+    private void stopLocationUpdates() {
+        mFusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
+        locationUpdatesStarted = false;
+        Log.e(TAG, "stopLocationUpdates invoked");
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        super.onServiceConnected(name, binder);
+        gnssBinder.addObserver(mapGameUpdater);
+        Log.e(TAG, "-- observer ADDED");
     }
 
     /**********************/
@@ -361,7 +429,9 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
                     stopGame(true);
                 }
             }
-            // TODO: delete this else after debugs
+            // Debug can be set to true if we need to debug the game
+            // The location is then set by tapping on the map, and a marker is provided to display it
+            // This way the game can be tested without having to walk around
         } else if (playing && bDebug){
             if (mMarker == null) {
                 mMarker = mMap.addMarker(new MarkerOptions().position(point));
@@ -617,22 +687,6 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         }
     }
 
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder binder) {
-        super.onServiceConnected(name, binder);
-        gnssBinder.addObserver(mapGameUpdater);
-        Log.e(TAG, "-- observer ADDED");
-    }
-
-    @Override
-    protected void onPause() {
-        if (gnssBinder != null) {
-            gnssBinder.removeObserver(mapGameUpdater);
-            Log.e(TAG, "-- observer REMOVED");
-        }
-        super.onPause();
-    }
-
     private void skipConstSelection() {
         if (locationFuncLevel == LOCATION_DEFAULT_NAV) {
             //TODO:test
@@ -649,11 +703,16 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     }
 
     private void enableGameButton() {
-        if (!GameButton.isEnabled()) {
-            GameButton.setText("GOT IT! PLAY!");
-            GameButton.setEnabled(true);
-            GameButton.setBackgroundColor(getResources().getColor(R.color.buttonGreen));
-            Log.e(TAG, "GAME-BUTTON: Button re-enabled");
-        }
+        GameButton.post(new Runnable() {
+            @Override
+            public void run() {
+                if (!GameButton.isEnabled()) {
+                    GameButton.setText("GOT IT! PLAY!");
+                    GameButton.setEnabled(true);
+                    GameButton.setBackgroundColor(getResources().getColor(R.color.buttonGreen));
+                    Log.e(TAG, "GAME-BUTTON: Button re-enabled");
+                }
+            }
+        });
     }
 }
