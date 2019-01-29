@@ -8,7 +8,7 @@
     tools:context="com.chocolateam.galileogame.MainMenu">
 
     <Button
-        android:id="@+id/confirmButton"
+        android:id="@+id/gameButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -66,7 +66,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline_right"
         app:layout_constraintHeight_percent="0.06"
         app:layout_constraintStart_toStartOf="@+id/guideline_left"
-        app:layout_constraintTop_toBottomOf="@+id/confirmButton"
+        app:layout_constraintTop_toBottomOf="@+id/gameButton"
         app:layout_constraintWidth_percent="0.53" />
 
     <Button
@@ -79,21 +79,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_percent="0.10" />
-
-    <TextView
-        android:id="@+id/warningText"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Initialising PVT engine - Ensure your location and Internet connection are switched on"
-        android:textAlignment="center"
-        android:textColor="@color/ap_light_gray"
-        app:layout_constraintBottom_toTopOf="@+id/guideline_buttons_top"
-        app:layout_constraintEnd_toStartOf="@+id/guideline_right"
-        app:layout_constraintStart_toStartOf="@+id/guideline_left"
-        app:layout_constraintTop_toTopOf="@+id/guideline_text_top"
-        app:layout_constraintVertical_bias="0.535" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline_buttons_top"

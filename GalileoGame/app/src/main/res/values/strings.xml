@@ -30,4 +30,6 @@
 
         <a href="https://www.facebook.com/Callisto-GAME-1666262033493155/">Callisto Facebook</a> --- <a href="https://github.com/TheChocolateam">The ChocolaTeam Github</a>
     </string>
+    <string name="landingGPSInfo">GPS Used: - Visible: -</string>
+    <string name="landingGalInfo">GAL Used: - Visible: -</string>
 </resources>
