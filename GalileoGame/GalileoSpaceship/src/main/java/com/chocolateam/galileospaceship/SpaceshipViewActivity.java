@@ -39,6 +39,8 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
+    protected int locationFuncLevel = 0;
+
     static final int NUM_PANELS = 3;
     SpacecraftPagerAdapter mAdapter;
     ViewPager mPager;
@@ -170,8 +172,7 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
         mPager = findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
 
-        // TODO: Replace with service
-        //StartGNSSFragment.gnssInit.addObservers(shipUpdater);
+        locationFuncLevel = getIntent().getExtras().getInt("location_functionality");
     }
 
     public static class SpacecraftPagerAdapter extends FragmentStatePagerAdapter {
@@ -231,8 +232,10 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
         super.onServiceConnected(name, binder);
-        gnssBinder.addObserver(shipUpdater);
-        Log.e(TAG, "-- observer ADDED");
+        if (locationFuncLevel > LOCATION_DEFAULT_NAV) {
+            gnssBinder.addObserver(shipUpdater);
+            Log.e(TAG, "-- observer ADDED");
+        }
     }
 
     @Override

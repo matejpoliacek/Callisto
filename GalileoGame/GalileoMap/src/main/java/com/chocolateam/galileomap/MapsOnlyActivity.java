@@ -109,7 +109,7 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
 
             if (locationFuncLevel < LOCATION_GPS_ONLY) {
                 checkBoxGPS.setEnabled(false);
-                checkBoxGPS.setAlpha(0.5f);;
+                checkBoxGPS.setAlpha(0.5f);
 
             }
         }
@@ -144,7 +144,9 @@ public class MapsOnlyActivity extends MapsActivity implements OnMapReadyCallback
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
         super.onServiceConnected(name, binder);
-        gnssBinder.addObserver(mapMarkerUpdater);
-        Log.e(TAG, "-- observer ADDED");
+        if (locationFuncLevel > LOCATION_DEFAULT_NAV) {
+            gnssBinder.addObserver(mapMarkerUpdater);
+            Log.e(TAG, "-- observer ADDED");
+        }
     }
 }

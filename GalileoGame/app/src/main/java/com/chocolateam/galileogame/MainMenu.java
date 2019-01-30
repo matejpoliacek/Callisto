@@ -48,7 +48,7 @@ public class MainMenu extends AppCompatActivity {
 
         Log.e(TAG, "Location functionality: " + locationFuncLevel);
 
-        while ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
+        while ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
             requestPermissionAndSetupFragments(this);
         }
 
@@ -60,7 +60,7 @@ public class MainMenu extends AppCompatActivity {
     protected void onResume() {
         // Start the blank fragment initiating Gal/Gps PVT on app start
         super.onResume();
-        if ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
+        if ((ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
             // FragmentManager fragmentManager = getSupportFragmentManager();
             // FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             // PvtFragment pvtFrag = new PvtFragment();
@@ -96,6 +96,11 @@ public class MainMenu extends AppCompatActivity {
             startActivity(intent);
         }
 
+    }
+
+    public void goToInfo(View view) {
+        Intent intent = new Intent(this, InfoActivity.class);
+        startActivity(intent);
     }
 
     /**

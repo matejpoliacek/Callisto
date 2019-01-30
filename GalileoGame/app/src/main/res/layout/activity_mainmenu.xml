@@ -33,7 +33,7 @@
         android:id="@+id/MapButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:background="@color/buttonGreen"
@@ -42,7 +42,7 @@
         android:text="Map"
         android:textColor="@color/buttonGreenDark"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline_buttons_bottom"
+        app:layout_constraintBottom_toTopOf="@+id/infoButton"
         app:layout_constraintEnd_toStartOf="@+id/guideline_right"
         app:layout_constraintHeight_percent="0.06"
         app:layout_constraintStart_toStartOf="@+id/guideline_left"
@@ -70,6 +70,26 @@
         app:layout_constraintWidth_percent="0.53" />
 
     <Button
+        android:id="@+id/infoButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:background="@color/buttonGreen"
+        android:fontFamily="@font/notes_esa_reg"
+        android:onClick="goToInfo"
+        android:text="Info"
+        android:textColor="@color/buttonGreenDark"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_buttons_bottom"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_right"
+        app:layout_constraintHeight_percent="0.06"
+        app:layout_constraintStart_toStartOf="@+id/guideline_left"
+        app:layout_constraintTop_toBottomOf="@+id/MapButton"
+        app:layout_constraintWidth_percent="0.53" />
+
+    <Button
         android:id="@+id/button2"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -85,7 +105,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.57" />
+        app:layout_constraintGuide_percent="0.45" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline_left"
@@ -100,13 +120,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.9" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline_text_top"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.46" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline_buttons_bottom"

@@ -378,8 +378,10 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
         super.onServiceConnected(name, binder);
-        gnssBinder.addObserver(mapGameUpdater);
-        Log.e(TAG, "-- observer ADDED");
+        if (locationFuncLevel > LOCATION_DEFAULT_NAV) {
+            gnssBinder.addObserver(mapGameUpdater);
+            Log.e(TAG, "-- observer ADDED");
+        }
     }
 
     /**********************/

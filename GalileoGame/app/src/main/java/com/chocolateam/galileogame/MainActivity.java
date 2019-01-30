@@ -59,6 +59,9 @@ public class MainActivity extends GNSSCoreServiceActivity {
 
             Log.e(TAG, "-- observer tick");
 
+            gpsText.setTextColor(getResources().getColor(R.color.ap_light_gray));
+            galText.setTextColor(getResources().getColor(R.color.ap_light_gray));
+
             CalculationModulesArrayList CMArrayList = gnssBinder.getCalculationModules();
 
             for(CalculationModule calculationModule : CMArrayList) {
@@ -144,7 +147,10 @@ public class MainActivity extends GNSSCoreServiceActivity {
         navInfoText = findViewById(R.id.navInfoText);
         confirmButton = findViewById(R.id.confirmButton);
 
-        while ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
+        gpsText.setTextColor(getResources().getColor(R.color.unknownSatelliteRed));
+        galText.setTextColor(getResources().getColor(R.color.unknownSatelliteRed));
+
+        while ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)){
             requestPermissionAndSetupFragments(this);
         }
 
@@ -168,7 +174,7 @@ public class MainActivity extends GNSSCoreServiceActivity {
     protected void onResume() {
         // Start the blank fragment initiating Gal/Gps PVT on app start
         super.onResume();
-        if ((checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
             // FragmentManager fragmentManager = getSupportFragmentManager();
             // FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             // PvtFragment pvtFrag = new PvtFragment();
@@ -289,11 +295,13 @@ public class MainActivity extends GNSSCoreServiceActivity {
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
         super.onServiceConnected(name, binder);
-        if(gnssService.waitForServiceStarted()) {
-            Log.e(TAG, "Service started succesfully");
+        if (Build.VERSION.SDK_INT >= MIN_SDK) {
+            if (gnssService.waitForServiceStarted()) {
+                Log.e(TAG, "Service started succesfully");
+            }
+            gnssBinder.addObserver(connCheckUpdater);
+            Log.e(TAG, "-- observer ADDED");
         }
-        gnssBinder.addObserver(connCheckUpdater);
-        Log.e(TAG, "-- observer ADDED");
     }
 
     @Override

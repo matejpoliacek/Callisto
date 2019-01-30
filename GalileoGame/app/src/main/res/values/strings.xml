@@ -32,4 +32,22 @@
     </string>
     <string name="landingGPSInfo">GPS Used: - Visible: -</string>
     <string name="landingGalInfo">GAL Used: - Visible: -</string>
+
+    <!-- BUTTON STRINGS FOR INFO ACTIVITY -->
+    <string name="infoDefaultText">Please select a category you would like to learn about, by clicking one of the buttons on the left</string>
+
+    <string name="infoWhatIsGalLabel">What is Galileo?</string>
+    <string name="infoWhatIsGalText">Here is some info on how Galileo already works</string>
+
+    <string name="infoCanUseGalLabel">Can I use Galileo?</string>
+    <string name="infoCanUseGalText">Now we tell you which HW supports galileo</string>
+
+    <string name="infoCanUseRawMLabel">Why only native navigation?</string>
+    <string name="infoCanUseRawMText">Something about APIs and phones accesing raw measurements</string>
+
+    <string name="infoESALabel">What is ESA?</string>
+    <string name="infoESAText">ESA basic info</string>
+
+    <string name="infoGSALabel">What is GSA?</string>
+    <string name="infoGSAText">GSA basic info</string>
 </resources>

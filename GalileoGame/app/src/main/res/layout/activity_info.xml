@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/darkSpace"
+    tools:context="com.chocolateam.galileogame.InfoActivity">
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_info_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="113dp" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_info_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="556dp" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_menubottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.055" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_menutop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.0" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_menuleft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.076" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_menuright"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.17" />
+
+    <ImageView
+        android:id="@+id/central_cabin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/center_panel"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/menuButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:background="#00000000"
+        android:onClick="backToMenu"
+        android:scaleType="fitXY"
+        android:src="@drawable/menu_button_selector"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_menubottom"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_menuright"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_menuleft"
+        app:layout_constraintTop_toTopOf="@+id/guideline_menutop" />
+
+    <LinearLayout
+        android:id="@+id/cols_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="@+id/guideline_info_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_info_bottom">
+
+        <LinearLayout
+            android:id="@+id/rows_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/info_whatIsGal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@color/buttonGreen"
+                android:fontFamily="@font/notes_esa_reg"
+                android:onClick="infoWhatIsGal"
+                android:text="@string/infoWhatIsGalLabel"
+                android:textColor="@color/buttonGreenDark"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/info_canUseGal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@color/buttonGreen"
+                android:fontFamily="@font/notes_esa_reg"
+                android:onClick="infoCanUseGal"
+                android:text="@string/infoCanUseGalLabel"
+                android:textColor="@color/buttonGreenDark"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/info_canUseRawM"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@color/buttonGreen"
+                android:fontFamily="@font/notes_esa_reg"
+                android:onClick="infoCanUseRawM"
+                android:text="@string/infoCanUseRawMLabel"
+                android:textColor="@color/buttonGreenDark"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/info_SPACER"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@color/darkSpace"
+                android:fontFamily="@font/notes_esa_reg"
+                android:textColor="@color/buttonGreenDark"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/info_whatIsESA"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@color/buttonGreen"
+                android:fontFamily="@font/notes_esa_reg"
+                android:onClick="infoESA"
+                android:text="@string/infoESALabel"
+                android:textColor="@color/buttonGreenDark"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/info_whatIsGSA"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@color/buttonGreen"
+                android:fontFamily="@font/notes_esa_reg"
+                android:onClick="infoGSA"
+                android:text="@string/infoGSALabel"
+                android:textColor="@color/buttonGreenDark"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/info_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/infoDefaultText"
+            android:textColor="@color/ap_light_gray" />
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
