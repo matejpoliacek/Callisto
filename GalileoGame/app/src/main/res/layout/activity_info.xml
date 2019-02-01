@@ -12,14 +12,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="113dp" />
+        app:layout_constraintGuide_percent="0.1" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline_info_bottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="556dp" />
+        app:layout_constraintGuide_percent="0.9" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline_menubottom"
@@ -166,16 +166,26 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/info_text"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:gravity="center"
-            android:text="@string/infoDefaultText"
-            android:textColor="@color/ap_light_gray" />
+            android:fillViewport="true"
+            android:fadeScrollbars="false"
+            android:scrollbarThumbVertical="@color/buttonGreen">
+
+            <TextView
+                android:id="@+id/info_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/infoDefaultText"
+                android:textColor="@color/ap_light_gray"/>
+
+        </ScrollView>
 
     </LinearLayout>
 

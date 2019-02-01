@@ -2,6 +2,7 @@ package com.chocolateam.galileogame;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -41,6 +42,7 @@ public class InfoActivity extends AppCompatActivity {
         allButtons.add(whatIsGSA);
 
         infoText = findViewById(R.id.info_text);
+        infoText.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
 

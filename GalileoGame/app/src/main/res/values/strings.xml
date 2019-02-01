@@ -37,17 +37,73 @@
     <string name="infoDefaultText">Please select a category you would like to learn about, by clicking one of the buttons on the left</string>
 
     <string name="infoWhatIsGalLabel">What is Galileo?</string>
-    <string name="infoWhatIsGalText">Here is some info on how Galileo already works</string>
+    <string name="infoWhatIsGalText">Galileo is the global navigation satellite system (GNSS)
+                                    created by the European Union (EU) through the European GNSS Agency (GSA).\n\n
+
+                                    One of the aims of Galileo is to provide an independent high-precision positioning so
+                                    European nations do not have to rely on the U.S. GPS, or the Russian GLONASS systems,
+                                    which could be disabled their operators at any time.\n\n
+
+                                    Galileo is intended to provide position measurements within 1-metre precision,
+                                    and to provide a new global search and rescue (SAR) function.\n\n
+
+                                    Galileo started offering Early Operational Capability on 15 December 2016,
+                                    with service continuing to improve as more satellites are launched.\n\n
+
+                                    Source and more info: <a href="https://en.wikipedia.org/wiki/Galileo_(satellite_navigation)">Galileo GNSS on Wikipedia</a>
+                                    </string>
 
     <string name="infoCanUseGalLabel">Can I use Galileo?</string>
-    <string name="infoCanUseGalText">Now we tell you which HW supports galileo</string>
+    <string name="infoCanUseGalText">First available smartphones capable of receiving navigation signal from Galileo satellites became available in 2017.
+                                    Therefore, if you bought a new phone after this point in time, there is a possibility it supports Galileo.\n\n
 
-    <string name="infoCanUseRawMLabel">Why only native navigation?</string>
-    <string name="infoCanUseRawMText">Something about APIs and phones accesing raw measurements</string>
+                                    Just like with GPS and other navigation providers, you don\'t need to download an app to benefit from Galileo.
+                                    If your phone supports Galileo, the Android operating system in your phone automatically processes it to calculate your position.
+                                    If you use e.g. Google Maps, your position is determined based on all available satellites - GPS, Galileo and
+                                    others alike, depending on the chips in your phone. In newer phones, developers can access the satellite signals
+                                    picked up by the chip separately. This way you can only see results coming from Galileo only, or GPS only - just like in this app.\n\n
+
+                                    You can read more about phones supporting Galileo GNSS <a href="https://www.gsc-europa.eu/galileo-gsc-overview/services/galileo-initial-services/galileo-enabled-devices">here.</a>
+                                    </string>
+
+    <string name="infoCanUseRawMLabel">Native navigation? "Raw measurements"?</string>
+    <string name="infoCanUseRawMText">Some of the newer phones allow developers access the unprocessed data broadcast by the navigation satellites.
+                                    Availability of this feature depends on the device and also on the version of Android used.\n\n
+
+                                    By accesing raw data, developers can use their own calculations and corrections to best fit their needs.
+                                    If you would like to compare the differences yourself, try <a href="https://play.google.com/store/apps/details?id=com.galfins.gnss_compare">GNSS Compare</a> app,
+                                    which also powers the navigation aspect of Callisto. You can compare Galileo with GPS, and explore various calculation options.\n\n
+
+                                    If your phone does not support raw GNSS measurements, it means the satellite data is directly processed by Android before
+                                    being used in apps. In case of Callisto, you are prompted to use the native navigation present in Android.\n\n
+
+                                    For more technical information, see the <a href="https://developer.android.com/guide/topics/sensors/gnss">Android Developers Documentation on Raw GNSS Measurements</a>
+                                    </string>
 
     <string name="infoESALabel">What is ESA?</string>
-    <string name="infoESAText">ESA basic info</string>
+    <string name="infoESAText">The European Space Agency (ESA) is an intergovernmental organisation of 22 member states dedicated to the exploration of space.
+                            Established in 1975 and headquartered in Paris, France, ESA has a worldwide staff of about 2,200 in 2018 and an annual budget of about €5.6 billion in 2018.\n\n
+
+                            ESA\'s space flight programme includes human spaceflight (mainly through participation in the ISS program); the launch and operation of unmanned exploration
+                            missions to other planets and the Moon; Earth observation, science and telecommunication; designing launch vehicles; and maintaining a major spaceport, the Guiana Space Centre at Kourou, French Guiana.\n\n
+
+                            The EU and ESA co-operate on the Galileo satellite navigation system.\n\n
+
+                            <a href="https://www.esa.int/">https://www.esa.int/</a>\n\n
+
+                            Source: <a href="https://en.wikipedia.org/wiki/European_Space_Agency">ESA on Wikipedia</a>
+                            </string>
 
     <string name="infoGSALabel">What is GSA?</string>
-    <string name="infoGSAText">GSA basic info</string>
+    <string name="infoGSAText">The European Global Navigation Satellite Systems Agency (European GNSS Agency; GSA) is the agency of the European Union (EU) that aims to
+                            ensure that essential public interests are properly defended and represented in connection with satellite navigation programmes of the union:
+                            Galileo and European Geostationary Navigation Overlay Service (EGNOS).\n\n
+
+                            The agency is responsible for managing and monitoring the use of the program funds. It will help the European Commission deal with
+                            any matters relating to satellite radio-navigation.\n\n
+
+                            <a href="https://www.gsa.europa.eu/">https://www.gsa.europa.eu/</a>\n\n
+
+                            Source: <a href="https://en.wikipedia.org/wiki/European_GNSS_Agency">GSA on Wikipedia</a>
+                            </string>
 </resources>
