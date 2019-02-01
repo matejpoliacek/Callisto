@@ -96,7 +96,7 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
 
     private boolean locationUpdatesStarted = false;
 
-    protected Location mGameLocation = mLastKnownLocation;
+    protected Location mGameLocation;
 
     protected int locationAvailabilityCounter = 0;
 
@@ -124,8 +124,8 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
                     final double lat = calculationModule.getPose().getGeodeticLatitude();
                     final double lng = calculationModule.getPose().getGeodeticLongitude();
 
-                    Log.e(TAG, "Game latitude: " + String.valueOf(lat));
-                    Log.e(TAG, "Game longitude: " + String.valueOf(lng));
+                    Log.e(TAG, "Game latitude: " + lat);
+                    Log.e(TAG, "Game longitude: " + lng);
 
                     mGameLocation.setLatitude(lat);
                     mGameLocation.setLongitude(lng);
@@ -277,65 +277,69 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
         }
 
         // Used when service is unavailable, i.e. raw measurements are not supported
-        mLocationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                Log.e(TAG, "onLocationResult called");
+        if (locationFuncLevel == LOCATION_DEFAULT_NAV) {
+            mLocationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    Log.e(TAG, "onLocationResult called");
 
-                if (locationResult == null) {
-                    locationAvailabilityCounter++;
-                    if(locationAvailabilityCounter > 10) {
-                        Log.e(TAG, "onLocationResult location failed after locactionAvailabilityCounter " + locationAvailabilityCounter);
-                        locationFailedAlert();
+                    if (locationResult == null) {
+                        locationAvailabilityCounter++;
+                        if (locationAvailabilityCounter > 10) {
+                            Log.e(TAG, "onLocationResult location failed after locactionAvailabilityCounter " + locationAvailabilityCounter);
+                            locationFailedAlert();
+                        }
+                        return;
+                    } else {
+
+                        mLastKnownLocation = locationResult.getLastLocation();
+                        Log.e(TAG, "onLocationResult - non null location returned: " + mLastKnownLocation.toString());
+
+                        if (!GameButton.isEnabled()) {
+                            enableGameButton();
+                        }
+
+                        if (mLastKnownLocation != null) {
+                            mGameLocation = mLastKnownLocation;
+                        }
+
+                        if (playing && game != null && !bDebug) { // debug boolean was used to set location by clicking to debug game without moving
+                            game.setPlayerLocation(mLastKnownLocation);
+                        }
+
+                        locationAvailabilityCounter = 0;
                     }
-                    return;
                 }
-                for (Location location : locationResult.getLocations()) {
-                    Log.e(TAG, "onLocationResult - non null location returned: " + location.toString());
-                    mLastKnownLocation = location;
 
-                    if (!GameButton.isEnabled()) {
-                        enableGameButton();
+                @Override
+                public void onLocationAvailability(LocationAvailability locationAvailability) {
+                    Log.e(TAG, "onLocationAvailability called: " + locationAvailability.isLocationAvailable());
+
+                    if (!locationAvailability.isLocationAvailable()) {
+                        locationAvailabilityCounter++;
+                        if (locationAvailabilityCounter > 10) {
+                            Log.e(TAG, "onLocationAvailability location failed after locactionAvailabilityCounter " + locationAvailabilityCounter);
+                            locationFailedAlert();
+                        }
+                    } else {
+                        locationAvailabilityCounter = 0;
                     }
-
-                    if (mLastKnownLocation != null) {
-                        mGameLocation = mLastKnownLocation;
-                    }
-
-                    if (playing && game != null && !bDebug) { // debug boolean was used to set location by clicking to debug game without moving
-                        game.setPlayerLocation(location);
-                    }
-
-                    locationAvailabilityCounter = 0;
                 }
+            };
+
+            if (!locationUpdatesStarted) {
+                startLocationUpdates();
             }
-
-            @Override
-            public void onLocationAvailability(LocationAvailability locationAvailability) {
-                Log.e(TAG, "onLocationAvailability called: " + locationAvailability.isLocationAvailable());
-
-                if (!locationAvailability.isLocationAvailable()) {
-                    locationAvailabilityCounter++;
-                    if (locationAvailabilityCounter > 10) {
-                        Log.e(TAG, "onLocationAvailability location failed after locactionAvailabilityCounter " + locationAvailabilityCounter);
-                        locationFailedAlert();
-                    }
-                } else {
-                    locationAvailabilityCounter = 0;
-                }
-            }
-        };
-
-        if (!locationUpdatesStarted) {
-            startLocationUpdates();
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (!locationUpdatesStarted && (mLocationCallback != null)) {
-            startLocationUpdates();
+        if (locationFuncLevel == LOCATION_DEFAULT_NAV) {
+            if (!locationUpdatesStarted && (mLocationCallback != null)) {
+                startLocationUpdates();
+            }
         }
         // TODO: add  a listener to continually check if location was disabled
     }
@@ -347,10 +351,10 @@ public class MapWithGameActivity extends MapsActivity implements OnMapReadyCallb
             Log.e(TAG, "-- observer REMOVED");
         }
         super.onPause();
+
         if (locationUpdatesStarted) {
             stopLocationUpdates();
         }
-
     }
 
     private void startLocationUpdates() {

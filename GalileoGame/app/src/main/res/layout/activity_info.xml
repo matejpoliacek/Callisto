@@ -171,6 +171,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
             android:gravity="center"
             android:text="@string/infoDefaultText"
             android:textColor="@color/ap_light_gray" />
