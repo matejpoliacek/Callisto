@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_layout"
     android:name=".WideColorActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/darkSpace"
-    android:colorMode="wideColorGamut"
-    tools:context="com.chocolateam.galileospaceship.com.chocolateam.galileospaceship.MainActivity">
+    android:colorMode="wideColorGamut">
 
 
     <ImageView
@@ -19,6 +17,7 @@
         android:src="@drawable/left_panel"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintVertical_bias="0.0"/>
+
 
     <ImageButton
         android:id="@+id/constellation_panel_button"
@@ -205,5 +204,17 @@
 
 
     </com.chocolateam.galileospaceship.GConstellationPanel>
+
+    <ImageView
+        android:id="@+id/ship_disabled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ship_disabled"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
