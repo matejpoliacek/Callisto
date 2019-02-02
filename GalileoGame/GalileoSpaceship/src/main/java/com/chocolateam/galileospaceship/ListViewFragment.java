@@ -68,21 +68,6 @@ public class ListViewFragment extends Fragment implements Runnable {
         mrecyclerView.setItemAnimator(new DefaultItemAnimator());
         mrecyclerView.setAdapter(mAdapter);
 
-        // Resize Imageview with satellite list
-        WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int phoneWidth = size.x;
-        int phoneHeight = size.y;
-
-        ImageView imageView = mView.findViewById(R.id.imageView);
-
-        imageView.getLayoutParams().width = (int)(phoneWidth*0.9); //2960) * imageView.getMeasuredWidth(); //imageView.getLayoutParams().width;
-        imageView.getLayoutParams().height = (int)(phoneHeight*0.55);//1440)* imageView.getMeasuredHeight(); //imageView.getLayoutParams().height;
-        imageView.requestLayout();
-        imageView.invalidate();
-
         created = true;
 
         return mView;

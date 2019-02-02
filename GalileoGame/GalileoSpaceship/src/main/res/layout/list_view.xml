@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_layout"
     android:name=".WideColorActivity"
@@ -19,18 +18,12 @@
         android:scaleType="fitXY"
         android:src="@drawable/left_panel"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintVertical_bias="0.0"
-        custom:layout_constraintBottom_toBottomOf="parent"
-        custom:layout_constraintEnd_toEndOf="parent"
-        custom:layout_constraintStart_toStartOf="parent"
-        custom:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintVertical_bias="0.0"/>
 
     <ImageButton
         android:id="@+id/constellation_panel_button"
         android:layout_width="wrap_content"
         android:layout_height="28dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
         android:adjustViewBounds="true"
         android:background="#00000000"
         android:scaleType="fitCenter"
@@ -38,67 +31,24 @@
         app:layout_constraintStart_toStartOf="@+id/guideline_cbutton_left"
         app:layout_constraintTop_toTopOf="@+id/guideline_cbutton_top" />
 
-    <com.chocolateam.galileospaceship.GStickSwitch
-        android:id="@+id/GStickSwitch4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="72dp"
-        app:layout_constraintBottom_toBottomOf="@+id/location_info"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.721"
-        app:layout_constraintTop_toTopOf="@+id/location_info"
-        app:layout_constraintVertical_bias="0.842"
-        custom:layout_constraintStart_toStartOf="parent">
-
-    </com.chocolateam.galileospaceship.GStickSwitch>
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="12dp"
-        android:src="@drawable/satellite_list_screen"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/location_info" />
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recycler_view"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="60dp"
-        android:scrollbars="vertical"
-        app:layout_constraintBottom_toBottomOf="@+id/left_cabin"
-        app:layout_constraintEnd_toEndOf="@+id/imageView"
-        app:layout_constraintStart_toStartOf="@+id/imageView"
-        app:layout_constraintTop_toTopOf="@+id/imageView">
-
-    </android.support.v7.widget.RecyclerView>
-
     <android.support.constraint.Guideline
         android:id="@+id/guideline_cbutton_left"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.06" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_list_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.94" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline_cbutton_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.08" />
 
@@ -106,49 +56,142 @@
         android:id="@+id/guideline_locinfo_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.15" />
 
-    <com.chocolateam.galileospaceship.LocInfo
-        android:id="@+id/location_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        android:layout_marginBottom="8dp"
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline_locinfo_bottom"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline_locinfo_top">
 
-    </com.chocolateam.galileospaceship.LocInfo>
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline_lever_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.63" />
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline_lever_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.99"/>
+
+        <com.chocolateam.galileospaceship.LocInfo
+            android:id="@+id/location_info"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:adjustViewBounds="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.502"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+        </com.chocolateam.galileospaceship.LocInfo>
+
+        <com.chocolateam.galileospaceship.GStickSwitch
+            android:id="@+id/GStickSwitch4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/guideline_lever_bottom"
+            app:layout_constraintStart_toStartOf="@+id/guideline_lever_left">
+
+        </com.chocolateam.galileospaceship.GStickSwitch>
+
+    </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline_locinfo_bottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.44" />
+        app:layout_constraintGuide_percent="0.39" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_list_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.42" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_list_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.99"/>
 
     <ImageView
         android:id="@+id/left_cabin_light"
         android:layout_width="395dp"
         android:layout_height="643dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:scaleType="fitXY"
         android:src="@drawable/left_cabin_light"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        custom:layout_constraintBottom_toBottomOf="parent"
-        custom:layout_constraintEnd_toEndOf="parent"
-        custom:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintVertical_bias="0.0"/>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_list_bottom"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_list_right"
+        app:layout_constraintStart_toStartOf="@+id/guideline_cbutton_left"
+        app:layout_constraintTop_toBottomOf="@+id/guideline_list_top">
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline_recycler_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.12" />
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline_recycler_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.91" />
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline_recycler_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.78" />
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline_recycler_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.23" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/satellite_list_screen" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scrollbars="vertical"
+            app:layout_constraintBottom_toBottomOf="@+id/guideline_recycler_bottom"
+            app:layout_constraintEnd_toEndOf="@+id/guideline_recycler_right"
+            app:layout_constraintStart_toStartOf="@+id/guideline_recycler_left"
+            app:layout_constraintTop_toTopOf="@+id/guideline_recycler_top">
+
+        </android.support.v7.widget.RecyclerView>
+    </android.support.constraint.ConstraintLayout>
 
     <com.chocolateam.galileospaceship.GConstellationPanel
         android:id="@+id/constellation_panel"
