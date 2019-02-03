@@ -4,7 +4,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -43,9 +46,12 @@ public class InfoActivity extends AppCompatActivity {
 
         infoText = findViewById(R.id.info_text);
         infoText.setMovementMethod(LinkMovementMethod.getInstance());
+
+        ImageView clouds = findViewById(R.id.clouds);
+
+        Animation ViewAnimation = AnimationUtils.loadAnimation(this, R.anim.rotation_slow);
+        clouds.startAnimation(ViewAnimation);
     }
-
-
 
     public void backToMenu(View view) {
         finish();

@@ -8,6 +8,57 @@
     tools:context="com.chocolateam.galileogame.InfoActivity">
 
     <android.support.constraint.Guideline
+        android:id="@+id/guideline_earth_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.67" />
+
+    <ImageView
+        android:id="@+id/spaceship_background_info"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/spaceship_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/earth_all"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="1.2162"
+        app:layout_constraintTop_toTopOf="@+id/guideline_earth_info"
+        android:scaleX="-1">
+
+        <ImageView
+            android:id="@+id/earth"
+            android:layout_width="550dp"
+            android:layout_height="550dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/earth" />
+
+        <ImageView
+            android:id="@+id/shadow"
+            android:layout_width="550dp"
+            android:layout_height="550dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/shadow" />
+
+        <ImageView
+            android:id="@+id/clouds"
+            android:layout_width="550dp"
+            android:layout_height="550dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/clouds" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.Guideline
         android:id="@+id/guideline_info_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -135,7 +186,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:background="@color/darkSpace"
+                android:visibility="invisible"
                 android:fontFamily="@font/notes_esa_reg"
                 android:textColor="@color/buttonGreenDark"
                 android:textSize="18sp" />
@@ -181,7 +232,7 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 android:layout_weight="1"
-                android:gravity="center"
+                android:gravity="left"
                 android:text="@string/infoDefaultText"
                 android:textColor="@color/ap_light_gray"/>
 

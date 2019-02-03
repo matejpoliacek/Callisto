@@ -79,7 +79,7 @@
         android:background="@color/buttonGreen"
         android:fontFamily="@font/notes_esa_reg"
         android:onClick="goToInfo"
-        android:text="Learn More"
+        android:text="Info"
         android:textColor="@color/buttonGreenDark"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline_buttons_bottom"
