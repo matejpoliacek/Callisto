@@ -36,6 +36,8 @@ import static android.content.Context.LOCATION_SERVICE;
 
 public class ListViewFragment extends Fragment implements Runnable {
 
+    private final String TAG = this.getClass().getSimpleName();
+
     private View mView;
     private RecyclerView mrecyclerView;
     private GConstellationPanel mconstellationPannel;
@@ -73,6 +75,11 @@ public class ListViewFragment extends Fragment implements Runnable {
         return mView;
     }
 
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        hideShipDisabledWarning();
+    }
+
     public void run() {
         try {
             Thread.sleep(500);
@@ -85,7 +92,7 @@ public class ListViewFragment extends Fragment implements Runnable {
     public void setSatellites(List<SatelliteParameters> satellitesList){
         msatList = satellitesList;
         mAdapter.setSatelliteList(satellitesList);
-        System.out.println("Number of sta in the actual view: " + Integer.toString(msatList.size()));
+        Log.e(TAG, "Number of sats in the actual view: " + Integer.toString(msatList.size()));
         mAdapter.notifyDataSetChanged();
     }
 
@@ -103,5 +110,18 @@ public class ListViewFragment extends Fragment implements Runnable {
 
     public String getSelectedConstellation(){
         return mconstellationPannel.getActive();
+    }
+
+    public void hideShipDisabledWarning() {
+        boolean isNavDefault = true;
+
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            isNavDefault = bundle.getBoolean("isNavDefault", true);
+        }
+
+        if (!isNavDefault) {
+            mView.findViewById(R.id.ship_disabled).setVisibility(View.GONE);
+        }
     }
 }

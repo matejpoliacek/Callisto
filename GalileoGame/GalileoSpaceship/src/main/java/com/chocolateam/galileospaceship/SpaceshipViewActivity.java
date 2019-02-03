@@ -173,6 +173,14 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
         mPager.setAdapter(mAdapter);
 
         locationFuncLevel = getIntent().getExtras().getInt("location_functionality");
+        boolean isNavDefault = (locationFuncLevel == LOCATION_DEFAULT_NAV);
+
+
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("isNavDefault", isNavDefault);
+        mListViewFragment.setArguments(bundle);
+        mSkyViewFragment.setArguments(bundle);
+        mRadarViewFragment.setArguments(bundle);
     }
 
     public static class SpacecraftPagerAdapter extends FragmentStatePagerAdapter {

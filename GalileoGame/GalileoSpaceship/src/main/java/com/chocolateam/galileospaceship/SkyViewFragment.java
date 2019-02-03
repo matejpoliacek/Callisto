@@ -45,9 +45,23 @@ public class SkyViewFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        hideShipDisabledWarning();
     }
 
     public void updateSatView(List <SatelliteParameters> satellites){
         mSatView.updateSatView(satellites);
+    }
+
+    public void hideShipDisabledWarning() {
+        boolean isNavDefault = true;
+
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            isNavDefault = bundle.getBoolean("isNavDefault", true);
+        }
+
+        if (!isNavDefault) {
+            mView.findViewById(R.id.ship_disabled).setVisibility(View.GONE);
+        }
     }
 }

@@ -95,7 +95,7 @@
         android:src="@drawable/right_panel" />
 
     <ImageButton
-        android:id="@+id/constellation_panel_button"
+        android:id="@+id/constellation_panel_button_radar"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
@@ -149,9 +149,12 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.chocolateam.galileospaceship.GConstellationPanel
-        android:id="@+id/constellation_panel"
+        android:id="@+id/constellation_panel_radar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

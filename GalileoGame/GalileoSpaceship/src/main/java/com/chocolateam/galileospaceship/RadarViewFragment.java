@@ -30,14 +30,17 @@ public class RadarViewFragment extends Fragment {
     RadarView mRadar;
     MeasurementsInfo mMeasurementsInfo;
     GConstellationPanel mconstellationPannel;
+    ImageButton constellationPannelButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState){
 
         mView = inflater.inflate(R.layout.radar_view, container, false);
-        mconstellationPannel = mView.findViewById(R.id.constellation_panel);
-        ImageButton constellationPannelButton = mView.findViewById(R.id.constellation_panel_button);
+
+        mconstellationPannel = mView.findViewById(R.id.constellation_panel_radar);
+        constellationPannelButton = mView.findViewById(R.id.constellation_panel_button_radar);
+
         constellationPannelButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 mconstellationPannel.deploy();
@@ -51,6 +54,8 @@ public class RadarViewFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState){
         mRadar = mView.findViewById(R.id.radarview);
         mMeasurementsInfo = mView.findViewById(R.id.measurements);
+
+        hideShipDisabledWarning();
 
         created = true;
     }
@@ -69,6 +74,19 @@ public class RadarViewFragment extends Fragment {
 
     public void setclock(Date initialtime){
         mMeasurementsInfo.setTimeClock(initialtime);
+    }
+
+    public void hideShipDisabledWarning() {
+        boolean isNavDefault = true;
+
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            isNavDefault = bundle.getBoolean("isNavDefault", true);
+        }
+
+        if (!isNavDefault) {
+            mView.findViewById(R.id.ship_disabled).setVisibility(View.GONE);
+        }
     }
 }
 
