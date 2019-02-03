@@ -73,6 +73,20 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.98" />
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radarview_measurements_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.04" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radarview_measurements_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.96" />
+
     <ImageView
         android:id="@+id/left_cabin"
         android:layout_width="match_parent"
@@ -115,12 +129,13 @@
 
     <com.chocolateam.galileospaceship.MeasurementsInfo
         android:id="@+id/measurements"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         app:layout_constraintTop_toTopOf="@+id/guideline_radarview_measurements_top"
         app:layout_constraintBottom_toBottomOf="@+id/guideline_radarview_measurements_bottom"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_radarview_measurements_left"
+        app:layout_constraintRight_toRightOf="@+id/guideline_radarview_measurements_right"/>
 
     <ImageView
         android:id="@+id/left_cabin_light"
@@ -137,8 +152,19 @@
         android:id="@+id/constellation_panel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/ship_disabled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ship_disabled"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

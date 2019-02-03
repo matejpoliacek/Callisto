@@ -2,171 +2,190 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="left">
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_console_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.185" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_console_clock_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.36" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_console_top2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.62" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_console_dop_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.90" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_console_nums_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.81" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_console_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.04" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_console_nums_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.59" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_console_nums_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="1.00" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_console_clock_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.82" />
+
     <ImageView
         android:id="@+id/background"
-        android:layout_width="326dp"
-        android:layout_height="152dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
         app:srcCompat="@drawable/console_right_cabin" />
+
+    <TextView
+        android:id="@+id/timestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:alpha="0.75"
+        android:layout_centerVertical="true"
+        android:fontFamily="@font/robotomono_medium"
+        android:text="00/00/00  00:00"
+        android:textColor="@color/console"
+        android:textSize="12dp"
+        app:layout_constraintTop_toTopOf="@+id/guideline_console_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_console_clock_bottom"
+        app:layout_constraintStart_toStartOf="@+id/guideline_console_left" />
+
+    <TextView
+        android:id="@+id/clock"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:alpha="0.75"
+        android:fontFamily="@font/robotomono_medium"
+        android:text="00:00"
+        android:textColor="@color/console"
+        app:layout_constraintTop_toTopOf="@+id/guideline_console_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_console_clock_bottom"
+        app:layout_constraintStart_toStartOf="@+id/guideline_console_clock_left" />
+
+    <TextView
+        android:id="@+id/dop"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:alpha="0.75"
+        android:layout_centerVertical="true"
+        android:fontFamily="@font/robotomono_medium"
+        android:text="> HDOP: 25.8\n> VDOP: 53.8"
+        android:textColor="@color/console"
+        android:textSize="12dp"
+        app:layout_constraintTop_toTopOf="@+id/guideline_console_top2"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_console_dop_bottom"
+        app:layout_constraintStart_toStartOf="@+id/guideline_console_left" />
 
     <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="154dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        custom:layout_constraintLeft_toLeftOf="parent"
-        custom:layout_constraintRight_toRightOf="parent">
+        app:layout_constraintTop_toTopOf="@+id/guideline_console_top2"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_console_nums_bottom"
+        app:layout_constraintStart_toStartOf="@+id/guideline_console_nums_left"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_console_nums_right">
 
-        <LinearLayout
-            android:layout_width="140dp"
-            android:layout_height="172dp"
-            android:orientation="vertical">
+        <TextView
+            android:id="@+id/ngalileo"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:alpha="0.75"
+            android:fontFamily="@font/robotomono_medium"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:text="0"
+            android:textColor="@color/console"
+            android:textSize="10dp" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="27dp"></View>
+        <TextView
+            android:id="@+id/ngps"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:alpha="0.75"
+            android:fontFamily="@font/robotomono_medium"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:text="0"
+            android:textColor="@color/console"
+            android:textSize="10dp" />
 
-            <TextView
-                android:id="@+id/timestamp"
-                android:layout_width="match_parent"
-                android:layout_height="38dp"
-                android:alpha="0.75"
-                android:fontFamily="@font/robotomono_medium"
-                android:gravity="center"
-                android:text="00/00/00  00:00"
-                android:textColor="@color/console"
-                android:textSize="12dp" />
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:alpha="0.75"
+            android:fontFamily="@font/robotomono_medium"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:text="0"
+            android:textColor="@color/console"
+            android:textSize="10dp" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="21dp"></View>
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:alpha="0.75"
+            android:fontFamily="@font/robotomono_medium"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:text="0"
+            android:textColor="@color/console"
+            android:textSize="10dp" />
 
-            <TextView
-                android:id="@+id/dop"
-                android:layout_width="match_parent"
-                android:layout_height="51dp"
-                android:alpha="0.75"
-                android:fontFamily="@font/robotomono_medium"
-                android:gravity="center"
-                android:text="> HDOP: 25.8\n> VDOP: 53.8"
-                android:textColor="@color/console"
-                android:textSize="12dp" />
-
-        </LinearLayout>
-
-        <View
-            android:layout_width="53dp"
-            android:layout_height="170dp"></View>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="171dp"
-            android:orientation="vertical">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="23dp"></View>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:orientation="horizontal">
-
-                <View
-                    android:layout_width="48dp"
-                    android:layout_height="match_parent"></View>
-
-                <TextView
-                    android:id="@+id/clock"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:alpha="0.75"
-                    android:fontFamily="@font/robotomono_medium"
-                    android:gravity="center"
-                    android:text="00:05"
-                    android:textColor="@color/console" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="24dp"></View>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="33dp"
-
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/ngalileo"
-                    android:layout_width="24dp"
-                    android:layout_height="match_parent"
-                    android:alpha="0.75"
-                    android:fontFamily="@font/robotomono_medium"
-                    android:gravity="center"
-                    android:text="0"
-                    android:textColor="@color/console"
-                    android:textSize="10dp" />
-
-                <TextView
-                    android:id="@+id/ngps"
-                    android:layout_width="29dp"
-                    android:layout_height="match_parent"
-                    android:alpha="0.75"
-                    android:fontFamily="@font/robotomono_medium"
-                    android:gravity="center"
-                    android:text="0"
-                    android:textColor="@color/console"
-                    android:textSize="10dp" />
-
-                <TextView
-                    android:id="@+id/textView6"
-                    android:layout_width="27dp"
-                    android:layout_height="match_parent"
-                    android:alpha="0.75"
-                    android:fontFamily="@font/robotomono_medium"
-                    android:gravity="center"
-                    android:text="0"
-                    android:textColor="@color/console"
-                    android:textSize="10dp" />
-
-                <TextView
-                    android:id="@+id/textView7"
-                    android:layout_width="27dp"
-                    android:layout_height="match_parent"
-                    android:alpha="0.75"
-                    android:fontFamily="@font/robotomono_medium"
-                    android:gravity="center"
-                    android:text="0"
-                    android:textColor="@color/console"
-                    android:textSize="10dp" />
-
-                <TextView
-                    android:id="@+id/textView8"
-                    android:layout_width="27dp"
-                    android:layout_height="match_parent"
-                    android:alpha="0.75"
-                    android:fontFamily="@font/robotomono_medium"
-                    android:gravity="center"
-                    android:text="0"
-                    android:textColor="@color/console"
-                    android:textSize="10dp" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="28dp"></View>
-
-        </LinearLayout>
-
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:alpha="0.75"
+            android:fontFamily="@font/robotomono_medium"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:text="0"
+            android:textColor="@color/console"
+            android:textSize="10dp" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
