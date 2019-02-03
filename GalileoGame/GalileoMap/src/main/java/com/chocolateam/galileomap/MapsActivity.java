@@ -407,8 +407,14 @@ public class MapsActivity extends GNSSCoreServiceActivity implements OnMapReadyC
     protected void locationFailedAlert() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
         alertDialog.setTitle("Can't Locate You");
-        alertDialog.setMessage("The signal is not good enough to determine your location - if you're indoors, try going outside. " +
-                "Have a look at the signal and satellite availability by accessing the spaceship from the main menu.");
+
+        String alertText = "The signal is not good enough to determine your location - if you're indoors, try going outside." ;
+
+        if (locationFuncLevel > LOCATION_DEFAULT_NAV) {
+            alertText += " Have a look at the signal and satellite availability by accessing the spaceship from the main menu.";
+        }
+
+        alertDialog.setMessage(alertText);
         alertDialog.setPositiveButton("Return to menu", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 (MapsActivity.this).finish();
