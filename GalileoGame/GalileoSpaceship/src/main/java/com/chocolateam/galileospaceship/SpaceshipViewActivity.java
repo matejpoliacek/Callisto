@@ -174,10 +174,11 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
 
         locationFuncLevel = getIntent().getExtras().getInt("location_functionality");
         boolean isNavDefault = (locationFuncLevel == LOCATION_DEFAULT_NAV);
-
-
+        boolean isNavGpsOnly = (locationFuncLevel == LOCATION_GPS_ONLY);
+        
         Bundle bundle = new Bundle();
         bundle.putBoolean("isNavDefault", isNavDefault);
+        bundle.putBoolean("isNavGpsOnly", isNavGpsOnly);
         mListViewFragment.setArguments(bundle);
         mSkyViewFragment.setArguments(bundle);
         mRadarViewFragment.setArguments(bundle);

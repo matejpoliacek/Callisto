@@ -55,7 +55,17 @@ public class RadarViewFragment extends Fragment {
         mRadar = mView.findViewById(R.id.radarview);
         mMeasurementsInfo = mView.findViewById(R.id.measurements);
 
-        hideShipDisabledWarning();
+        Bundle bundle = this.getArguments();
+        // Hide "Ship disabled" if appropriate
+        GraphicsTools.hideShipDisabledWarning(mView, R.id.ship_disabled, bundle);
+
+        // Hide "GPS Only" if appropriate
+        if (GraphicsTools.checkIfGPSOnly(bundle)) {
+            mconstellationPannel.setPanelEnabled(false);
+            mconstellationPannel.setActive(false);
+        } else {
+            mconstellationPannel.hideGpsOnlyWarning();
+        }
 
         created = true;
     }
@@ -76,17 +86,5 @@ public class RadarViewFragment extends Fragment {
         mMeasurementsInfo.setTimeClock(initialtime);
     }
 
-    public void hideShipDisabledWarning() {
-        boolean isNavDefault = true;
-
-        Bundle bundle = this.getArguments();
-        if (bundle != null) {
-            isNavDefault = bundle.getBoolean("isNavDefault", true);
-        }
-
-        if (!isNavDefault) {
-            mView.findViewById(R.id.ship_disabled).setVisibility(View.GONE);
-        }
-    }
 }
 

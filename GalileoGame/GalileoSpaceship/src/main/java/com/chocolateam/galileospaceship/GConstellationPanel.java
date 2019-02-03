@@ -28,6 +28,8 @@ public class GConstellationPanel extends RelativeLayout {
     private ImageButton mOKButton;
     private ImageButton mCANCELButton;
 
+    private boolean bEnabled = true;
+
     public GConstellationPanel(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -77,7 +79,14 @@ public class GConstellationPanel extends RelativeLayout {
         //        panel is retracted
         mViewAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onAnimationStart(Animation animation) {setActive(true);}
+            public void onAnimationStart(Animation animation) {
+                if (bEnabled) {
+                    setActive(true);
+                } else {
+                    // This keeps cancel button visible if the panel is disabled and deployed
+                    mCANCELButton.setVisibility(VISIBLE);
+                }
+            }
 
             @Override
             public void onAnimationEnd(Animation animation) {}
@@ -121,7 +130,7 @@ public class GConstellationPanel extends RelativeLayout {
 
         mGalileoSwitch.setEnabled(active);
         mQzssSwitch.setEnabled(active);
-        mGalileoSwitch.setEnabled(active);
+        mGpsSwitch.setEnabled(active);
 
         if(active) {
             mCANCELButton.setVisibility(VISIBLE);
@@ -130,6 +139,12 @@ public class GConstellationPanel extends RelativeLayout {
         else{
             mCANCELButton.setVisibility(INVISIBLE);
             mOKButton.setVisibility(INVISIBLE);
+
+            // The panel will only be disable if we're using GPS Only, thus we can force check GPS here"
+            if (!bEnabled) {
+            } else {
+                mGpsSwitch.setChecked(true);
+            }
         }
     }
 
@@ -145,4 +160,11 @@ public class GConstellationPanel extends RelativeLayout {
         }
     }
 
+    public void hideGpsOnlyWarning() {
+        mView.findViewById(R.id.gps_only).setVisibility(GONE);
+    }
+
+    public void setPanelEnabled(boolean enabled) {
+        this.bEnabled = enabled;
+    }
 }

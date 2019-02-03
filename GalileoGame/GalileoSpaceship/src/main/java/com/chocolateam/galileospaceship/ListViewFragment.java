@@ -77,7 +77,17 @@ public class ListViewFragment extends Fragment implements Runnable {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        hideShipDisabledWarning();
+        Bundle bundle = this.getArguments();
+        // Hide "Ship disabled" if appropriate
+        GraphicsTools.hideShipDisabledWarning(mView, R.id.ship_disabled, bundle);
+
+        // Hide "GPS Only" if appropriate
+        if (GraphicsTools.checkIfGPSOnly(bundle)) {
+            mconstellationPannel.setPanelEnabled(false);
+            mconstellationPannel.setActive(false);
+        } else {
+            mconstellationPannel.hideGpsOnlyWarning();
+        }
     }
 
     public void run() {
@@ -112,16 +122,4 @@ public class ListViewFragment extends Fragment implements Runnable {
         return mconstellationPannel.getActive();
     }
 
-    public void hideShipDisabledWarning() {
-        boolean isNavDefault = true;
-
-        Bundle bundle = this.getArguments();
-        if (bundle != null) {
-            isNavDefault = bundle.getBoolean("isNavDefault", true);
-        }
-
-        if (!isNavDefault) {
-            mView.findViewById(R.id.ship_disabled).setVisibility(View.GONE);
-        }
-    }
 }
