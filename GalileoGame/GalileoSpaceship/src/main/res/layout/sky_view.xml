@@ -187,4 +187,95 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_sky_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.99" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_sky_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.01" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_sky_topArrow_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.15" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_sky_topArrow_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.20" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_sky_bottomArrow_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.94" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_sky_bottomArrow_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.99"/>
+
+    <ImageView
+        android:id="@+id/swipe_arrow_right_top"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ship_arrow_right"
+        android:onClick="jumpToRadarView"
+        app:layout_constraintTop_toTopOf="@+id/guideline_sky_topArrow_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_sky_topArrow_bottom"
+        app:layout_constraintRight_toRightOf="@+id/guideline_sky_right"
+        />
+
+    <ImageView
+        android:id="@+id/swipe_arrow_right_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ship_arrow_right"
+        android:onClick="jumpToRadarView"
+        app:layout_constraintTop_toTopOf="@+id/guideline_sky_bottomArrow_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_sky_bottomArrow_bottom"
+        app:layout_constraintRight_toRightOf="@+id/guideline_sky_right" />
+
+    <ImageView
+        android:id="@+id/swipe_arrow_left_top"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ship_arrow_left"
+        android:onClick="jumpToListView"
+        app:layout_constraintTop_toTopOf="@+id/guideline_sky_topArrow_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_sky_topArrow_bottom"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_sky_left"/>
+
+    <ImageView
+        android:id="@+id/swipe_arrow_left_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ship_arrow_left"
+        android:onClick="jumpToListView"
+        app:layout_constraintTop_toTopOf="@+id/guideline_sky_bottomArrow_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_sky_bottomArrow_bottom"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_sky_left"/>
+
 </android.support.constraint.ConstraintLayout>

@@ -2,6 +2,7 @@ package com.chocolateam.galileospaceship;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.Display;
@@ -55,9 +56,13 @@ public class RadarViewFragment extends Fragment {
         mRadar = mView.findViewById(R.id.radarview);
         mMeasurementsInfo = mView.findViewById(R.id.measurements);
 
+        ImageView topArrow = mView.findViewById(R.id.swipe_arrow_radar_top);
+        ImageView bottomArrow = mView.findViewById(R.id.swipe_arrow_radar_bottom);
+        ImageView shipDisabled = mView.findViewById(R.id.ship_disabled);
+
         Bundle bundle = this.getArguments();
         // Hide "Ship disabled" if appropriate
-        GraphicsTools.hideShipDisabledWarning(mView, R.id.ship_disabled, bundle);
+        GraphicsTools.hideShipDisabledWarning(shipDisabled, bundle);
 
         // Hide "GPS Only" if appropriate
         if (GraphicsTools.checkIfGPSOnly(bundle)) {
@@ -66,6 +71,11 @@ public class RadarViewFragment extends Fragment {
         } else {
             mconstellationPannel.hideGpsOnlyWarning();
         }
+
+        // Animate arrows and hologram
+        GraphicsTools.pulseAnimate(topArrow, 750);
+        GraphicsTools.pulseAnimate(bottomArrow, 750);
+        GraphicsTools.pulseAnimate(shipDisabled, 2000);
 
         created = true;
     }

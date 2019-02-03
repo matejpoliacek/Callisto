@@ -1,5 +1,9 @@
 package com.chocolateam.galileospaceship;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.os.Bundle;
 import android.view.View;
 
@@ -9,7 +13,7 @@ import android.view.View;
 
 public class GraphicsTools {
 
-    public static void hideShipDisabledWarning(View parentView, int warningImage, Bundle bundle) {
+    public static void hideShipDisabledWarning(View view,  Bundle bundle) {
         boolean isNavDefault = true;
 
         if (bundle != null) {
@@ -17,7 +21,7 @@ public class GraphicsTools {
         }
 
         if (!isNavDefault) {
-            parentView.findViewById(warningImage).setVisibility(View.GONE);
+            view.setVisibility(View.GONE);
         }
     }
 
@@ -29,5 +33,28 @@ public class GraphicsTools {
         }
 
         return isGpsOnly;
+    }
+
+    public static void pulseAnimate(View view, int speed) {
+        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(view, "alpha", 1.0f, 0.5f);
+        fadeOut.setDuration(speed);
+        ObjectAnimator fadeIn = ObjectAnimator.ofFloat(view, "alpha", 0.5f, 1.0f);
+        fadeIn.setDuration(speed);
+
+        AnimatorSet mAnimationSet = new AnimatorSet();
+
+        mAnimationSet.play(fadeIn).after(fadeOut);
+
+        final AnimatorSet mAnimationSet_final = mAnimationSet;
+
+        mAnimationSet_final.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                mAnimationSet_final.start();
+            }
+        });
+
+        mAnimationSet_final.start();
     }
 }

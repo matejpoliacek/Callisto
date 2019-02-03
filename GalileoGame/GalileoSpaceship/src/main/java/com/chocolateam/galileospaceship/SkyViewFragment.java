@@ -28,6 +28,8 @@ public class SkyViewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+
+
         mView = inflater.inflate(R.layout.sky_view, container, false);
 
         SatelliteInfoView satinfoview = mView.findViewById(R.id.satinfoview);
@@ -45,9 +47,22 @@ public class SkyViewFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        ImageView topRightArrow = mView.findViewById(R.id.swipe_arrow_right_top);
+        ImageView bottomRightArrow = mView.findViewById(R.id.swipe_arrow_right_bottom);
+        ImageView topLeftArrow = mView.findViewById(R.id.swipe_arrow_left_top);
+        ImageView bottomLeftArrow = mView.findViewById(R.id.swipe_arrow_left_bottom);
+        ImageView shipDisabled = mView.findViewById(R.id.ship_disabled);
+
         Bundle bundle = this.getArguments();
         // Hide "Ship disabled" if appropriate
-        GraphicsTools.hideShipDisabledWarning(mView, R.id.ship_disabled, bundle);
+        GraphicsTools.hideShipDisabledWarning(shipDisabled, bundle);
+
+        // Animate arrows and hologram
+        GraphicsTools.pulseAnimate(topRightArrow, 750);
+        GraphicsTools.pulseAnimate(bottomRightArrow, 750);
+        GraphicsTools.pulseAnimate(topLeftArrow, 750);
+        GraphicsTools.pulseAnimate(bottomLeftArrow, 750);
+        GraphicsTools.pulseAnimate(shipDisabled, 2000);
     }
 
     public void updateSatView(List <SatelliteParameters> satellites){

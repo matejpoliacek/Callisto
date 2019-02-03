@@ -1,34 +1,22 @@
 package com.chocolateam.galileospaceship;
 
-import android.Manifest;
-import android.content.Context;
-import android.graphics.Point;
-import android.location.GnssMeasurement;
-import android.location.GnssMeasurementsEvent;
-import android.location.LocationManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
-import com.chocolateam.galileospaceship.R;
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import static android.content.Context.LOCATION_SERVICE;
 
 /**
  * Created by Lionel Garcia on 25/01/2018.
@@ -46,6 +34,7 @@ public class ListViewFragment extends Fragment implements Runnable {
     private SatelliteItemAdapter mAdapter;
     private LocInfo mLocationInfo;
     public boolean created = false;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -77,9 +66,13 @@ public class ListViewFragment extends Fragment implements Runnable {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        ImageView topArrow = mView.findViewById(R.id.swipe_arrow_list_top);
+        ImageView bottomArrow = mView.findViewById(R.id.swipe_arrow_list_bottom);
+        ImageView shipDisabled = mView.findViewById(R.id.ship_disabled);
+
         Bundle bundle = this.getArguments();
         // Hide "Ship disabled" if appropriate
-        GraphicsTools.hideShipDisabledWarning(mView, R.id.ship_disabled, bundle);
+        GraphicsTools.hideShipDisabledWarning(shipDisabled, bundle);
 
         // Hide "GPS Only" if appropriate
         if (GraphicsTools.checkIfGPSOnly(bundle)) {
@@ -88,6 +81,12 @@ public class ListViewFragment extends Fragment implements Runnable {
         } else {
             mconstellationPannel.hideGpsOnlyWarning();
         }
+
+        // Animate arrows and hologram
+        GraphicsTools.pulseAnimate(topArrow, 750);
+        GraphicsTools.pulseAnimate(bottomArrow, 750);
+        GraphicsTools.pulseAnimate(shipDisabled, 2000);
+
     }
 
     public void run() {
@@ -121,5 +120,4 @@ public class ListViewFragment extends Fragment implements Runnable {
     public String getSelectedConstellation(){
         return mconstellationPannel.getActive();
     }
-
 }

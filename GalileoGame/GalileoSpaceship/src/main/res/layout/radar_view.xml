@@ -170,4 +170,64 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radar_topArrow_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.15" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radar_topArrow_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.20" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radar_bottomArrow_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.68" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radar_bottomArrow_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.73"/>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radar_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.01" />
+
+    <ImageView
+        android:id="@+id/swipe_arrow_radar_top"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ship_arrow_left"
+        android:onClick="jumpToSkyView"
+        app:layout_constraintTop_toTopOf="@+id/guideline_radar_topArrow_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_radar_topArrow_bottom"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_radar_left"/>
+
+    <ImageView
+        android:id="@+id/swipe_arrow_radar_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ship_arrow_left"
+        android:onClick="jumpToSkyView"
+        app:layout_constraintTop_toTopOf="@+id/guideline_radar_bottomArrow_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_radar_bottomArrow_bottom"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_radar_left"/>
+
+
 </android.support.constraint.ConstraintLayout>

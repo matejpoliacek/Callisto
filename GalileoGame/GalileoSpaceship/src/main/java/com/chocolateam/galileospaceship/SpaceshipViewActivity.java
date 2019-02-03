@@ -175,7 +175,7 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
         locationFuncLevel = getIntent().getExtras().getInt("location_functionality");
         boolean isNavDefault = (locationFuncLevel == LOCATION_DEFAULT_NAV);
         boolean isNavGpsOnly = (locationFuncLevel == LOCATION_GPS_ONLY);
-        
+
         Bundle bundle = new Bundle();
         bundle.putBoolean("isNavDefault", isNavDefault);
         bundle.putBoolean("isNavGpsOnly", isNavGpsOnly);
@@ -254,5 +254,17 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
             Log.e(TAG, "-- observer REMOVED");
         }
         super.onPause();
+    }
+
+    public void jumpToListView(View view) {
+        mPager.setCurrentItem(0);
+    }
+
+    public void jumpToSkyView(View view) {
+        mPager.setCurrentItem(1);
+    }
+
+    public void jumpToRadarView(View view) {
+        mPager.setCurrentItem(2);
     }
 }
