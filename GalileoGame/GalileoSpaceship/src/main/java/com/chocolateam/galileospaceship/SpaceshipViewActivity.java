@@ -176,6 +176,9 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
         boolean isNavDefault = (locationFuncLevel == LOCATION_DEFAULT_NAV);
         boolean isNavGpsOnly = (locationFuncLevel == LOCATION_GPS_ONLY);
 
+        // TODO: remove when ship is fully working
+        isNavDefault = true;
+
         Bundle bundle = new Bundle();
         bundle.putBoolean("isNavDefault", isNavDefault);
         bundle.putBoolean("isNavGpsOnly", isNavGpsOnly);

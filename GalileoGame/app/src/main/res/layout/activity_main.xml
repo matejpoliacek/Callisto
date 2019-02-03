@@ -171,6 +171,13 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.9" />
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_main_text_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.42" />
+
     <TextView
         android:id="@+id/navInfoText"
         android:layout_width="wrap_content"
@@ -180,7 +187,7 @@
         android:text="@string/no_sats"
         android:textAlignment="center"
         android:textColor="@color/ap_light_gray"
-        app:layout_constraintTop_toTopOf="@+id/guideline_bitmap_bottom"
+        app:layout_constraintTop_toTopOf="@+id/guideline_main_text_top"
         app:layout_constraintVertical_bias="1.0"
         tools:layout_editor_absoluteX="0dp" /><![CDATA[
 
