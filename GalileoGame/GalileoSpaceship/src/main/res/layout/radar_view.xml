@@ -1,82 +1,137 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_layout"
     android:name=".WideColorActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center_horizontal"
     android:background="@color/darkSpace"
-    android:colorMode="wideColorGamut"
-    android:layout_gravity="center_horizontal">
+    android:colorMode="wideColorGamut">
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_cbutton_radarview_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.94" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_cbutton_radarview_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.12" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_cbutton_radarview_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.08" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radarview_slice_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.125" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radarview_slice_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.40" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radarview_radar_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.33" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radarview_radar_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.78" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radarview_measurements_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.74" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_radarview_measurements_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.98" />
 
     <ImageView
         android:id="@+id/left_cabin"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitXY"
-        custom:layout_constraintBottom_toBottomOf="parent"
-        custom:layout_constraintEnd_toEndOf="parent"
-        custom:layout_constraintStart_toStartOf="parent"
-        custom:layout_constraintTop_toTopOf="parent"
         android:src="@drawable/right_panel" />
 
-    <LinearLayout
+    <ImageButton
+        android:id="@+id/constellation_panel_button"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:background="#00000000"
+        android:scaleType="fitCenter"
+        android:src="@drawable/constellation_button_selector"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_cbutton_radarview_bottom"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_cbutton_radarview_right"
+        app:layout_constraintTop_toTopOf="@+id/guideline_cbutton_radarview_top" />
+
+    <ImageView
+        android:id="@+id/sticker"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/slice1"
+        app:layout_constraintTop_toTopOf="@+id/guideline_radarview_slice_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_radarview_slice_bottom"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <com.chocolateam.galileospaceship.RadarView
+        android:id="@+id/radarview"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="@+id/guideline_radarview_radar_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_radarview_radar_bottom"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <com.chocolateam.galileospaceship.MeasurementsInfo
+        android:id="@+id/measurements"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="@+id/guideline_radarview_measurements_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_radarview_measurements_bottom"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <ImageView
+        android:id="@+id/left_cabin_light"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
-
-        <ImageButton
-            android:id="@+id/constellation_panel_button"
-            android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginTop="80dp"
-            android:layout_marginLeft="280dp"
-            android:adjustViewBounds="true"
-            android:layout_gravity="left"
-            android:background="#00000000"
-            android:scaleType="fitCenter"
-            android:src="@drawable/constellation_button_selector"
-            app:layout_constraintTop_toTopOf="parent"
-            custom:layout_constraintStart_toStartOf="parent" />
-
-        <ImageView
-            android:id="@+id/imageView2"
-            android:layout_width="350dp"
-            android:layout_height="215dp"
-            android:layout_marginTop="28dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:scaleType="fitCenter"
-            android:layout_marginLeft="20dp"
-            android:src="@drawable/slice1" />
-
-        <com.chocolateam.galileospaceship.RadarView
-            android:id="@+id/radarview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="-50dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <com.chocolateam.galileospaceship.MeasurementsInfo
-            android:id="@+id/measurements"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
-
-    </LinearLayout>
+        android:scaleType="fitXY"
+        android:src="@drawable/right_cabin_light"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.chocolateam.galileospaceship.GConstellationPanel
         android:id="@+id/constellation_panel"
@@ -86,15 +141,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/left_cabin_light"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitXY"
-        custom:layout_constraintBottom_toBottomOf="parent"
-        custom:layout_constraintEnd_toEndOf="parent"
-        custom:layout_constraintStart_toStartOf="parent"
-        custom:layout_constraintTop_toTopOf="parent"
-        android:src="@drawable/right_cabin_light" />
-
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>

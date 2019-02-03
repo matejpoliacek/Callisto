@@ -52,26 +52,6 @@ public class RadarViewFragment extends Fragment {
         mRadar = mView.findViewById(R.id.radarview);
         mMeasurementsInfo = mView.findViewById(R.id.measurements);
 
-        // Resize Radar and Slice
-        WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int phoneWidth = size.x;
-        int phoneHeight = size.y;
-
-        ImageView imageViewSlice = mView.findViewById(R.id.imageView2);
-
-        imageViewSlice.getLayoutParams().width = (int)(phoneWidth*0.9); //2960) * imageView.getMeasuredWidth(); //imageView.getLayoutParams().width;
-        imageViewSlice.getLayoutParams().height = (int)(phoneHeight*0.55);//1440)* imageView.getMeasuredHeight(); //imageView.getLayoutParams().height;
-        imageViewSlice.requestLayout();
-        imageViewSlice.invalidate();
-
-        mRadar.getLayoutParams().width = (int)(phoneWidth*0.9); //2960) * imageView.getMeasuredWidth(); //imageView.getLayoutParams().width;
-        mRadar.getLayoutParams().height = (int)(phoneHeight*0.55);//1440)* imageView.getMeasuredHeight(); //imageView.getLayoutParams().height;
-        mRadar.requestLayout();
-        mRadar.invalidate();
-
         created = true;
     }
 
