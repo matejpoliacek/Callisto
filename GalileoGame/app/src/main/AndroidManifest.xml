@@ -12,16 +12,20 @@
         android:roundIcon="@drawable/callisto_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainMenu" />
-        <activity android:name=".DescriptionActivity" />
-        <activity android:name=".InfoActivity"></activity>
+        <activity android:name=".MainMenu"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".DescriptionActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".InfoActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

@@ -41,17 +41,19 @@
 
         <activity
             android:name=".MapsOnlyActivity"
-            android:label="@string/title_activity_mapOnly">
+            android:label="@string/title_activity_mapOnly"
+            android:screenOrientation="portrait">
         </activity>
 
         <activity
             android:name=".MapWithGameActivity"
-            android:label="@string/title_activity_mapGame">
+            android:label="@string/title_activity_mapGame"
+            android:screenOrientation="portrait">
         </activity>
 
         <activity android:name=".SummaryActivity"
-                  android:parentActivityName=".MapsActivity">
-            >
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MapsActivity">
             <!-- The meta-data tag is required if you support API level 15 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
