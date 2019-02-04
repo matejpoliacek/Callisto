@@ -15,5 +15,5 @@ The project began as an entry to **European Space Agency’s Galileo App Competi
 
 
 
-<p style="text-align:center;"><img src="doc/callisto_icon.png" width="100px"></p>
+<p align='center'><img src="doc/callisto_icon.png" width="100px"></p>
 
