@@ -11,7 +11,10 @@ The project began as an entry to **European Space Agency’s Galileo App Competi
 ## More info
 
 - [App competition final article by ESA](http://www.esa.int/Our_Activities/Navigation/ESA_trainees_compete_in_inaugural_Galileo_app_contest)
+- [ESA Article about released apps] (https://www.esa.int/Our_Activities/Navigation/Gaming_with_Galileo_new_Android_smartphone_apps_published)
+
 - [App competition winner: GNSS Compare (now used as a backend for callisto)](https://play.google.com/store/apps/details?id=com.galfins.gnss_compare)
+
 
 
 
