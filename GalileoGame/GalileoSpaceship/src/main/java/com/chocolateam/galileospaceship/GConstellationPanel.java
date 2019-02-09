@@ -2,6 +2,7 @@ package com.chocolateam.galileospaceship;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -89,7 +90,7 @@ public class GConstellationPanel extends RelativeLayout {
             @Override
             public void onAnimationStart(Animation animation) {
                 // If we're using GPS only, disable buttons, otherwise, enable them on panel deployment
-                setActive(!bGPSOnly);
+                setActive(true);
             }
 
             @Override
@@ -133,9 +134,16 @@ public class GConstellationPanel extends RelativeLayout {
 
     public void setActive(Boolean active){
 
-        mGalileoSwitch.setEnabled(active);
-        mGalGPSSwitch.setEnabled(active);
-        mGpsSwitch.setEnabled(active);
+        boolean status = true;
+
+        if (bGPSOnly) {
+            status = false;
+        }
+
+
+        mGalileoSwitch.setEnabled(status);
+        mGalGPSSwitch.setEnabled(status);
+        mGpsSwitch.setEnabled(status);
 
         if (selectedConst.equals(GNSSCoreServiceActivity.GalConstName)) {
             mGalileoSwitch.setChecked(true);
@@ -149,8 +157,7 @@ public class GConstellationPanel extends RelativeLayout {
 
         if(active) {
             mCANCELButton.setVisibility(VISIBLE);
-
-            // Only make OK button visible, if we're using more constellations than just GPS
+            // Only make OK button visible, if we're using more than GPS only
             if (!bGPSOnly) {
                 mOKButton.setVisibility(VISIBLE);
             }
