@@ -32,7 +32,7 @@ public class GConstellationPanel extends RelativeLayout {
 
     private String selectedConst = "none";
 
-    private boolean bEnabled = true;
+    private boolean bGPSOnly = false;
 
     public GConstellationPanel(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -69,6 +69,9 @@ public class GConstellationPanel extends RelativeLayout {
 
         setActive(false);
 
+        // By default, use Gal+GPS constellation
+        selectedConst = GNSSCoreServiceActivity.GalGPSConstName;
+
     }
 
     public GConstellationPanel(Context context) {
@@ -85,7 +88,8 @@ public class GConstellationPanel extends RelativeLayout {
         mViewAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                    setActive(bEnabled);
+                // If we're using GPS only, disable buttons, otherwise, enable them on panel deployment
+                setActive(!bGPSOnly);
             }
 
             @Override
@@ -145,7 +149,9 @@ public class GConstellationPanel extends RelativeLayout {
 
         if(active) {
             mCANCELButton.setVisibility(VISIBLE);
-            if (bEnabled) {
+
+            // Only make OK button visible, if we're using more constellations than just GPS
+            if (!bGPSOnly) {
                 mOKButton.setVisibility(VISIBLE);
             }
         }
@@ -175,7 +181,8 @@ public class GConstellationPanel extends RelativeLayout {
         mView.findViewById(R.id.gps_only).setVisibility(GONE);
     }
 
-    public void setPanelEnabled(boolean enabled) {
-        this.bEnabled = enabled;
+    public void setGPSOnly(boolean gpsOnly) {
+        this.bGPSOnly = gpsOnly;
+        selectedConst = GNSSCoreServiceActivity.GPSConstName;
     }
 }

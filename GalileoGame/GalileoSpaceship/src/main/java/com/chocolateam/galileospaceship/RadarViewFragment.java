@@ -66,7 +66,7 @@ public class RadarViewFragment extends Fragment {
 
         // Hide "GPS Only" if appropriate
         if (GraphicsTools.checkIfGPSOnly(bundle)) {
-            mconstellationPannel.setPanelEnabled(false);
+            mconstellationPannel.setGPSOnly(true);
             mconstellationPannel.setActive(false);
         } else {
             mconstellationPannel.hideGpsOnlyWarning();
