@@ -56,15 +56,7 @@ public class GConstellationPanel extends RelativeLayout {
 
         mOKButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (mGalileoSwitch.isChecked()){
-                    selectedConst = GNSSCoreServiceActivity.GalConstName;
-                }
-                else if (mGpsSwitch.isChecked()){
-                    selectedConst = GNSSCoreServiceActivity.GPSConstName;
-                }
-                else {
-                    selectedConst = GNSSCoreServiceActivity.GalGPSConstName;
-                }
+                selectedConst = chooseConstellation();
                 retract();
             }
         });
@@ -93,12 +85,7 @@ public class GConstellationPanel extends RelativeLayout {
         mViewAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                if (bEnabled) {
-                    setActive(true);
-                } else {
-                    // This keeps cancel button visible if the panel is disabled and deployed
-                    mCANCELButton.setVisibility(VISIBLE);
-                }
+                    setActive(bEnabled);
             }
 
             @Override
@@ -110,6 +97,7 @@ public class GConstellationPanel extends RelativeLayout {
         mView.startAnimation(mViewAnimation);
         mView.setOnTouchListener(new OnSwipeTouchListener(mContext) {
             public void onSwipeTop() {
+                selectedConst = chooseConstellation();
                 retract();
             }
         });
@@ -157,23 +145,30 @@ public class GConstellationPanel extends RelativeLayout {
 
         if(active) {
             mCANCELButton.setVisibility(VISIBLE);
-            mOKButton.setVisibility(VISIBLE);
+            if (bEnabled) {
+                mOKButton.setVisibility(VISIBLE);
+            }
         }
         else{
             mCANCELButton.setVisibility(INVISIBLE);
             mOKButton.setVisibility(INVISIBLE);
-
-            // The panel will only be disable if we're using GPS Only, thus we can force check GPS here"
-            if (!bEnabled) {
-            } else {
-                mGpsSwitch.setChecked(true);
-                selectedConst = GNSSCoreServiceActivity.GPSConstName;
-            }
         }
     }
 
-    public String getActive(){
+    public String getSelectedConst(){
        return selectedConst;
+    }
+
+    private String chooseConstellation() {
+        if (mGalileoSwitch.isChecked()){
+            return GNSSCoreServiceActivity.GalConstName;
+        }
+        else if (mGpsSwitch.isChecked()){
+            return GNSSCoreServiceActivity.GPSConstName;
+        }
+        else {
+            return GNSSCoreServiceActivity.GalGPSConstName;
+        }
     }
 
     public void hideGpsOnlyWarning() {
