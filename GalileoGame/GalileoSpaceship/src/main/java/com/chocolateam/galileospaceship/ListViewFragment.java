@@ -22,7 +22,7 @@ import java.util.List;
  * Created by Lionel Garcia on 25/01/2018.
  */
 
-public class ListViewFragment extends Fragment implements Runnable {
+public class ListViewFragment extends Fragment/* implements Runnable*/ {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -89,19 +89,20 @@ public class ListViewFragment extends Fragment implements Runnable {
 
     }
 
-    public void run() {
+   /* public void run() {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
         }
-    }
+    }*/
 
     public void setSatellites(List<SatelliteParameters> satellitesList){
         msatList = satellitesList;
         mAdapter.setSatelliteList(satellitesList);
         Log.e(TAG, "Number of sats in the actual view: " + Integer.toString(msatList.size()));
+        mrecyclerView.getRecycledViewPool().clear();
         mAdapter.notifyDataSetChanged();
     }
 
