@@ -69,17 +69,15 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                 Log.e(TAG, "ConstName: " + calculationModule.getConstellation().getName());
 
 
-                final List<SatelliteParameters> satellites;
-                final List<SatelliteParameters> satellitesVisibleOnly;
+                final List<SatelliteParameters> satellites = calculationModule.getConstellation().getSatellites();
+                final List<SatelliteParameters> satellitesOnlyVisible = calculationModule.getConstellation().getUnusedSatellites();
 
-                final List<SatelliteParameters> satellitesAll;
+                List<SatelliteParameters> satellitesAllTemp  = calculationModule.getConstellation().getSatellites();
+                satellitesAllTemp.addAll(satellitesOnlyVisible);
 
-                satellites = calculationModule.getConstellation().getSatellites();
-                satellitesVisibleOnly = calculationModule.getConstellation().getUnusedSatellites();
-                Log.e(TAG, "Satellite list not empty? Used: " + String.valueOf(!satellites.isEmpty()) + " Unused but visible: " + String.valueOf(!satellitesVisibleOnly.isEmpty()));
+                final List<SatelliteParameters> satellitesAll = satellitesAllTemp;
 
-                satellitesAll = calculationModule.getConstellation().getSatellites();
-                satellitesAll.addAll(satellitesVisibleOnly);
+                Log.e(TAG, "Satellite list not empty? Used: " + String.valueOf(!satellites.isEmpty()) + " Unused but visible: " + String.valueOf(!satellitesOnlyVisible.isEmpty()));
 
                 runOnUiThread(new Runnable() {
                     @Override
@@ -98,8 +96,20 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                             switch (currentConstellation + " " + calcName) {
                                 case "GPS GPS":
                                     Log.e(TAG, "SATPOS gps: " + String.valueOf(satellites.size()));
+
+                                    setSatellitesList(satellites);
+                                    setLatLongIndicator(calculationModule.getPose().getGeodeticLatitude(),
+                                            calculationModule.getPose().getGeodeticLongitude());
+                                    setAltitudeIndicator(calculationModule.getPose().getGeodeticHeight());
+
                                 case "Galileo Galileo":
                                     Log.e(TAG, "SATPOS galileo: " + String.valueOf(satellites.size()));
+
+                                    setSatellitesList(satellites);
+                                    setLatLongIndicator(calculationModule.getPose().getGeodeticLatitude(),
+                                            calculationModule.getPose().getGeodeticLongitude());
+                                    setAltitudeIndicator(calculationModule.getPose().getGeodeticHeight());
+
                                 case "Galileo+GPS Galileo+GPS":
                                     if (satellites.size() >= 1) {
                                         if (satellites.get(0).getSatellitePosition() != null) {
@@ -108,6 +118,11 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                                             Log.e(TAG, "GALGPS-SPACESHIP: Satellite positions are null");
                                         }
                                     }
+
+                                    setSatellitesList(satellites);
+                                    setLatLongIndicator(calculationModule.getPose().getGeodeticLatitude(),
+                                            calculationModule.getPose().getGeodeticLongitude());
+                                    setAltitudeIndicator(calculationModule.getPose().getGeodeticHeight());
 
                                     mSkyViewFragment.updateSatView(satellitesAll);
                                     if (mRadarViewFragment.created) {
@@ -140,14 +155,14 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                         }
 
 
-                        if (mListViewFragment != null) {
+                        /*if (mListViewFragment != null) {
                             double lat = calculationModule.getPose().getGeodeticLatitude();
                             double lng = calculationModule.getPose().getGeodeticLongitude();
                             double alt = calculationModule.getPose().getGeodeticHeight();
 
                             mListViewFragment.setLatLong(lat, lng);
                             mListViewFragment.setAltitude(alt);
-                        }
+                        }*/
                     }
                 });
             }
@@ -175,10 +190,7 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
         locationFuncLevel = getIntent().getExtras().getInt("location_functionality");
         boolean isNavDefault = (locationFuncLevel == LOCATION_DEFAULT_NAV);
         boolean isNavGpsOnly = (locationFuncLevel == LOCATION_GPS_ONLY);
-
-        // TODO: remove when ship is fully working
-        isNavDefault = true;
-
+        
         Bundle bundle = new Bundle();
         bundle.putBoolean("isNavDefault", isNavDefault);
         bundle.putBoolean("isNavGpsOnly", isNavGpsOnly);

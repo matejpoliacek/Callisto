@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ConstraintLayout"
     android:layout_width="match_parent"
     android:layout_height="35dp"
     android:background="?android:attr/selectableItemBackground"
@@ -12,56 +13,69 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/row_padding_vertical">
 
-    <ImageView
-        android:id="@+id/flag"
-        android:layout_width="25dp"
-        android:layout_height="60dp"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:alpha="0.8"
-        android:scaleType="fitCenter"
-        app:srcCompat="@mipmap/ic_launcher" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <ImageView
-        android:id="@+id/signal"
-        android:layout_width="20dp"
-        android:layout_height="30dp"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:scaleType="fitCenter"
-        app:srcCompat="@mipmap/ic_launcher" />
+        <TextView
+            android:id="@+id/constellation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="7dp"
+            android:layout_marginLeft="7dp"
+            android:layout_toEndOf="@+id/flag"
+            android:layout_toRightOf="@id/flag"
+            android:alpha="0"
+            android:fontFamily="@font/robotomono_medium"
+            android:text="TextView"
+            android:textColor="@color/screen_blue"
+            android:textSize="10dp" />
 
-    <TextView
-        android:id="@+id/id"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:fontFamily="@font/robotomono_medium"
-        android:text="TextView"
-        android:alpha="0.75"
-        android:textColor="@color/screen_blue"
-        android:textSize="14dp" />
+        <TextView
+            android:id="@+id/id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:alpha="0.75"
+            android:fontFamily="@font/robotomono_medium"
+            android:text="TextView"
+            android:textColor="@color/screen_blue"
+            android:textSize="14dp" />
 
-    <TextView
-        android:id="@+id/constellation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="7dp"
-        android:layout_toEndOf="@+id/flag"
-        android:fontFamily="@font/robotomono_medium"
-        android:text="TextView"
-        android:alpha="0"
-        android:textColor="@color/screen_blue"
-        android:textSize="10dp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:alpha="0.30"
+            android:background="@color/console" />
 
-    <View
-        android:layout_width="300dp"
-        android:layout_height="1dp"
-        android:layout_alignParentBottom="true"
-        android:background="@color/console"
-        android:alpha="0.30"
-        android:layout_centerHorizontal="true"/>
+        <ImageView
+            android:id="@+id/signal"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:scaleType="fitCenter"
+            app:srcCompat="@mipmap/ic_launcher" />
 
-</RelativeLayout>
+        <ImageView
+            android:id="@+id/flag"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:alpha="0.8"
+            android:scaleType="fitCenter"
+            app:srcCompat="@mipmap/ic_launcher" />
+    </RelativeLayout>
+
+</android.support.constraint.ConstraintLayout>
