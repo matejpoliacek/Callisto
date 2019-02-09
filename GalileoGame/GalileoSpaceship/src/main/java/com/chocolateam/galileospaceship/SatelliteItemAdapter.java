@@ -19,6 +19,8 @@ import java.util.List;
 
 public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdapter.MyViewHolder> {
 
+    private final String TAG = this.getClass().getSimpleName();
+
     private List<SatelliteParameters> mSatellites;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -57,6 +59,7 @@ public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdap
         holder.midView.setText(String.format("%05d", satellite.getSatId()));
         holder.msignalView.setImageResource(getSignalBitmap((int) (6 * Math.min(satellite.getSignalStrength()/40, 1))));
         holder.mflagView.setImageResource(getFlagBitmap(satellite.getConstellationType()));
+          Log.e(TAG, "getConstellationType()" + satellite.getConstellationType());
     }
 
     @Override

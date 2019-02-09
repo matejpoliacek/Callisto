@@ -26,10 +26,10 @@ public class GraphicsTools {
     }
 
     public static boolean checkIfGPSOnly(Bundle bundle) {
-        boolean isGpsOnly = true;
+        boolean isGpsOnly = false;
 
         if (bundle != null) {
-            isGpsOnly = bundle.getBoolean("isNavGpsOnly", true);
+            isGpsOnly = bundle.getBoolean("isNavGpsOnly", false);
         }
 
         return isGpsOnly;
