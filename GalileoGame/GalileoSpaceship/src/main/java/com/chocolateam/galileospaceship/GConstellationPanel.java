@@ -11,6 +11,8 @@ import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 
+import com.galfins.gnss_compare.GNSSCoreServiceActivity;
+
 /**
  * Created by lgr on 21/01/2018.
  */
@@ -150,13 +152,13 @@ public class GConstellationPanel extends RelativeLayout {
 
     public String getActive(){
         if (mGalileoSwitch.isChecked()){
-            return "Galileo";
+            return GNSSCoreServiceActivity.GalConstName;
         }
         else if (mGpsSwitch.isChecked()){
-            return "GPS";
+            return GNSSCoreServiceActivity.GPSConstName;
         }
         else {
-            return "Galileo+GPS";
+            return GNSSCoreServiceActivity.GalGPSConstName;
         }
     }
 
