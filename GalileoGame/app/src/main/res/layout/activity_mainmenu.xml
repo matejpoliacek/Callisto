@@ -4,8 +4,41 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/menu_background"
     tools:context="com.chocolateam.galileogame.MainMenu">
+
+    <ImageView
+        android:id="@+id/BackgroundView"
+        android:layout_height="wrap_content"
+        android:scaleType="fitXY"
+        android:src="@drawable/main_activity_background_sky"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        />
+
+    <ImageView
+        android:id="@+id/Stars"
+        android:layout_height="wrap_content"
+        android:scaleType="fitStart"
+        android:src="@drawable/main_activity_background_stars"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ImageView
+        android:id="@+id/Callisto"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/main_activity_background_callisto_and_title"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_buttons_top"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <ImageView
+        android:id="@+id/Landscape"
+        android:layout_width="wrap_content"
+        android:scaleType="fitEnd"
+        android:src="@drawable/main_activity_background_landscape"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
 
     <Button
         android:id="@+id/gameButton"
