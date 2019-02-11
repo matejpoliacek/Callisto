@@ -5,17 +5,44 @@
     android:id="@+id/aboutLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/menu_background"
     tools:context="com.chocolateam.galileogame.DescriptionActivity">
 
+    
     <ImageView
-        android:id="@+id/chocoImgView"
-        android:layout_width="wrap_content"
+        android:id="@+id/BackgroundView"
         android:layout_height="wrap_content"
-        android:scaleType="fitCenter"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/main_activity_background_sky" />
+
+    <ImageView
+        android:id="@+id/Stars"
+        android:layout_height="wrap_content"
+        android:scaleType="fitStart"
+        android:src="@drawable/main_activity_background_stars"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/Landscape"
+        android:layout_width="wrap_content"
+        android:scaleType="fitEnd"
+        android:src="@drawable/description_activity_partners_logo"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageView
+        android:id="@+id/Logos"
+        android:layout_width="0dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/description_activity_chocolateam_logo"
         app:layout_constraintBottom_toTopOf="@+id/guideline_logo_bottom"
-        app:layout_constraintTop_toTopOf="@+id/guideline_logo_top"
-        app:srcCompat="@drawable/full_about_logos" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline_logo_top" />
 
     <TextView
         android:id="@+id/descText"
