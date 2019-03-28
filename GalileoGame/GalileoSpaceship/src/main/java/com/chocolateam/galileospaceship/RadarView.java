@@ -56,44 +56,9 @@ public class RadarView extends RelativeLayout {
         Animation ViewAnimation = AnimationUtils.loadAnimation(mContext, R.anim.rotation_fast);
         mRadarLight.startAnimation(ViewAnimation);
 
-//        addPoint(new Satellite(1,1,12), new PointF(30f, 100f));
-//        addPoint(new Satellite(34,2,12), new PointF(134f, 80f));
-//        addPoint(new Satellite(21,3,12), new PointF(-50f, 100f));
-/**
-        // Resize Radar images
-        WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int phoneWidth = size.x;
-        int phoneHeight = size.y;
-
-        ImageView imgBackground = mView.findViewById(R.id.background);
-        ImageView imgForeground = mView.findViewById(R.id.foreground);
-        ImageView imgLight = mView.findViewById(R.id.radar_light);
-        RelativeLayout layoutArea = mView.findViewById(R.id.radar_area);
-
-
-        imgBackground.getLayoutParams().width = (int)(phoneWidth*0.9); //2960) * imageView.getMeasuredWidth(); //imageView.getLayoutParams().width;
-        imgBackground.getLayoutParams().height = (int)(phoneHeight*0.55);//1440)* imageView.getMeasuredHeight(); //imageView.getLayoutParams().height;
-        imgBackground.requestLayout();
-        imgBackground.invalidate();
-
-        imgForeground.getLayoutParams().width = (int)(phoneWidth*0.9); //2960) * imageView.getMeasuredWidth(); //imageView.getLayoutParams().width;
-        imgForeground.getLayoutParams().height = (int)(phoneHeight*0.55);//1440)* imageView.getMeasuredHeight(); //imageView.getLayoutParams().height;
-        imgForeground.requestLayout();
-        imgForeground.invalidate();
-
-        imgLight.getLayoutParams().width = (int)(phoneWidth*0.9); //2960) * imageView.getMeasuredWidth(); //imageView.getLayoutParams().width;
-        imgLight.getLayoutParams().height = (int)(phoneHeight*0.55);//1440)* imageView.getMeasuredHeight(); //imageView.getLayoutParams().height;
-        imgLight.requestLayout();
-        imgLight.invalidate();
-
-        layoutArea.getLayoutParams().width = (int)(phoneWidth*0.9); //2960) * imageView.getMeasuredWidth(); //imageView.getLayoutParams().width;
-        layoutArea.getLayoutParams().height = (int)(phoneHeight*0.55);//1440)* imageView.getMeasuredHeight(); //imageView.getLayoutParams().height;
-        layoutArea.requestLayout();
-        layoutArea.invalidate();
-**/
+/*        addPoint(new Satellite(1,1,12), new PointF(30f, 100f));
+        addPoint(new Satellite(34,2,12), new PointF(134f, 80f));
+        addPoint(new Satellite(21,3,12), new PointF(-50f, 100f));*/
 
     }
 
@@ -125,13 +90,12 @@ public class RadarView extends RelativeLayout {
 
     public void updateSatellites(List<SatelliteParameters> satellites){
         mView.removeAllViews();
-        for (int i=0; i<satellites.size(); i++){
-            SatelliteParameters satellite = satellites.get(i);
+        for (SatelliteParameters satellite : satellites){
             Log.d("SAT_POSITION_CHECK", "updateSatellites:" + satellite.getSatellitePosition());
-            // crashing
-//            addPoint(satellite,
-//                    new PointF((float) satellite.getSatellitePosition().getX(),
-//                            (float) satellite.getSatellitePosition().getY()));
+            // TODO: crashing?
+            addPoint(satellite,
+                   new PointF((float) satellite.getSatellitePosition().getX(),
+                            (float) satellite.getSatellitePosition().getY()));
         }
     }
 
