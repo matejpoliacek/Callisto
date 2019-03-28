@@ -96,5 +96,8 @@ public class RadarViewFragment extends Fragment {
         mMeasurementsInfo.setTimeClock(initialtime);
     }
 
+    public void setLatLng(double lat , double lng) {
+        mRadar.setLatLng(lat, lng);
+    }
 }
 

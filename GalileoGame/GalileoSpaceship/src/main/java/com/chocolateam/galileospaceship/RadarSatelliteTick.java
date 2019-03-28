@@ -81,36 +81,36 @@ public class RadarSatelliteTick extends RelativeLayout {
         tick = R.drawable.galileo_point;
         label_color = R.color.galileo_color;
 
-//        switch (satellite.getMoperator()) {
-//            case 1:
-//                tick = R.drawable.gps_point;
-//                label_color = R.color.gps_color;
-//                break;
-//            case 2:
-//                tick = R.drawable.glonass_point;
-//                label_color = R.color.glonass_color;
-//                break;
-//            case 3:
-//                tick = R.drawable.sbas_point;
-//                label_color = R.color.sbs_color;
-//                break;
-//            case 4:
-//                tick = R.drawable.qzss_point;
-//                label_color = R.color.qzss_color;
-//                break;
-//            case 5:
-//                tick = R.drawable.beidou_point;
-//                label_color = R.color.beidou_color;
-//                break;
-//            case 6:
-//                tick = R.drawable.galileo_point;
-//                label_color = R.color.galileo_color;
-//                break;
-//            default:
-//                tick = R.drawable.galileo_point;
-//                label_color = R.color.galileo_color;
-//                break;
-//        }
+        switch (satellite.getConstellationType()) {
+            case 1:
+                tick = R.drawable.gps_point;
+                label_color = R.color.gps_color;
+                break;
+            case 2:
+           //     tick = R.drawable.glonass_point;
+           //     label_color = R.color.glonass_color;
+                break;
+            case 3:
+                tick = R.drawable.sbas_point;
+                label_color = R.color.sbs_color;
+                break;
+            case 4:
+                tick = R.drawable.qzss_point;
+                label_color = R.color.qzss_color;
+                break;
+            case 5:
+           //     tick = R.drawable.beidou_point;
+           //     label_color = R.color.beidou_color;
+                break;
+            case 6:
+                tick = R.drawable.galileo_point;
+                label_color = R.color.galileo_color;
+                break;
+            default:
+                tick = R.drawable.galileo_point;
+                label_color = R.color.galileo_color;
+                break;
+        }
 
         Log.e("operator", Integer.toString(satellite.getConstellationType()));
         setLabel(prefix+satellite.getSatId(), label_color);

@@ -36,11 +36,11 @@ public class RadarView extends RelativeLayout {
     float mViewW;
     float mViewH;
 
+    double lat;
+    double lng;
+
     public RadarView(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        mViewH = getResources().getDimension(R.dimen.radar_width);
-        mViewW = mViewH;
 
         mSatTickH = getResources().getDimension(R.dimen.satellite_tick_height);
         mSatTickW = getResources().getDimension(R.dimen.satellite_tick_width);
@@ -52,6 +52,9 @@ public class RadarView extends RelativeLayout {
         mView = this.findViewById(R.id.radar_area);
         mRadarLight = this.findViewById(R.id.radar_light);
         mContext = context;
+
+        mViewH = mView.getHeight();
+        mViewW = mView.getWidth();
 
         Animation ViewAnimation = AnimationUtils.loadAnimation(mContext, R.anim.rotation_fast);
         mRadarLight.startAnimation(ViewAnimation);
@@ -72,19 +75,25 @@ public class RadarView extends RelativeLayout {
         return px;
     }
 
-    public void addPoint(SatelliteParameters satellite, PointF position){
-
+    public void addPoint(SatelliteParameters satellite){
+        //satellite = new SatelliteParameters(1, new Pseudorange(23000, 1));
+        PointF position = new PointF((float) satellite.getSatellitePosition().getX(), (float) satellite.getSatellitePosition().getY());
         RadarSatelliteTick satPoint = new RadarSatelliteTick(mContext);
         satPoint.setTick(satellite);
 
-        PointF pointPosition = circToCart(position.x, position.y);
+        double dy = satellite.getSatellitePosition().getGeodeticLatitude() - lat;
+        double dx = Math.cos(Math.PI/180*lat)*(satellite.getSatellitePosition().getGeodeticLongitude() - lng);
+        double angle = Math.atan2(dy, dx);
+
+        PointF pointPosition = circToCart((float) angle ,findViewById(R.id.background).getHeight());
 
         satPoint.setX(pointPosition.x);
         satPoint.setY(pointPosition.y);
 
-        Log.e("added", "point");
+        Log.e("added", "point x: " + pointPosition.x + " y: " + pointPosition.y);
 
         mView.addView(satPoint);
+        mView.invalidate();
 
     }
 
@@ -92,10 +101,17 @@ public class RadarView extends RelativeLayout {
         mView.removeAllViews();
         for (SatelliteParameters satellite : satellites){
             Log.d("SAT_POSITION_CHECK", "updateSatellites:" + satellite.getSatellitePosition());
-            // TODO: crashing?
-            addPoint(satellite,
-                   new PointF((float) satellite.getSatellitePosition().getX(),
-                            (float) satellite.getSatellitePosition().getY()));
+            //
+            if (satellite != null) {
+                if (satellite.getSatellitePosition() != null) {
+                    Log.e("RadarView - ", String.valueOf(satellite.getSatId()) + "Satellite POSITION is NOT null");
+                    addPoint(satellite);
+                } else {
+                    Log.e("RadarView - ", String.valueOf(satellite.getSatId()) + "Satellite POSITION is null");
+                }
+        	} else {
+        		Log.e("RadarView", "Satellite is null");
+        	}
         }
     }
 
@@ -113,5 +129,10 @@ public class RadarView extends RelativeLayout {
 
         return coordinates;
 
+    }
+
+    public void setLatLng(double lat, double lng) {
+        this.lat = lat;
+        this.lng = lng;
     }
 }
