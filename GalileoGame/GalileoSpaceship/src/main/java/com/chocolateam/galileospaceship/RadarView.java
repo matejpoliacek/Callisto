@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.chocolateam.galileospaceship.R;
+import com.galfins.gnss_compare.Constellations.Pseudorange;
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
 import java.util.List;
@@ -108,18 +109,21 @@ public class RadarView extends RelativeLayout {
     }
 
     public void addPoint(SatelliteParameters satellite, PointF position){
-
+        //satellite = new SatelliteParameters(1, new Pseudorange(23000, 1));
         RadarSatelliteTick satPoint = new RadarSatelliteTick(mContext);
         satPoint.setTick(satellite);
 
         PointF pointPosition = circToCart(position.x, position.y);
 
-        satPoint.setX(pointPosition.x);
-        satPoint.setY(pointPosition.y);
+        satPoint.setX(mView.getWidth()/2); //pointPosition.x);
+        satPoint.setY(mView.getHeight()/2); //pointPosition.y);
 
-        Log.e("added", "point");
+        Log.e("added", "point x: " + pointPosition.x + " y: " + pointPosition.y);
 
+        mView.setBackgroundColor(getResources().getColor(R.color.galileo_color));
+        satPoint.setBackgroundColor(getResources().getColor(R.color.ap_light_gray));
         mView.addView(satPoint);
+        mView.invalidate();
 
     }
 
@@ -128,10 +132,19 @@ public class RadarView extends RelativeLayout {
         for (int i=0; i<satellites.size(); i++){
             SatelliteParameters satellite = satellites.get(i);
             Log.d("SAT_POSITION_CHECK", "updateSatellites:" + satellite.getSatellitePosition());
-            // crashing
-//            addPoint(satellite,
-//                    new PointF((float) satellite.getSatellitePosition().getX(),
-//                            (float) satellite.getSatellitePosition().getY()));
+            // 
+            if (satellite != null) {
+                if (satellite.getSatellitePosition() != null) {
+                    Log.e("RadarView - ", String.valueOf(satellite.getSatId()) + "Satellite POSITION is NOT null");
+                    addPoint(satellite,
+                            new PointF((float) satellite.getSatellitePosition().getX(),
+                                    (float) satellite.getSatellitePosition().getY()));
+                } else {
+                    Log.e("RadarView - ", String.valueOf(satellite.getSatId()) + "Satellite POSITION is null");
+                }
+        	} else {
+        		Log.e("RadarView", "Satellute is null");
+        	}
         }
     }
 
