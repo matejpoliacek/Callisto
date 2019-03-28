@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
@@ -53,9 +54,6 @@ public class RadarView extends RelativeLayout {
         mRadarLight = this.findViewById(R.id.radar_light);
         mContext = context;
 
-        mViewH = mView.getHeight();
-        mViewW = mView.getWidth();
-
         Animation ViewAnimation = AnimationUtils.loadAnimation(mContext, R.anim.rotation_fast);
         mRadarLight.startAnimation(ViewAnimation);
 
@@ -76,8 +74,12 @@ public class RadarView extends RelativeLayout {
     }
 
     public void addPoint(SatelliteParameters satellite){
+
+        mViewH = mView.getHeight();
+        mViewW = mView.getWidth();
+
         //satellite = new SatelliteParameters(1, new Pseudorange(23000, 1));
-        PointF position = new PointF((float) satellite.getSatellitePosition().getX(), (float) satellite.getSatellitePosition().getY());
+        //PointF position = new PointF((float) satellite.getSatellitePosition().getX(), (float) satellite.getSatellitePosition().getY());
         RadarSatelliteTick satPoint = new RadarSatelliteTick(mContext);
         satPoint.setTick(satellite);
 
@@ -85,12 +87,16 @@ public class RadarView extends RelativeLayout {
         double dx = Math.cos(Math.PI/180*lat)*(satellite.getSatellitePosition().getGeodeticLongitude() - lng);
         double angle = Math.atan2(dy, dx);
 
-        PointF pointPosition = circToCart((float) angle ,findViewById(R.id.background).getHeight());
+        float radius = convertPixelsToDp(findViewById(R.id.background).getHeight()/2, mContext);
+
+        Log.e("RADARVIEW", "Input params angle: " + angle + " radius: " + radius + " IMGW: " + mViewW + " IMGH: " + mViewH);
+
+        PointF pointPosition = circToCart((float) angle , radius);
 
         satPoint.setX(pointPosition.x);
         satPoint.setY(pointPosition.y);
 
-        Log.e("added", "point x: " + pointPosition.x + " y: " + pointPosition.y);
+        Log.e("RADARVIEW", "added point x: " + pointPosition.x + " y: " + pointPosition.y);
 
         mView.addView(satPoint);
         mView.invalidate();
@@ -122,8 +128,6 @@ public class RadarView extends RelativeLayout {
         float xo = mViewW/2;
         float yo = mViewH/2;
 
-        angle = (float) Math.toRadians(angle);
-
         coordinates.x = xo + (R * (float) Math.sin(angle)) - mSatTickW / 2;
         coordinates.y = yo - (R * (float) Math.cos(angle))- mSatTickH * 3f/2f;
 
@@ -134,5 +138,12 @@ public class RadarView extends RelativeLayout {
     public void setLatLng(double lat, double lng) {
         this.lat = lat;
         this.lng = lng;
+    }
+
+    private float convertPixelsToDp(float px, Context context){
+        Resources resources = context.getResources();
+        DisplayMetrics metrics = resources.getDisplayMetrics();
+        float dp = px / ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return dp;
     }
 }
