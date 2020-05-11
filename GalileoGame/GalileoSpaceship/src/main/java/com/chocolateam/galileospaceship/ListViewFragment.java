@@ -82,34 +82,17 @@ public class ListViewFragment extends Fragment/* implements Runnable*/ {
         // Hide "Ship disabled" if appropriate
         GraphicsTools.hideShipDisabledWarning(shipDisabled, bundle);
 
-        // Hide "GPS Only" if appropriate
-        if (GraphicsTools.checkIfGPSOnly(bundle)) {
-            mconstellationPannel.setGPSOnly(true);
-            mconstellationPannel.setActive(false);
-        } else {
-            mconstellationPannel.hideGpsOnlyWarning();
-        }
+        mconstellationPannel.checkConstellationBundle(bundle);
 
-        // Animate arrows and hologram
-//        GraphicsTools.pulseAnimate(topArrow, 750);
-//        GraphicsTools.pulseAnimate(bottomArrow, 750);
+        // Animate hologram
         GraphicsTools.pulseAnimate(shipDisabled, 2000);
 
     }
 
-   /* public void run() {
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-        }
-    }*/
-
     public void setSatellites(List<SatelliteParameters> satellitesList){
         msatList = satellitesList;
         mAdapter.setSatelliteList(satellitesList);
-        Log.e(TAG, "Number of sats in the actual view: " + Integer.toString(msatList.size()));
+        Log.e(TAG, "Number of sats in the actual view: " + msatList.size());
         mrecyclerView.getRecycledViewPool().clear();
         mAdapter.notifyDataSetChanged();
     }

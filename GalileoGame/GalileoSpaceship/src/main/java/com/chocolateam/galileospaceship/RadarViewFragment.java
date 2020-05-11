@@ -28,6 +28,7 @@ import java.util.List;
 public class RadarViewFragment extends Fragment {
 
     View mView;
+    Boolean created = false;
     RadarView mRadar;
     MeasurementsInfo mMeasurementsInfo;
     GConstellationPanel mconstellationPannel;
@@ -72,18 +73,12 @@ public class RadarViewFragment extends Fragment {
         // Hide "Ship disabled" if appropriate
         GraphicsTools.hideShipDisabledWarning(shipDisabled, bundle);
 
-        // Hide "GPS Only" if appropriate
-        if (GraphicsTools.checkIfGPSOnly(bundle)) {
-            mconstellationPannel.setGPSOnly(true);
-            mconstellationPannel.setActive(false);
-        } else {
-            mconstellationPannel.hideGpsOnlyWarning();
-        }
+        mconstellationPannel.checkConstellationBundle(bundle);
 
-        // Animate arrows and hologram
-//        GraphicsTools.pulseAnimate(topArrow, 750);
-//        GraphicsTools.pulseAnimate(bottomArrow, 750);
+        // Animate hologram
         GraphicsTools.pulseAnimate(shipDisabled, 2000);
+
+        created = true;
     }
 
     public void updateSatellites(List<SatelliteParameters> satellites){
@@ -105,5 +100,7 @@ public class RadarViewFragment extends Fragment {
     public void setLatLng(double lat , double lng) {
         mRadar.setLatLng(lat, lng);
     }
+
+    public boolean isCreated() { return created; }
 }
 

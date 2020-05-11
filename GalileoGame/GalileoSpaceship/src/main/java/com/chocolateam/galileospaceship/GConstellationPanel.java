@@ -1,6 +1,7 @@
 package com.chocolateam.galileospaceship;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,6 +35,7 @@ public class GConstellationPanel extends RelativeLayout {
     private String selectedConst = "none";
 
     private boolean bGPSOnly = false;
+    private boolean bDefaultOnly = false;
 
     public GConstellationPanel(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -117,7 +119,9 @@ public class GConstellationPanel extends RelativeLayout {
             public void onAnimationStart(Animation animation) {}
 
             @Override
-            public void onAnimationEnd(Animation animation) {setActive(false);}
+            public void onAnimationEnd(Animation animation) {
+                setActive(false);
+            }
 
             @Override
             public void onAnimationRepeat(Animation animation) {}
@@ -134,35 +138,34 @@ public class GConstellationPanel extends RelativeLayout {
 
     public void setActive(Boolean active){
 
-        boolean status = true;
-
-        if (bGPSOnly) {
-            status = false;
-        }
-
+        boolean status = active && !bGPSOnly && !bDefaultOnly;
 
         mGalileoSwitch.setEnabled(status);
         mGalGPSSwitch.setEnabled(status);
         mGpsSwitch.setEnabled(status);
 
-        if (selectedConst.equals(GNSSCoreServiceActivity.GalConstName)) {
-            mGalileoSwitch.setChecked(true);
-        }
-        else if (selectedConst.equals(GNSSCoreServiceActivity.GPSConstName)){
-            mGpsSwitch.setChecked(true);
-        }
-        else if (selectedConst.equals(GNSSCoreServiceActivity.GalGPSConstName)) {
-           mGalGPSSwitch.setChecked(true);
+        if (bDefaultOnly) {
+            mGalileoSwitch.setChecked(false);
+            mGpsSwitch.setChecked(false);
+            mGalGPSSwitch.setChecked(false);
+        } else {
+            if (selectedConst.equals(GNSSCoreServiceActivity.GalConstName)) {
+                mGalileoSwitch.setChecked(true);
+            } else if (selectedConst.equals(GNSSCoreServiceActivity.GPSConstName)) {
+                mGpsSwitch.setChecked(true);
+            } else if (selectedConst.equals(GNSSCoreServiceActivity.GalGPSConstName)) {
+                mGalGPSSwitch.setChecked(true);
+            }
         }
 
         if(active) {
             mCANCELButton.setVisibility(VISIBLE);
             // Only make OK button visible, if we're using more than GPS only
-            if (!bGPSOnly) {
+            if (status) {
                 mOKButton.setVisibility(VISIBLE);
             }
         }
-        else{
+        else {
             mCANCELButton.setVisibility(INVISIBLE);
             mOKButton.setVisibility(INVISIBLE);
         }
@@ -191,5 +194,21 @@ public class GConstellationPanel extends RelativeLayout {
     public void setGPSOnly(boolean gpsOnly) {
         this.bGPSOnly = gpsOnly;
         selectedConst = GNSSCoreServiceActivity.GPSConstName;
+    }
+
+    public void setDefaultOnly(boolean defaultOnly) {
+        this.bDefaultOnly = defaultOnly;
+    }
+
+    public void checkConstellationBundle(Bundle bundle) {
+        if (GraphicsTools.checkIfGPSOnly(bundle)) {
+            bGPSOnly = true;
+        } else if (GraphicsTools.checkIfDefaultOnly(bundle)) {
+            bDefaultOnly = true;
+        }
+
+        if (!bGPSOnly) {
+            hideGpsOnlyWarning();
+        }
     }
 }

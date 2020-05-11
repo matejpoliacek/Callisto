@@ -17,7 +17,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.chocolateam.galileospaceship.R;
+import com.galfins.gnss_compare.Constellations.Pseudorange;
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
+import com.galfins.gogpsextracts.SatellitePosition;
 
 import java.util.List;
 
@@ -61,6 +63,11 @@ public class RadarView extends RelativeLayout {
         addPoint(new Satellite(34,2,12), new PointF(134f, 80f));
         addPoint(new Satellite(21,3,12), new PointF(-50f, 100f));*/
 
+
+        SatelliteParameters satellite = new SatelliteParameters(1, new Pseudorange(23000, 1));
+        satellite.setSatellitePosition(new SatellitePosition(1,1, 'G', 18109.86, 1364.389, 23357.029));
+
+        addPoint(satellite);
     }
 
     public RadarView(Context context) {
@@ -78,10 +85,14 @@ public class RadarView extends RelativeLayout {
         mViewH = mView.getHeight();
         mViewW = mView.getWidth();
 
-        //satellite = new SatelliteParameters(1, new Pseudorange(23000, 1));
         //PointF position = new PointF((float) satellite.getSatellitePosition().getX(), (float) satellite.getSatellitePosition().getY());
         RadarSatelliteTick satPoint = new RadarSatelliteTick(mContext);
         satPoint.setTick(satellite);
+
+        Log.e("RADARVIEW", "Sat Location: Lat: " + satellite.getSatellitePosition().getGeodeticLatitude()
+                + ", Lng:  " + satellite.getSatellitePosition().getGeodeticLongitude()
+                + "; User Loc: Lat: " + lat + ", Lng: " + lng);
+
 
         double dy = satellite.getSatellitePosition().getGeodeticLatitude() - lat;
         double dx = Math.cos(Math.PI/180*lat)*(satellite.getSatellitePosition().getGeodeticLongitude() - lng);

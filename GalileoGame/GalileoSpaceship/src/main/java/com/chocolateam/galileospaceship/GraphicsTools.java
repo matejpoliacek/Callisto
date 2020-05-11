@@ -14,15 +14,21 @@ import android.view.View;
 public class GraphicsTools {
 
     public static void hideShipDisabledWarning(View view,  Bundle bundle) {
+        boolean isNavDefault = checkIfDefaultOnly(bundle);
+
+        if (!isNavDefault) {
+            view.setVisibility(View.GONE);
+        }
+    }
+
+    public static boolean checkIfDefaultOnly(Bundle bundle) {
         boolean isNavDefault = true;
 
         if (bundle != null) {
             isNavDefault = bundle.getBoolean("isNavDefault", true);
         }
 
-        if (!isNavDefault) {
-            view.setVisibility(View.GONE);
-        }
+        return isNavDefault;
     }
 
     public static boolean checkIfGPSOnly(Bundle bundle) {
