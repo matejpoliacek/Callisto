@@ -1,5 +1,6 @@
 package com.chocolateam.galileospaceship;
 
+import android.graphics.drawable.AnimationDrawable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -53,15 +54,31 @@ public class SkyViewFragment extends Fragment {
         ImageView bottomLeftArrow = mView.findViewById(R.id.swipe_arrow_left_bottom);
         ImageView shipDisabled = mView.findViewById(R.id.ship_disabled);
 
+        //right arrows animation
+        topRightArrow.setBackgroundResource(R.drawable.ship_arrow_anim_right);
+        AnimationDrawable topArrow_anim_right = (AnimationDrawable) topRightArrow.getBackground();
+        topArrow_anim_right.start();
+        bottomRightArrow.setBackgroundResource(R.drawable.ship_arrow_anim_right);
+        AnimationDrawable bottomArrow_anim_right = (AnimationDrawable) bottomRightArrow.getBackground();
+        bottomArrow_anim_right.start();
+
+        //left arrows animation
+        topLeftArrow.setBackgroundResource(R.drawable.ship_arrow_anim_left);
+        AnimationDrawable topArrow_anim_left = (AnimationDrawable) topLeftArrow.getBackground();
+        topArrow_anim_left.start();
+        bottomLeftArrow.setBackgroundResource(R.drawable.ship_arrow_anim_left);
+        AnimationDrawable bottomArrow_anim_left = (AnimationDrawable) bottomLeftArrow.getBackground();
+        bottomArrow_anim_left.start();
+
         Bundle bundle = this.getArguments();
         // Hide "Ship disabled" if appropriate
         GraphicsTools.hideShipDisabledWarning(shipDisabled, bundle);
 
         // Animate arrows and hologram
-        GraphicsTools.pulseAnimate(topRightArrow, 750);
-        GraphicsTools.pulseAnimate(bottomRightArrow, 750);
-        GraphicsTools.pulseAnimate(topLeftArrow, 750);
-        GraphicsTools.pulseAnimate(bottomLeftArrow, 750);
+//        GraphicsTools.pulseAnimate(topRightArrow, 750);
+//        GraphicsTools.pulseAnimate(bottomRightArrow, 750);
+//        GraphicsTools.pulseAnimate(topLeftArrow, 750);
+//        GraphicsTools.pulseAnimate(bottomLeftArrow, 750);
         GraphicsTools.pulseAnimate(shipDisabled, 2000);
     }
 

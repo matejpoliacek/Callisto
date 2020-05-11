@@ -2,6 +2,7 @@ package com.chocolateam.galileospaceship;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.drawable.AnimationDrawable;
 import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -27,7 +28,6 @@ import java.util.List;
 public class RadarViewFragment extends Fragment {
 
     View mView;
-    Boolean created = false;
     RadarView mRadar;
     MeasurementsInfo mMeasurementsInfo;
     GConstellationPanel mconstellationPannel;
@@ -60,6 +60,14 @@ public class RadarViewFragment extends Fragment {
         ImageView bottomArrow = mView.findViewById(R.id.swipe_arrow_radar_bottom);
         ImageView shipDisabled = mView.findViewById(R.id.ship_disabled);
 
+        topArrow.setBackgroundResource(R.drawable.ship_arrow_anim_left);
+        AnimationDrawable topArrow_anim = (AnimationDrawable) topArrow.getBackground();
+        topArrow_anim.start();
+        bottomArrow.setBackgroundResource(R.drawable.ship_arrow_anim_left);
+        AnimationDrawable bottomArrow_anim = (AnimationDrawable) bottomArrow.getBackground();
+        bottomArrow_anim.start();
+
+
         Bundle bundle = this.getArguments();
         // Hide "Ship disabled" if appropriate
         GraphicsTools.hideShipDisabledWarning(shipDisabled, bundle);
@@ -73,11 +81,9 @@ public class RadarViewFragment extends Fragment {
         }
 
         // Animate arrows and hologram
-        GraphicsTools.pulseAnimate(topArrow, 750);
-        GraphicsTools.pulseAnimate(bottomArrow, 750);
+//        GraphicsTools.pulseAnimate(topArrow, 750);
+//        GraphicsTools.pulseAnimate(bottomArrow, 750);
         GraphicsTools.pulseAnimate(shipDisabled, 2000);
-
-        created = true;
     }
 
     public void updateSatellites(List<SatelliteParameters> satellites){

@@ -1,5 +1,6 @@
 package com.chocolateam.galileospaceship;
 
+import android.graphics.drawable.AnimationDrawable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -70,6 +71,13 @@ public class ListViewFragment extends Fragment/* implements Runnable*/ {
         ImageView bottomArrow = mView.findViewById(R.id.swipe_arrow_list_bottom);
         ImageView shipDisabled = mView.findViewById(R.id.ship_disabled);
 
+        topArrow.setBackgroundResource(R.drawable.ship_arrow_anim_right);
+        AnimationDrawable topArrow_anim_right = (AnimationDrawable) topArrow.getBackground();
+        topArrow_anim_right.start();
+        bottomArrow.setBackgroundResource(R.drawable.ship_arrow_anim_right);
+        AnimationDrawable bottomArrow_anim_right = (AnimationDrawable) bottomArrow.getBackground();
+        bottomArrow_anim_right.start();
+
         Bundle bundle = this.getArguments();
         // Hide "Ship disabled" if appropriate
         GraphicsTools.hideShipDisabledWarning(shipDisabled, bundle);
@@ -83,8 +91,8 @@ public class ListViewFragment extends Fragment/* implements Runnable*/ {
         }
 
         // Animate arrows and hologram
-        GraphicsTools.pulseAnimate(topArrow, 750);
-        GraphicsTools.pulseAnimate(bottomArrow, 750);
+//        GraphicsTools.pulseAnimate(topArrow, 750);
+//        GraphicsTools.pulseAnimate(bottomArrow, 750);
         GraphicsTools.pulseAnimate(shipDisabled, 2000);
 
     }
