@@ -82,7 +82,12 @@ public class RadarView extends RelativeLayout {
 
     public void addPoint(SatelliteParameters satellite){
 
-        mViewH = mView.getHeight();
+        Log.e("RADARVIEW-SATPARAMS", satellite.getSatId() + ", " + satellite.getSatellitePosition() + ", " + satellite.getPseudorange()
+                + ", " + + satellite.getSatellitePosition().getGeodeticLatitude() + ", " + satellite.getSatellitePosition().getGeodeticLongitude()
+                + "," + satellite.getSatellitePosition().getGeodeticHeight() + ", " + satellite.getSatellitePosition().getX() + ", "
+                + satellite.getSatellitePosition().getY() + ", " + satellite.getSatellitePosition().getZ());
+
+                mViewH = mView.getHeight();
         mViewW = mView.getWidth();
 
         //PointF position = new PointF((float) satellite.getSatellitePosition().getX(), (float) satellite.getSatellitePosition().getY());
