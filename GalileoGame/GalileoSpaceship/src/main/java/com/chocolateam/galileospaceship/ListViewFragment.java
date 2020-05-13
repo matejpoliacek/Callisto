@@ -78,15 +78,14 @@ public class ListViewFragment extends Fragment/* implements Runnable*/ {
         AnimationDrawable bottomArrow_anim_right = (AnimationDrawable) bottomArrow.getBackground();
         bottomArrow_anim_right.start();
 
+        // Animate hologram
+        GraphicsTools.pulseAnimate(shipDisabled, 2000);
+
         Bundle bundle = this.getArguments();
         // Hide "Ship disabled" if appropriate
         GraphicsTools.hideShipDisabledWarning(shipDisabled, bundle);
 
         mconstellationPannel.checkConstellationBundle(bundle);
-
-        // Animate hologram
-        GraphicsTools.pulseAnimate(shipDisabled, 2000);
-
     }
 
     public void setSatellites(List<SatelliteParameters> satellitesList){

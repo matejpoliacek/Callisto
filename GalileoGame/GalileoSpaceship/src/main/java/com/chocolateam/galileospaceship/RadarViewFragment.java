@@ -68,15 +68,14 @@ public class RadarViewFragment extends Fragment {
         AnimationDrawable bottomArrow_anim = (AnimationDrawable) bottomArrow.getBackground();
         bottomArrow_anim.start();
 
+        // Animate hologram
+        GraphicsTools.pulseAnimate(shipDisabled, 2000);
 
         Bundle bundle = this.getArguments();
         // Hide "Ship disabled" if appropriate
         GraphicsTools.hideShipDisabledWarning(shipDisabled, bundle);
 
         mconstellationPannel.checkConstellationBundle(bundle);
-
-        // Animate hologram
-        GraphicsTools.pulseAnimate(shipDisabled, 2000);
 
         created = true;
     }

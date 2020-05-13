@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -15,6 +16,8 @@ public class GraphicsTools {
 
     public static void hideShipDisabledWarning(View view,  Bundle bundle) {
         boolean isNavDefault = checkIfDefaultOnly(bundle);
+
+        Log.e("GRAPH-TOOLS", "Hide Spaceship? " + !isNavDefault);
 
         if (!isNavDefault) {
             view.setVisibility(View.GONE);
