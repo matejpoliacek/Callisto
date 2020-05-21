@@ -298,7 +298,7 @@ public class GpsConstellation extends Constellation {
 
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
-                    Log.e(TAG, "Failed getting ephemeris data!");
+                    GnssCoreService.notifyUser("Failed getting ephemeris data!", Snackbar.LENGTH_SHORT, RNP_NULL_MESSAGE);
                     continue;
                 }
 

@@ -64,8 +64,9 @@ public class RadarView extends RelativeLayout {
         addPoint(new Satellite(21,3,12), new PointF(-50f, 100f));*/
 
 
-        SatelliteParameters satellite = new SatelliteParameters(1, new Pseudorange(23000, 1));
-        satellite.setSatellitePosition(new SatellitePosition(1,1, 'G', 18109.86, 1364.389, 23357.029));
+        SatelliteParameters satellite = new SatelliteParameters(33, new Pseudorange(2.417412909035839E7, 1));
+        satellite.setSatellitePosition(new SatellitePosition(1,33, 'G', 1.8167810804206647E7, 1.4853089328323795E7, 1.803785447755915E7));
+        satellite.setAccumulatedCorrection(-4.6729749952844333E-4);
 
         addPoint(satellite);
     }
@@ -83,7 +84,7 @@ public class RadarView extends RelativeLayout {
     public void addPoint(SatelliteParameters satellite){
 
         Log.e("RADARVIEW-SATPARAMS", satellite.getSatId() + ", " + satellite.getSatellitePosition() + ", " + satellite.getPseudorange()
-                + ", " + + satellite.getSatellitePosition().getGeodeticLatitude() + ", " + satellite.getSatellitePosition().getGeodeticLongitude()
+                + ", " + satellite.getSatellitePosition().getGeodeticLatitude() + ", " + satellite.getSatellitePosition().getGeodeticLongitude()
                 + "," + satellite.getSatellitePosition().getGeodeticHeight() + ", " + satellite.getSatellitePosition().getX() + ", "
                 + satellite.getSatellitePosition().getY() + ", " + satellite.getSatellitePosition().getZ());
 

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.galfins.gnss_compare.Corrections.Correction;
+import com.galfins.gnss_compare.UserNotifier;
 import com.galfins.gogpsextracts.Coordinates;
 import com.galfins.gogpsextracts.Time;
 
