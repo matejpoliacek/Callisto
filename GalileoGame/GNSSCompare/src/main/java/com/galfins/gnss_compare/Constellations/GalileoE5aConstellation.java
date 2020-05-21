@@ -10,7 +10,6 @@ import android.util.Log;
 
 import com.galfins.gnss_compare.Corrections.Correction;
 import com.galfins.gnss_compare.GnssCoreService;
-import com.galfins.gnss_compare.MainActivity;
 import com.galfins.gogpsextracts.Constants;
 import com.galfins.gogpsextracts.Coordinates;
 import com.galfins.gogpsextracts.NavigationProducer;
@@ -350,7 +349,6 @@ public class GalileoE5aConstellation extends Constellation {
 
                 if (rnp == null) {
                     excludedSatellites.add(observedSatellite);
-                    GnssCoreService.notifyUser("Faled getting ephemeris data!", Snackbar.LENGTH_SHORT, RNP_NULL_MESSAGE);
                     continue;
                 }
 
