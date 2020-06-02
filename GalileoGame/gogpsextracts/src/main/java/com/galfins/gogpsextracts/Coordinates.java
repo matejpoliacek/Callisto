@@ -19,6 +19,8 @@
  *
  */
 package com.galfins.gogpsextracts;
+import android.util.Log;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -157,6 +159,10 @@ public class Coordinates implements Streamable{
 		double lamGeod = lamGeoc;
 		double N = a / Math.sqrt(1 - Math.pow(e, 2) * Math.pow(Math.sin(phiGeod), 2));
 		double h = r * Math.cos(phiGeoc) / Math.cos(phiGeod) - N;
+
+		//TODO: delete after test
+		Log.e("COORDS-CALC", lamGeod + ", " + phiGeod + ", " + h + " --- " + Math.toDegrees(lamGeod) + ", " + Math.toDegrees(phiGeod));
+		Log.e("COORDS-CALC", this.geod.toString());
 
 		this.geod.set(0, 0, Math.toDegrees(lamGeod));
 		this.geod.set(1, 0, Math.toDegrees(phiGeod));
