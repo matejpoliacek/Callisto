@@ -2,24 +2,18 @@ package com.chocolateam.galileospaceship;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.LayoutInflater;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.chocolateam.galileospaceship.R;
-import com.galfins.gnss_compare.Constellations.Pseudorange;
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
-import com.galfins.gogpsextracts.SatellitePosition;
 
 import java.util.List;
 
@@ -36,11 +30,14 @@ public class RadarView extends RelativeLayout {
     float mSatTickW;
     float mSatTickH;
 
-    float mViewW;
-    float mViewH;
+    float mRadarLightW;
+    float mRadarLightH;
 
     double lat;
     double lng;
+    double ECEF_X;
+    double ECEF_Y;
+    double ECEF_Z;
 
     public RadarView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -58,17 +55,6 @@ public class RadarView extends RelativeLayout {
 
         Animation ViewAnimation = AnimationUtils.loadAnimation(mContext, R.anim.rotation_fast);
         mRadarLight.startAnimation(ViewAnimation);
-
-/*        addPoint(new Satellite(1,1,12), new PointF(30f, 100f));
-        addPoint(new Satellite(34,2,12), new PointF(134f, 80f));
-        addPoint(new Satellite(21,3,12), new PointF(-50f, 100f));*/
-
-
-        SatelliteParameters satellite = new SatelliteParameters(33, new Pseudorange(2.417412909035839E7, 1));
-        satellite.setSatellitePosition(new SatellitePosition(1,33, 'G', 1.8167810804206647E7, 1.4853089328323795E7, 1.803785447755915E7));
-        satellite.setAccumulatedCorrection(-4.6729749952844333E-4);
-
-        addPoint(satellite);
     }
 
     public RadarView(Context context) {
@@ -88,27 +74,27 @@ public class RadarView extends RelativeLayout {
                 + "," + satellite.getSatellitePosition().getGeodeticHeight() + ", " + satellite.getSatellitePosition().getX() + ", "
                 + satellite.getSatellitePosition().getY() + ", " + satellite.getSatellitePosition().getZ());
 
-        mViewH = mView.getHeight();
-        mViewW = mView.getWidth();
+        mRadarLightH = mRadarLight.getHeight();
+        mRadarLightW = mRadarLight.getWidth();
 
         //PointF position = new PointF((float) satellite.getSatellitePosition().getX(), (float) satellite.getSatellitePosition().getY());
         RadarSatelliteTick satPoint = new RadarSatelliteTick(mContext);
         satPoint.setTick(satellite);
 
         Log.e("RADARVIEW", "Sat Location: Lat: " + satellite.getSatellitePosition().getGeodeticLatitude()
-                + ", Lng:  " + satellite.getSatellitePosition().getGeodeticLongitude()
-                + "; User Loc: Lat: " + lat + ", Lng: " + lng);
+                + ", Lng:  " + satellite.getSatellitePosition().getGeodeticLongitude() + ", X:  " + satellite.getSatellitePosition().getX()
+                + ", Y:  " + satellite.getSatellitePosition().getY() + ", Z:  " + satellite.getSatellitePosition().getZ() + "\n; "
+                + "User Loc: Lat: " + lat + ", Lng: " + lng + ", X: " + ECEF_X + ", Y: " + ECEF_Y + ", Z: " + ECEF_Z);
 
+        double[] AzEl = calcAzEl(satellite.getSatellitePosition().getX(), satellite.getSatellitePosition().getY(), satellite.getSatellitePosition().getZ(),
+                                 ECEF_X, ECEF_Y, ECEF_Z);
 
-        double dy = satellite.getSatellitePosition().getGeodeticLatitude() - lat;
-        double dx = Math.cos(Math.PI/180*lat)*(satellite.getSatellitePosition().getGeodeticLongitude() - lng);
-        double angle = Math.atan2(dy, dx);
+        //float radius = convertPixelsToDp(mRadarLightH, mContext);
+        float radius = (float) ((mRadarLightH / 90.0) * AzEl[1]); // radius scaled by elevation
 
-        float radius = convertPixelsToDp(findViewById(R.id.background).getHeight()/2, mContext);
+        Log.e("RADARVIEW", "Input params angle: " + AzEl[0] + " radius: " + AzEl[1] + " IMGW: " + mRadarLightW + " IMGH: " + mRadarLightH + "; Az,El: (" + AzEl[0] + ", " + AzEl[1] + ")");
 
-        Log.e("RADARVIEW", "Input params angle: " + angle + " radius: " + radius + " IMGW: " + mViewW + " IMGH: " + mViewH);
-
-        PointF pointPosition = circToCart((float) angle , radius);
+        PointF pointPosition = circToCart((float)  AzEl[0] , radius);
 
         satPoint.setX(pointPosition.x);
         satPoint.setY(pointPosition.y);
@@ -138,23 +124,37 @@ public class RadarView extends RelativeLayout {
         }
     }
 
+    private double[] calcAzEl(double sat_x, double sat_y, double sat_z, double user_x, double user_y, double user_z) {
+
+        double distance = Math.sqrt(Math.pow(sat_x - user_x, 2) + Math.pow(sat_y - user_y, 2) + Math.pow(sat_z - user_z, 2));
+        double elevation = Math.toDegrees(Math.asin((sat_z - user_z) / distance));
+        double azimuth = Math.toDegrees(Math.atan((sat_x - user_x) / (sat_y - user_y)));
+
+        double[] AzEl = {azimuth, elevation};
+
+        return AzEl;
+    }
+
     public PointF circToCart(float angle, float R){
 
         PointF coordinates = new PointF(0,0);
 
-        float xo = mViewW/2;
-        float yo = mViewH/2;
+        float xo = mRadarLightW /2;
+        float yo = mRadarLightH /2;
 
         coordinates.x = xo + (R * (float) Math.sin(angle)) - mSatTickW / 2;
-        coordinates.y = yo - (R * (float) Math.cos(angle))- mSatTickH * 3f/2f;
+        coordinates.y = yo - (R * (float) Math.cos(angle)) - mSatTickH * 3f/2f;
 
         return coordinates;
 
     }
 
-    public void setLatLng(double lat, double lng) {
+    public void setLatLngXYZ(double lat, double lng, double ECEF_X, double ECEF_Y, double ECEF_Z) {
         this.lat = lat;
         this.lng = lng;
+        this.ECEF_X = ECEF_X;
+        this.ECEF_Y = ECEF_Y;
+        this.ECEF_Z = ECEF_Z;
     }
 
     private float convertPixelsToDp(float px, Context context){

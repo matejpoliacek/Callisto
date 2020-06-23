@@ -96,7 +96,8 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                             mSkyViewFragment.updateSatView(satellitesAll);
 
                             if (mRadarViewFragment.isCreated()) {
-                                mRadarViewFragment.setLatLng(calculationModule.getPose().getGeodeticLatitude(), calculationModule.getPose().getGeodeticLongitude());
+                                mRadarViewFragment.setLatLngXYZ(calculationModule.getPose().getGeodeticLatitude(), calculationModule.getPose().getGeodeticLongitude(),
+                                        calculationModule.getPose().getX(), calculationModule.getPose().getY(), calculationModule.getPose().getZ());
                                 mRadarViewFragment.setTimeUTC();
                                 mRadarViewFragment.setclock(mInitialTime);
                                 mRadarViewFragment.setSatCounts(calcName, calculationModule.getConstellation().getUsedConstellationSize());
