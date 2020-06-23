@@ -90,7 +90,7 @@ public class RadarView extends RelativeLayout {
                                  ECEF_X, ECEF_Y, ECEF_Z);
 
         //float radius = convertPixelsToDp(mRadarLightH, mContext);
-        float radius = (float) ((mRadarLightH / 90.0) * AzEl[1]); // radius scaled by elevation
+        float radius = (float) ((mRadarLightH / 90.0) * (90.0 - AzEl[1])); // radius scaled by elevation
 
         Log.e("RADARVIEW", "Input params angle: " + AzEl[0] + " radius: " + AzEl[1] + " IMGW: " + mRadarLightW + " IMGH: " + mRadarLightH + "; Az,El: (" + AzEl[0] + ", " + AzEl[1] + ")");
 
