@@ -2,6 +2,7 @@ package com.chocolateam.galileospaceship;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RelativeLayout;
@@ -47,11 +48,26 @@ public class MeasurementsInfo extends RelativeLayout {
     }
 
     public void setSatCounts(String constellationType, int numberOfSat){
+
+        Log.e("MEASUREMENTS-INFO", "Const: " + constellationType + " no. sats: "+ numberOfSat);
+
+        final String value = Integer.toString(numberOfSat);
+
         switch (constellationType){
             case "GPS":
-                mGPS.setText(Integer.toString(numberOfSat));
+                mGPS.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mGPS.setText(value);
+                    }
+                });
             case "Galileo":
-                mGAL.setText(Integer.toString(numberOfSat));
+                mGAL.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mGAL.setText(value);
+                    }
+                });
         }
     }
 
