@@ -39,6 +39,8 @@ public class RadarView extends RelativeLayout {
     double ECEF_Y;
     double ECEF_Z;
 
+    double RAD_SCALE = 0.95;
+
     public RadarView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -61,11 +63,6 @@ public class RadarView extends RelativeLayout {
         this(context, null);
     }
 
-    private int getPixels(float dipValue){
-        Resources r = getResources();
-        int px = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue,   r.getDisplayMetrics());
-        return px;
-    }
 
     public void addPoint(SatelliteParameters satellite){
 
@@ -90,7 +87,7 @@ public class RadarView extends RelativeLayout {
                                  ECEF_X, ECEF_Y, ECEF_Z);
 
         //float radius = convertPixelsToDp(mRadarLightH, mContext);
-        float radius = (float) ((mRadarLightH / 90.0) * (90.0 - AzEl[1])); // radius scaled by elevation
+        float radius = (float) ((((mRadarLightH * RAD_SCALE)/ 2) / 90.0) * (90.0 - AzEl[1])); // radius scaled by elevation
 
         Log.e("RADARVIEW", "Input params angle: " + AzEl[0] + " radius: " + AzEl[1] + " IMGW: " + mRadarLightW + " IMGH: " + mRadarLightH + "; Az,El: (" + AzEl[0] + ", " + AzEl[1] + ")");
 
@@ -139,11 +136,11 @@ public class RadarView extends RelativeLayout {
 
         PointF coordinates = new PointF(0,0);
 
-        float xo = mRadarLightW /2;
-        float yo = mRadarLightH /2;
+        float xo = (float) ((mRadarLightW * RAD_SCALE) / 2.0);
+        float yo = (float) ((mRadarLightH * RAD_SCALE) / 2.0);
 
-        coordinates.x = xo + (R * (float) Math.sin(angle)) - mSatTickW / 2;
-        coordinates.y = yo - (R * (float) Math.cos(angle)) - mSatTickH * 3f/2f;
+        coordinates.x = (int) (xo + (R * (float) Math.sin(angle)) - mSatTickW / 2);
+        coordinates.y = (int) (yo - (R * (float) Math.cos(angle)) - mSatTickH / 2);
 
         return coordinates;
 
@@ -157,10 +154,19 @@ public class RadarView extends RelativeLayout {
         this.ECEF_Z = ECEF_Z;
     }
 
+    //TODO: Candidates for removal
+
     private float convertPixelsToDp(float px, Context context){
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
         float dp = px / ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
         return dp;
+    }
+
+
+    private int getPixels(float dipValue){
+        Resources r = getResources();
+        int px = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue,   r.getDisplayMetrics());
+        return px;
     }
 }
