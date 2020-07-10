@@ -82,12 +82,13 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (!satellites.isEmpty()) {
+                    if (!satellitesAll.isEmpty()) {
                         Log.e(TAG, "Comparing Selected Const: " + currentConstellation + " with Const from calcModule " + calcName);
                         if (currentConstellation.equals(calcName)) {
                             Log.e(TAG, "SATPOS: " + currentConstellation +" " + String.valueOf(satellites.size()));
 
-                            setSatellitesList(satellites);
+                            // TODO: check if satellitesAll is okay, or if only satellites should be used
+                            setSatellitesList(satellitesAll);
                             setLatLongIndicator(calculationModule.getPose().getGeodeticLatitude(), calculationModule.getPose().getGeodeticLongitude());
                             setAltitudeIndicator(calculationModule.getPose().getGeodeticHeight());
                             //TODO:
@@ -100,8 +101,10 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                                         calculationModule.getPose().getX(), calculationModule.getPose().getY(), calculationModule.getPose().getZ());
                                 mRadarViewFragment.setTimeUTC();
                                 mRadarViewFragment.setclock(mInitialTime);
-                                mRadarViewFragment.setSatCounts(calcName, calculationModule.getConstellation().getUsedConstellationSize());
-                                mRadarViewFragment.updateSatellites(satellites);
+                                mRadarViewFragment.setSatCounts(satellitesAll);
+
+                                //TODO: satellites, or satellites all ?
+                                mRadarViewFragment.updateSatellites(satellitesAll);
                             }
                         }
                     }

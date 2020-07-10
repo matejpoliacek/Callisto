@@ -152,7 +152,7 @@
             android:textSize="10dp" />
 
         <TextView
-            android:id="@+id/textView6"
+            android:id="@+id/nglo"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:alpha="0.75"
@@ -164,7 +164,7 @@
             android:textSize="10dp" />
 
         <TextView
-            android:id="@+id/textView7"
+            android:id="@+id/nqzs"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:alpha="0.75"
@@ -176,7 +176,7 @@
             android:textSize="10dp" />
 
         <TextView
-            android:id="@+id/textView8"
+            android:id="@+id/nbds"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:alpha="0.75"

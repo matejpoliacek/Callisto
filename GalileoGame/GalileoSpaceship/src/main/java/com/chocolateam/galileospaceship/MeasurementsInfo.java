@@ -8,14 +8,14 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.chocolateam.galileospaceship.R;
 
-import org.w3c.dom.Text;
+import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Lionel Garcia on 25/01/2018.
@@ -28,6 +28,9 @@ public class MeasurementsInfo extends RelativeLayout {
     TextView mDOP;
     TextView mGAL;
     TextView mGPS;
+    TextView mQZS;
+    TextView mBDS;
+    TextView mGLO;
 
     public MeasurementsInfo(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -41,34 +44,85 @@ public class MeasurementsInfo extends RelativeLayout {
         mDOP = mView.findViewById(R.id.dop);
         mGAL = mView.findViewById(R.id.ngalileo);
         mGPS = mView.findViewById(R.id.ngps);
+        mQZS = mView.findViewById(R.id.nqzs);
+        mBDS = mView.findViewById(R.id.nbds);
+        mGLO = mView.findViewById(R.id.nglo);
     }
 
     public MeasurementsInfo(Context context) {
         this(context, null);
     }
 
-    public void setSatCounts(String constellationType, int numberOfSat){
+    public void setSatCounts(List<SatelliteParameters> satellites){
 
-        Log.e("MEASUREMENTS-INFO", "Const: " + constellationType + " no. sats: "+ numberOfSat);
+        int gps_count = 0;
+        int glo_count = 0;
+        int qzs_count = 0;
+        int bei_count = 0;
+        int gal_count = 0;
 
-        final String value = Integer.toString(numberOfSat);
-
-        switch (constellationType){
-            case "GPS":
-                mGPS.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mGPS.setText(value);
-                    }
-                });
-            case "Galileo":
-                mGAL.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mGAL.setText(value);
-                    }
-                });
+        for (SatelliteParameters satellite : satellites) {
+            switch (satellite.getConstellationType()) {
+                case 1:
+                    gps_count++;
+                    break;
+                case 2:
+                    glo_count++;
+                    break;
+                case 3:
+                    glo_count++;
+                    break;
+                case 4:
+                    qzs_count++;
+                    break;
+                case 5:
+                    bei_count++;
+                    break;
+                case 6:
+                    gal_count++;
+                    break;
+            }
         }
+
+        Log.e("MEASUREMENTS-INFO", "Sizes: GPS - " + gps_count + ", Glo - " + glo_count + ", QZSS - " + qzs_count + ", Beidou - " + bei_count + ", Galileo - " + gal_count);
+
+        final int gps_count_final = gps_count;
+        final int glo_count_final = glo_count;
+        final int qzs_count_final = qzs_count;
+        final int bei_count_final = bei_count;
+        final int gal_count_final = gal_count;
+
+        mGPS.post(new Runnable() {
+            @Override
+            public void run() {
+                mGPS.setText(gps_count_final);
+            }
+        });
+        mGAL.post(new Runnable() {
+            @Override
+            public void run() {
+                mGAL.setText(gal_count_final);
+            }
+        });
+        mQZS.post(new Runnable() {
+            @Override
+            public void run() {
+                mGAL.setText(qzs_count_final);
+            }
+        });
+        mGLO.post(new Runnable() {
+            @Override
+            public void run() {
+                mGAL.setText(glo_count_final);
+            }
+        });
+        mBDS.post(new Runnable() {
+            @Override
+            public void run() {
+                mGAL.setText(bei_count_final);
+            }
+        });
+
     }
 
     public void setTimeUTC(){

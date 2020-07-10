@@ -1,20 +1,13 @@
 package com.chocolateam.galileospaceship;
 
-import android.content.Context;
-import android.graphics.Point;
 import android.graphics.drawable.AnimationDrawable;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
@@ -84,8 +77,8 @@ public class RadarViewFragment extends Fragment {
         mRadar.updateSatellites(satellites);
     }
 
-    public void setSatCounts(String constellationType, int numberOfSat) {
-        mMeasurementsInfo.setSatCounts(constellationType, numberOfSat);
+    public void setSatCounts(List<SatelliteParameters> satellites) {
+        mMeasurementsInfo.setSatCounts(satellites);
     }
 
     public void setTimeUTC(){
