@@ -95,31 +95,31 @@ public class MeasurementsInfo extends RelativeLayout {
         mGPS.post(new Runnable() {
             @Override
             public void run() {
-                mGPS.setText(gps_count_final);
+                mGPS.setText(Integer.toString(gps_count_final));
             }
         });
         mGAL.post(new Runnable() {
             @Override
             public void run() {
-                mGAL.setText(gal_count_final);
+                mGAL.setText(Integer.toString(gal_count_final));
             }
         });
         mQZS.post(new Runnable() {
             @Override
             public void run() {
-                mGAL.setText(qzs_count_final);
+                mGAL.setText(Integer.toString(qzs_count_final));
             }
         });
         mGLO.post(new Runnable() {
             @Override
             public void run() {
-                mGAL.setText(glo_count_final);
+                mGAL.setText(Integer.toString(glo_count_final));
             }
         });
         mBDS.post(new Runnable() {
             @Override
             public void run() {
-                mGAL.setText(bei_count_final);
+                mGAL.setText(Integer.toString(bei_count_final));
             }
         });
 
