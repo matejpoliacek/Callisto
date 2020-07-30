@@ -84,7 +84,9 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                 public void run() {
                     if (!satellitesAll.isEmpty()) {
                         Log.e(TAG, "Comparing Selected Const: " + currentConstellation + " with Const from calcModule " + calcName);
-                        if (currentConstellation.equals(calcName)) {
+
+                        // TODO: verify if the OR GalGPS does not duplicate displayed satellites
+                        if (currentConstellation.equals(calcName) || currentConstellation.equals(GNSSCoreServiceActivity.GalGPSConstName)) {
                             Log.e(TAG, "SATPOS: " + currentConstellation +" " + String.valueOf(satellites.size()));
 
                             // TODO: check if satellitesAll is okay, or if only satellites should be used
