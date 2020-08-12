@@ -76,6 +76,13 @@
             android:alpha="0.8"
             android:scaleType="fitCenter"
             app:srcCompat="@mipmap/ic_launcher" />
+
+        <View android:id="@+id/grey_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:background="#DDDDDD"
+            android:visibility="invisible"/>
     </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

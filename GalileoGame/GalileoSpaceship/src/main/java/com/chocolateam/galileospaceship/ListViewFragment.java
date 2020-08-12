@@ -91,7 +91,7 @@ public class ListViewFragment extends Fragment/* implements Runnable*/ {
     public void setSatellites(List<SatelliteParameters> satellitesList){
         msatList = satellitesList;
         mAdapter.setSatelliteList(satellitesList);
-        Log.e(TAG, "Number of sats in the actual view: " + msatList.size());
+        Log.e(TAG, "Number of sats in the actual listView: " + msatList.size());
         mrecyclerView.getRecycledViewPool().clear();
         mAdapter.notifyDataSetChanged();
     }

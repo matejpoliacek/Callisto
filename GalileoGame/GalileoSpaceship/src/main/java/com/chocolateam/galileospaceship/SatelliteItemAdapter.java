@@ -27,6 +27,7 @@ public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdap
         private TextView midView, mconstelationView;
         private ImageView mflagView;
         private ImageView msignalView;
+        private View mDisabledOverlay;
 
         public MyViewHolder(View view) {
             super(view);
@@ -34,6 +35,7 @@ public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdap
             mflagView = view.findViewById(R.id.flag);
             msignalView = view.findViewById(R.id.signal);
             mconstelationView = view.findViewById(R.id.constellation);
+            mDisabledOverlay = view.findViewById(R.id.grey_overlay);
         }
     }
 
@@ -59,7 +61,17 @@ public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdap
         holder.midView.setText(String.format("%05d", satellite.getSatId()));
         holder.msignalView.setImageResource(getSignalBitmap((int) (6 * Math.min(satellite.getSignalStrength()/40, 1))));
         holder.mflagView.setImageResource(getFlagBitmap(satellite.getConstellationType()));
-          Log.e(TAG, "getConstellationType()" + satellite.getConstellationType());
+
+        if(satellite.getSatellitePosition() == null) {
+            holder.mDisabledOverlay.setVisibility(View.VISIBLE);
+            holder.mDisabledOverlay.setAlpha(0.25f);
+            Log.e(TAG, "ListView - Satellite " + satellite.getSatId() + " set as disabled");
+        } else {
+            holder.mDisabledOverlay.setVisibility(View.INVISIBLE);
+            Log.e(TAG, "ListView - Satellite " + satellite.getSatId() + " set as enabled");
+        }
+
+        Log.e(TAG, "getConstellationType()" + satellite.getConstellationType());
     }
 
     @Override
