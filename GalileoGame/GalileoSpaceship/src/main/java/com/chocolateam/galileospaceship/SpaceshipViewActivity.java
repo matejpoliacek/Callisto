@@ -77,7 +77,7 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
 
             final List<SatelliteParameters> satellitesAll = satellitesAllTemp;
 
-            Log.e(TAG, "Satellite list not empty? Used: " + String.valueOf(!satellites.isEmpty()) + " Unused but visible: " + String.valueOf(!satellitesOnlyVisible.isEmpty()));
+            Log.e(TAG, "Satellite list not empty? Used: " + satellites.size() + " Unused but visible: " + satellitesOnlyVisible.size());
 
             runOnUiThread(new Runnable() {
                 @Override

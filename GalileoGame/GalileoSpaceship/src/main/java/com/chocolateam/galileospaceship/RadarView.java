@@ -105,6 +105,9 @@ public class RadarView extends RelativeLayout {
 
     public void updateSatellites(List<SatelliteParameters> satellites){
         mView.removeAllViews();
+        int displayed = 0;
+        int notDisplayed = 0;
+        int nullSat = 0;
         for (SatelliteParameters satellite : satellites){
             Log.d("SAT_POSITION_CHECK", "updateSatellites:" + satellite.getSatellitePosition());
             //
@@ -112,13 +115,16 @@ public class RadarView extends RelativeLayout {
                 if (satellite.getSatellitePosition() != null) {
                     Log.e("RadarView - ", String.valueOf(satellite.getSatId()) + "Satellite POSITION is NOT null");
                     addPoint(satellite);
+                    displayed++;
                 } else {
                     Log.e("RadarView - ", String.valueOf(satellite.getSatId()) + "Satellite POSITION is null");
+                    notDisplayed++;
                 }
         	} else {
         		Log.e("RadarView", "Satellite is null");
         	}
         }
+        Log.e("RadarView", "Satellites updated, stats - displayed: " + displayed + " | not displayed: " + notDisplayed + " | null sats: " + nullSat);
     }
 
     private double[] calcAzEl(double sat_x, double sat_y, double sat_z, double user_x, double user_y, double user_z) {
