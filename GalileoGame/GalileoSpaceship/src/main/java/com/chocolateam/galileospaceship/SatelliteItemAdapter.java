@@ -64,7 +64,7 @@ public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdap
 
         if(satellite.getSatellitePosition() == null) {
             holder.mDisabledOverlay.setVisibility(View.VISIBLE);
-            holder.mDisabledOverlay.setAlpha(0.25f);
+            holder.mDisabledOverlay.setAlpha(0.60f);
             Log.e(TAG, "ListView - Satellite " + satellite.getSatId() + " set as disabled");
         } else {
             holder.mDisabledOverlay.setVisibility(View.INVISIBLE);
