@@ -8,10 +8,10 @@
     android:clickable="true"
     android:focusable="true"
     android:orientation="vertical"
-    android:paddingBottom="0dp"
     android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/row_padding_vertical"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/row_padding_vertical">
+    android:paddingBottom="0dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -58,10 +58,10 @@
             android:id="@+id/signal"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:adjustViewBounds="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:adjustViewBounds="true"
             android:scaleType="fitCenter"
             app:srcCompat="@mipmap/ic_launcher" />
 
@@ -69,10 +69,10 @@
             android:id="@+id/flag"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:adjustViewBounds="true"
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
+            android:adjustViewBounds="true"
             android:alpha="0.8"
             android:scaleType="fitCenter"
             app:srcCompat="@mipmap/ic_launcher" />
@@ -82,7 +82,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignParentTop="true"
-            android:background="#9A202020"
+            android:background="#9AFF0000"
             android:visibility="invisible" />
     </RelativeLayout>
 

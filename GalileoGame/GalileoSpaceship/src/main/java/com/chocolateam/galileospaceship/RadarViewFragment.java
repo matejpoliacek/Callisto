@@ -11,6 +11,8 @@ import android.widget.ImageView;
 
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +28,7 @@ public class RadarViewFragment extends Fragment {
     MeasurementsInfo mMeasurementsInfo;
     GConstellationPanel mconstellationPannel;
     ImageButton constellationPannelButton;
+    List<SatelliteParameters> satList = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -73,12 +76,20 @@ public class RadarViewFragment extends Fragment {
         created = true;
     }
 
-    public void updateSatellites(List<SatelliteParameters> satellites){
-        mRadar.updateSatellites(satellites);
+    public void addSatellites(List<SatelliteParameters> satellites) {
+        satList.addAll(satellites);
     }
 
-    public void setSatCounts(List<SatelliteParameters> satellites) {
-        mMeasurementsInfo.setSatCounts(satellites);
+    public void updateSatellites() {
+        mRadar.updateSatellites(satList);
+    }
+
+    public void resetSatellites() {
+        satList = new ArrayList<>();
+    }
+
+    public void setSatCounts() {
+        mMeasurementsInfo.setSatCounts(satList);
     }
 
     public void setTimeUTC(){

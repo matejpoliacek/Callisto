@@ -122,6 +122,7 @@ public class RadarView extends RelativeLayout {
                 }
         	} else {
         		Log.e("RadarView", "Satellite is null");
+        		nullSat++;
         	}
         }
         Log.e("RadarView", "Satellites updated, stats - displayed: " + displayed + " | not displayed: " + notDisplayed + " | null sats: " + nullSat);

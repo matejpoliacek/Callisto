@@ -14,6 +14,8 @@ import android.widget.ImageView;
 
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,8 +24,10 @@ import java.util.List;
 
 public class SkyViewFragment extends Fragment {
 
-    View mView;
-    SatView mSatView;
+    private View mView;
+    private SatView mSatView;
+    private List<SatelliteParameters> satList = new ArrayList<>();
+    private boolean created = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -42,6 +46,8 @@ public class SkyViewFragment extends Fragment {
         clouds.startAnimation(ViewAnimation);
 
         mSatView.setSatInfoView(satinfoview);
+
+        created = true;
 
         return mView;
     }
@@ -82,7 +88,18 @@ public class SkyViewFragment extends Fragment {
         GraphicsTools.pulseAnimate(shipDisabled, 2000);
     }
 
-    public void updateSatView(List <SatelliteParameters> satellites){
-        mSatView.updateSatView(satellites);
+    public void addSatellites(List <SatelliteParameters> satellites) {
+        satList.addAll(satellites);
+    }
+    public void updateSatView() {
+        mSatView.updateSatView(satList);
+    }
+
+    public void resetSatellites() {
+        satList = new ArrayList<>();
+    }
+
+    public boolean isCreated() {
+        return created;
     }
 }

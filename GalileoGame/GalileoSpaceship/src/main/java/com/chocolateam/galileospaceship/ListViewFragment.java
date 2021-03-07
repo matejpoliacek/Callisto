@@ -90,8 +90,23 @@ public class ListViewFragment extends Fragment/* implements Runnable*/ {
 
     public void setSatellites(List<SatelliteParameters> satellitesList){
         msatList = satellitesList;
-        mAdapter.setSatelliteList(satellitesList);
         Log.e(TAG, "Number of sats in the actual listView: " + msatList.size());
+    }
+
+    public void addSatellites(List<SatelliteParameters> satellitesList) {
+        msatList.addAll(satellitesList);
+        Log.e(TAG, "Number of sats added to listView: " + satellitesList.size());
+        Log.e(TAG, "Number of sats in the actual listView: " + msatList.size());
+    }
+
+    public void resetSatelliteList() {
+        msatList = new ArrayList<>();
+        Log.e(TAG, "listView cleared");
+        Log.e(TAG, "Number of sats in the actual listView: " + msatList.size());
+    }
+
+    public void updateViewedSatellites() {
+        mAdapter.setSatelliteList(msatList);
         mrecyclerView.getRecycledViewPool().clear();
         mAdapter.notifyDataSetChanged();
     }
@@ -110,5 +125,9 @@ public class ListViewFragment extends Fragment/* implements Runnable*/ {
 
     public String getSelectedConstellation(){
         return mconstellationPannel.getSelectedConst();
+    }
+
+    public boolean isCreated() {
+        return created;
     }
 }

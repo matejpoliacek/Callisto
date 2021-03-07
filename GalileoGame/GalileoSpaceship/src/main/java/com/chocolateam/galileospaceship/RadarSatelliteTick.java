@@ -13,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.chocolateam.galileospaceship.R;
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
 /**
@@ -36,7 +35,7 @@ public class RadarSatelliteTick extends RelativeLayout {
 
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        inflater.inflate(R.layout.sattelite_radar_point, this, true);
+        inflater.inflate(R.layout.satellite_radar_point, this, true);
 
         mView = this.findViewById(R.id.main_layout);
         mLabel = this.findViewById(R.id.label);

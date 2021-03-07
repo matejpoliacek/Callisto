@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.chocolateam.galileospaceship.R;
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
 
 import java.util.List;
@@ -32,7 +31,7 @@ public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdap
         public MyViewHolder(View view) {
             super(view);
             midView = view.findViewById(R.id.id);
-            mflagView = view.findViewById(R.id.flag);
+                mflagView = view.findViewById(R.id.flag);
             msignalView = view.findViewById(R.id.signal);
             mconstelationView = view.findViewById(R.id.constellation);
             mDisabledOverlay = view.findViewById(R.id.grey_overlay);
@@ -50,7 +49,7 @@ public class SatelliteItemAdapter extends RecyclerView.Adapter<SatelliteItemAdap
     @Override
     public SatelliteItemAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.sattelite_item_row, parent, false);
+                .inflate(R.layout.satellite_item_row, parent, false);
 
         return new SatelliteItemAdapter.MyViewHolder(itemView);
     }

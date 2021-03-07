@@ -107,19 +107,19 @@ public class MeasurementsInfo extends RelativeLayout {
         mQZS.post(new Runnable() {
             @Override
             public void run() {
-                mGAL.setText(Integer.toString(qzs_count_final));
+                mQZS.setText(Integer.toString(qzs_count_final));
             }
         });
         mGLO.post(new Runnable() {
             @Override
             public void run() {
-                mGAL.setText(Integer.toString(glo_count_final));
+                mGLO.setText(Integer.toString(glo_count_final));
             }
         });
         mBDS.post(new Runnable() {
             @Override
             public void run() {
-                mGAL.setText(Integer.toString(bei_count_final));
+                mBDS.setText(Integer.toString(bei_count_final));
             }
         });
 

@@ -60,6 +60,16 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
 
         CalculationModulesArrayList CMArrayList = gnssBinder.getCalculationModules();
 
+        if (mListViewFragment.isCreated()) {
+            mListViewFragment.resetSatelliteList();
+        }
+        if (mSkyViewFragment.isCreated()) {
+            mSkyViewFragment.resetSatellites();
+        }
+        if (mRadarViewFragment.isCreated()) {
+            mRadarViewFragment.resetSatellites();
+        }
+
         for (final CalculationModule calculationModule : CMArrayList) {
 
             final String calcName = calculationModule.getConstellation().getName();
@@ -83,31 +93,44 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                 @Override
                 public void run() {
                     if (!satellitesAll.isEmpty()) {
+
                         Log.e(TAG, "Comparing Selected Const: " + currentConstellation + " with Const from calcModule " + calcName);
 
-                        // TODO: verify if the OR GalGPS does not duplicate displayed satellites
-                        if (currentConstellation.equals(calcName) || currentConstellation.equals(GNSSCoreServiceActivity.GalGPSConstName)) {
+                        if (currentConstellation.equals(calcName)) {
                             Log.e(TAG, "SATPOS: " + currentConstellation +" " + String.valueOf(satellites.size()));
 
                             // TODO: check if satellitesAll is okay, or if only satellites should be used
-                            setSatellitesList(satellitesAll);
-                            setLatLongIndicator(calculationModule.getPose().getGeodeticLatitude(), calculationModule.getPose().getGeodeticLongitude());
-                            setAltitudeIndicator(calculationModule.getPose().getGeodeticHeight());
-                            //TODO:
-                            // setSpeedIndicator( ?? );
+                            if (mListViewFragment.isCreated()) {
+                                mListViewFragment.addSatellites(satellitesAll);
+                                mListViewFragment.setLatLong(calculationModule.getPose().getGeodeticLatitude(), calculationModule.getPose().getGeodeticLongitude());
+                                mListViewFragment.setAltitude(calculationModule.getPose().getGeodeticHeight());
+                                //TODO:
+                                // mListViewFragment.setSpeedIndicator( ?? );
+                            }
 
-                            mSkyViewFragment.updateSatView(satellitesAll);
+                            if (mSkyViewFragment.isCreated()) {
+                                mSkyViewFragment.addSatellites(satellitesAll);
+                            }
 
                             if (mRadarViewFragment.isCreated()) {
                                 mRadarViewFragment.setLatLngXYZ(calculationModule.getPose().getGeodeticLatitude(), calculationModule.getPose().getGeodeticLongitude(),
                                         calculationModule.getPose().getX(), calculationModule.getPose().getY(), calculationModule.getPose().getZ());
-                                mRadarViewFragment.setTimeUTC();
-                                mRadarViewFragment.setclock(mInitialTime);
-                                mRadarViewFragment.setSatCounts(satellitesAll);
-
-                                //TODO: satellites, or satellites all ?
-                                mRadarViewFragment.updateSatellites(satellitesAll);
+                                mRadarViewFragment.addSatellites(satellitesAll);
                             }
+                        }
+
+                        /** Update the respective views **/
+                        if (mListViewFragment.isCreated()) {
+                            mListViewFragment.updateViewedSatellites();
+                        }
+                        if (mSkyViewFragment.isCreated()) {
+                            mSkyViewFragment.updateSatView();
+                        }
+                        if (mRadarViewFragment.isCreated()) {
+                            mRadarViewFragment.updateSatellites();
+                            mRadarViewFragment.setSatCounts();
+                            mRadarViewFragment.setTimeUTC();
+                            mRadarViewFragment.setclock(mInitialTime);
                         }
                     }
                 }
@@ -179,27 +202,6 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
     // Methods to fill the UI
 
         // Left panel - mListViewFragment
-
-    public void setSatellitesList(List<SatelliteParameters> satellitesList){
-        // Set the list of satellites
-        // check Satellite class to see how to build a Satellite object from the Observer output
-        mListViewFragment.setSatellites(satellitesList);
-    }
-
-    public void setLatLongIndicator(double latitude, double longitude){
-        // Set Latitude and Longitude indicator (first screen on the Left Spaceship view)
-        mListViewFragment.setLatLong(latitude, longitude);
-    }
-
-    public void setSpeedIndicator(float speed){
-        // Set speed indicator (second screen on the Left Spaceship view)
-        mListViewFragment.setSpeed(speed);
-    }
-
-    public void setAltitudeIndicator(double altitude){
-        // Set Altitude indicator (third screen on the Left Spaceship view)
-        mListViewFragment.setAltitude(altitude);
-    }
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
