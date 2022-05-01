@@ -58,22 +58,22 @@ public class RadarSatelliteTick extends RelativeLayout {
 
         switch (satellite.getConstellationType()) {
             case 1:
-                constellation = "GPS";
+                constellation = "GPS"; break;
             case 2:
-                constellation = "SBAS";
+                constellation = "SBAS"; break;
             case 3:
-                constellation = "GLONASS";
+                constellation = "GLONASS"; break;
             case 4:
-                constellation = "QZSS";
+                constellation = "QZSS"; break;
             case 5:
-                constellation = "BEIDOU";
+                constellation = "BEIDOU"; break;
             case 6:
-                constellation = "GALILEO";
+                constellation = "GALILEO"; break;
             default:
                 constellation = "UNKNOWN";
         }
 
-        String prefix = constellation.substring(0, 2);
+        String prefix = constellation.substring(0, 3);
         int tick;
         int label_color;
 

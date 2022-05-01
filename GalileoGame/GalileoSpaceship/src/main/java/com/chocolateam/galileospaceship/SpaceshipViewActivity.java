@@ -93,6 +93,8 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                 @Override
                 public void run() {
                     if (!satellitesAll.isEmpty()) {
+                        long startTime = System.currentTimeMillis();
+                        Log.e(TAG + " TIMER", "START: " + (System.currentTimeMillis() - startTime));
 
                         Log.e(TAG, "Comparing Selected Const: " + currentConstellation + " with Const from calcModule " + calcName);
 
@@ -100,6 +102,7 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                             Log.e(TAG, "SATPOS: " + currentConstellation +" " + String.valueOf(satellites.size()));
 
                             // TODO: check if satellitesAll is okay, or if only satellites should be used
+                            Log.e(TAG + " TIMER", "BEGIN LIST VIEW: " + (System.currentTimeMillis() - startTime));
                             if (mListViewFragment.isCreated()) {
                                 mListViewFragment.addSatellites(satellitesAll);
                                 mListViewFragment.setLatLong(calculationModule.getPose().getGeodeticLatitude(), calculationModule.getPose().getGeodeticLongitude());
@@ -107,11 +110,11 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                                 //TODO:
                                 // mListViewFragment.setSpeedIndicator( ?? );
                             }
-
+                            Log.e(TAG + " TIMER", "BEGIN SKY VIEW: " + (System.currentTimeMillis() - startTime));
                             if (mSkyViewFragment.isCreated()) {
                                 mSkyViewFragment.addSatellites(satellitesAll);
                             }
-
+                            Log.e(TAG + " TIMER", "BEGIN RADAR VIEW: " + (System.currentTimeMillis() - startTime));
                             if (mRadarViewFragment.isCreated()) {
                                 mRadarViewFragment.setLatLngXYZ(calculationModule.getPose().getGeodeticLatitude(), calculationModule.getPose().getGeodeticLongitude(),
                                         calculationModule.getPose().getX(), calculationModule.getPose().getY(), calculationModule.getPose().getZ());
@@ -120,18 +123,22 @@ public class SpaceshipViewActivity extends GNSSCoreServiceActivity {
                         }
 
                         /** Update the respective views **/
+                        Log.e(TAG + " TIMER", "BEGIN UPDATE LV: " + (System.currentTimeMillis() - startTime));
                         if (mListViewFragment.isCreated()) {
                             mListViewFragment.updateViewedSatellites();
                         }
+                        Log.e(TAG + " TIMER", "BEGIN UPDATE SV: " + (System.currentTimeMillis() - startTime));
                         if (mSkyViewFragment.isCreated()) {
                             mSkyViewFragment.updateSatView();
                         }
+                        Log.e(TAG + " TIMER", "BEGIN UPDATE RV: " + (System.currentTimeMillis() - startTime));
                         if (mRadarViewFragment.isCreated()) {
                             mRadarViewFragment.updateSatellites();
                             mRadarViewFragment.setSatCounts();
                             mRadarViewFragment.setTimeUTC();
                             mRadarViewFragment.setclock(mInitialTime);
                         }
+                        Log.e(TAG + " TIMER", "END THREAD: " + (System.currentTimeMillis() - startTime));
                     }
                 }
             });

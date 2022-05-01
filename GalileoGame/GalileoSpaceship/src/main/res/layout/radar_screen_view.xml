@@ -47,21 +47,32 @@
         app:layout_constraintBottom_toBottomOf="@+id/guideline_radar_bottom"
         app:srcCompat="@drawable/radar_background" />
 
-    <RelativeLayout
-        android:id="@+id/radar_area"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/radar_light"
+    <com.chocolateam.galileospaceship.RadarCompassNeedleView
+        android:id="@+id/compass"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="@+id/guideline_radar_left"
         app:layout_constraintEnd_toEndOf="@+id/guideline_radar_right"
         app:layout_constraintTop_toTopOf="@+id/guideline_radar_top"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_radar_bottom" />
+
+    <RelativeLayout
+        android:id="@+id/radar_area"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="@+id/guideline_radar_bottom"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_radar_right"
+        app:layout_constraintStart_toStartOf="@+id/guideline_radar_left"
+        app:layout_constraintTop_toTopOf="@+id/guideline_radar_top" />
+
+    <ImageView
+        android:id="@+id/radar_light"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_radar_bottom"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_radar_right"
+        app:layout_constraintStart_toStartOf="@+id/guideline_radar_left"
+        app:layout_constraintTop_toTopOf="@+id/guideline_radar_top"
         app:srcCompat="@drawable/radar_light" />
 
     <ImageView

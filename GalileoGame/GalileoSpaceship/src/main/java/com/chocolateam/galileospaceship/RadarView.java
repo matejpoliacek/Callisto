@@ -26,6 +26,7 @@ public class RadarView extends RelativeLayout {
     RelativeLayout mView;
     ImageView mRadarLight;
     Context mContext;
+    RadarCompassNeedleView mCompass;
 
     float mSatTickW;
     float mSatTickH;
@@ -40,6 +41,7 @@ public class RadarView extends RelativeLayout {
     double ECEF_Z;
 
     double RAD_SCALE = 0.95;
+    private float azimuth;
 
     public RadarView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -53,16 +55,17 @@ public class RadarView extends RelativeLayout {
 
         mView = this.findViewById(R.id.radar_area);
         mRadarLight = this.findViewById(R.id.radar_light);
+        mCompass = this.findViewById(R.id.compass);
         mContext = context;
 
         Animation ViewAnimation = AnimationUtils.loadAnimation(mContext, R.anim.rotation_fast);
         mRadarLight.startAnimation(ViewAnimation);
+
     }
 
     public RadarView(Context context) {
         this(context, null);
     }
-
 
     public void addPoint(SatelliteParameters satellite){
 
@@ -87,20 +90,19 @@ public class RadarView extends RelativeLayout {
                                  ECEF_X, ECEF_Y, ECEF_Z);
 
         //float radius = convertPixelsToDp(mRadarLightH, mContext);
-        float radius = (float) ((((mRadarLightH * RAD_SCALE)/ 2) / 90.0) * (90.0 - AzEl[1])); // radius scaled by elevation
+        float radius = (float) ((((mRadarLightH)/ 2) / 90.0) * (90.0 - AzEl[1])); // radius scaled by elevation
 
         Log.e("RADARVIEW", "Input params angle: " + AzEl[0] + " radius: " + AzEl[1] + " IMGW: " + mRadarLightW + " IMGH: " + mRadarLightH + "; Az,El: (" + AzEl[0] + ", " + AzEl[1] + ")");
 
-        PointF pointPosition = circToCart((float)  AzEl[0] , radius);
+        PointF pointPosition = circToCart((float)  Math.toRadians(AzEl[0]) + azimuth, radius); // add compass heading
 
-        satPoint.setX(pointPosition.x);
-        satPoint.setY(pointPosition.y);
+        satPoint.setX(pointPosition.x - mSatTickW/2);
+        satPoint.setY(pointPosition.y - (int) (mSatTickH*1.5));
 
         Log.e("RADARVIEW", "added point x: " + pointPosition.x + " y: " + pointPosition.y);
 
         mView.addView(satPoint);
         mView.invalidate();
-
     }
 
     public void updateSatellites(List<SatelliteParameters> satellites){
@@ -125,7 +127,27 @@ public class RadarView extends RelativeLayout {
         		nullSat++;
         	}
         }
+
         Log.e("RadarView", "Satellites updated, stats - displayed: " + displayed + " | not displayed: " + notDisplayed + " | null sats: " + nullSat);
+    }
+
+    public void drawCompassLine(float angle) {
+
+        mRadarLightH = mRadarLight.getHeight();
+        mRadarLightW = mRadarLight.getWidth();
+
+        Log.d("DRAW", ""+angle);
+        int centerX = (int) ((mRadarLightW) / 2);
+        int centerY = (int) ((mRadarLightH) / 2);
+
+        PointF azimuthCoordsNorth = circToCart(angle, (mRadarLightW) / 2);
+        PointF azimuthCoordsSouth = circToCart(angle + (float) Math.PI, (mRadarLightW) / 2);
+
+        mCompass.setPointsCenter(centerX, centerY);
+        mCompass.setPointsNorth((int) azimuthCoordsNorth.x, (int) azimuthCoordsNorth.y);
+        mCompass.setPointsSouth((int) azimuthCoordsSouth.x, (int) azimuthCoordsSouth.y);
+        mCompass.invalidate();
+
     }
 
     private double[] calcAzEl(double sat_x, double sat_y, double sat_z, double user_x, double user_y, double user_z) {
@@ -141,13 +163,15 @@ public class RadarView extends RelativeLayout {
 
     public PointF circToCart(float angle, float R){
 
+        angle = angle - (float)(Math.PI/2.0); //rotate by 90 deg
+
         PointF coordinates = new PointF(0,0);
 
-        float xo = (float) ((mRadarLightW * RAD_SCALE) / 2.0);
-        float yo = (float) ((mRadarLightH * RAD_SCALE) / 2.0);
+        float xo = (float) ((mRadarLightW) / 2.0);
+        float yo = (float) ((mRadarLightH) / 2.0);
 
-        coordinates.x = (int) (xo + (R * (float) Math.sin(angle)) - mSatTickW / 2);
-        coordinates.y = (int) (yo - (R * (float) Math.cos(angle)) - mSatTickH / 2);
+        coordinates.x = (int) (R * (float) Math.cos(angle)) + xo;// - mSatTickW / 2);
+        coordinates.y = (int) (R * (float) Math.sin(angle)) + yo;// - mSatTickH / 2);
 
         return coordinates;
 
@@ -175,5 +199,9 @@ public class RadarView extends RelativeLayout {
         Resources r = getResources();
         int px = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue,   r.getDisplayMetrics());
         return px;
+    }
+
+    public void setAzimuth(float azimuth) {
+        this.azimuth = azimuth;
     }
 }
