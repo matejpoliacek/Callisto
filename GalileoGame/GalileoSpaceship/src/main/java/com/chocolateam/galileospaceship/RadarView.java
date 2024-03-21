@@ -13,7 +13,9 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.galfins.gnss_compare.Constellations.Pseudorange;
 import com.galfins.gnss_compare.Constellations.SatelliteParameters;
+import com.galfins.gogpsextracts.SatellitePosition;
 
 import java.util.List;
 
@@ -61,6 +63,14 @@ public class RadarView extends RelativeLayout {
         Animation ViewAnimation = AnimationUtils.loadAnimation(mContext, R.anim.rotation_fast);
         mRadarLight.startAnimation(ViewAnimation);
 
+        // BEGIN TODO: DELETE
+        SatelliteParameters N_point = new SatelliteParameters(1,new Pseudorange(1000.0, 0.0));
+        N_point.setSatellitePosition(new SatellitePosition(System.currentTimeMillis() / 1000L, 0, (char)65, 3838234.0, 786480.0, 6233786.0));
+        N_point.getSatellitePosition();
+
+        addPoint(N_point);
+        Log.e("POINT", "N Point added, pos: " + N_point.getSatellitePosition());
+        // END TODO: DELETED
     }
 
     public RadarView(Context context) {
@@ -91,14 +101,20 @@ public class RadarView extends RelativeLayout {
 
         //float radius = convertPixelsToDp(mRadarLightH, mContext);
         float radius = (float) ((((mRadarLightH)/ 2) / 90.0) * (90.0 - AzEl[1])); // radius scaled by elevation
+        float angle = (float) Math.toRadians(AzEl[0] + azimuth); //TODO: check azimuth inside or outside?
 
         Log.e("RADARVIEW", "Input params angle: " + AzEl[0] + " radius: " + AzEl[1] + " IMGW: " + mRadarLightW + " IMGH: " + mRadarLightH + "; Az,El: (" + AzEl[0] + ", " + AzEl[1] + ")");
 
-        PointF pointPosition = circToCart((float)  Math.toRadians(AzEl[0]) + azimuth, radius); // add compass heading
+//        radius = (float) ((((mRadarLightH)/ 2) / 90.0) * (90.0 - 45.0));
+//        angle = (float) Math.toRadians(0.0 + azimuth);
+
+        PointF pointPosition = circToCart(angle, radius); // TODO: this returns 0.0 / 0.0 now, why?
+
 
         satPoint.setX(pointPosition.x - mSatTickW/2);
         satPoint.setY(pointPosition.y - (int) (mSatTickH*1.5));
-
+        satPoint.setLabel("x:" + satPoint.getX() + "(" +pointPosition.x+")," + "y:" + satPoint.getY()+ "(" +pointPosition.y+"),", R.color.white);
+        Log.e("RADARVIEW", "satPoint x: " + satPoint.getX() + " y: " + satPoint.getY());
         Log.e("RADARVIEW", "added point x: " + pointPosition.x + " y: " + pointPosition.y);
 
         mView.addView(satPoint);
@@ -110,6 +126,7 @@ public class RadarView extends RelativeLayout {
         int displayed = 0;
         int notDisplayed = 0;
         int nullSat = 0;
+
         for (SatelliteParameters satellite : satellites){
             Log.d("SAT_POSITION_CHECK", "updateSatellites:" + satellite.getSatellitePosition());
             //
